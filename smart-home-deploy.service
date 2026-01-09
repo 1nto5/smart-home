@@ -1,0 +1,20 @@
+# Systemd service for smart-home auto-deploy
+# Install: sudo cp smart-home-deploy.service /etc/systemd/system/
+# Enable:  sudo systemctl enable smart-home-deploy
+# Start:   sudo systemctl start smart-home-deploy
+# Logs:    journalctl -u smart-home-deploy -f
+
+[Unit]
+Description=Smart Home Auto-Deploy Watcher
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=administrator
+WorkingDirectory=/mnt/c/smart-home
+ExecStart=/mnt/c/smart-home/watch-deploy.sh 60
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
