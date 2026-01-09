@@ -1,4 +1,4 @@
-import { W as attr_class, V as attr, X as stringify, _ as attr_style, U as ensure_array_like, $ as head } from "../../chunks/index2.js";
+import { W as attr_class, V as attr, X as stringify, U as ensure_array_like, _ as attr_style, $ as head } from "../../chunks/index2.js";
 import { s as store } from "../../chunks/stores.svelte.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
@@ -86,8 +86,41 @@ function LampCard($$renderer, $$props) {
     let status = store.lampStatuses.get(lamp.id);
     let loading = false;
     let dialogOpen = false;
+    let displayBrightness = status?.brightness ?? 0;
+    let displayColorTemp = status?.color_temp ?? 0;
+    const presets = [
+      {
+        id: "day",
+        label: "Day",
+        brightness: 100,
+        colorTemp: 5e3,
+        moonlight: false
+      },
+      {
+        id: "night",
+        label: "Night",
+        brightness: 30,
+        colorTemp: 2700,
+        moonlight: false
+      },
+      {
+        id: "moonlight",
+        label: "Moonlight",
+        brightness: 10,
+        colorTemp: 2700,
+        moonlight: true
+      }
+    ];
+    function isPresetActive(preset) {
+      if (!status?.power) return false;
+      if (preset.moonlight) return status?.moonlight_mode ?? false;
+      if (status?.moonlight_mode) return false;
+      const brightMatch = Math.abs(status.brightness - preset.brightness) <= 5;
+      const tempMatch = Math.abs(status.color_temp - preset.colorTemp) <= 200;
+      return brightMatch && tempMatch;
+    }
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
-      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${stringify(status?.power ? "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
+      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${stringify(status?.power ? status?.moonlight_mode ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
       { "status-active": status?.power }
     )}>`);
@@ -98,7 +131,14 @@ function LampCard($$renderer, $$props) {
     $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">${escape_html(displayName)}</h4> `);
     if (status?.power) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status.brightness)}% · ${escape_html(status.color_temp)}K</p>`);
+      if (status.moonlight_mode) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<p class="text-xs text-indigo-400">Moonlight</p>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status.brightness)}% · ${escape_html(status.color_temp)}K</p>`);
+      }
+      $$renderer2.push(`<!--]-->`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status ? "Off" : "Offline")}</p>`);
@@ -109,13 +149,35 @@ function LampCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(status?.power ? "text-amber-400" : "text-zinc-500")}`)}>${escape_html(status?.power ? "On" : status ? "Off" : "Offline")}</span></div> `);
+        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(status?.power ? status?.moonlight_mode ? "text-indigo-400" : "text-amber-400" : "text-zinc-500")}`)}>`);
+        if (status?.power) {
+          $$renderer3.push("<!--[-->");
+          $$renderer3.push(`${escape_html(status.moonlight_mode ? "Moonlight" : "On")}`);
+        } else {
+          $$renderer3.push("<!--[!-->");
+          $$renderer3.push(`${escape_html(status ? "Off" : "Offline")}`);
+        }
+        $$renderer3.push(`<!--]--></span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all ${stringify(status.power ? "bg-amber-500/20 text-amber-400" : "bg-zinc-800 text-zinc-400")} hover:scale-[1.02] disabled:opacity-50`)}>${escape_html(status.power ? "Turn Off" : "Turn On")}</button> `);
+          $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all ${stringify(status.power ? status.moonlight_mode ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800 text-zinc-400")} hover:scale-[1.02] disabled:opacity-50`)}>${escape_html(status.power ? "Turn Off" : "Turn On")}</button> `);
           if (status.power) {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div><div class="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Brightness</span> <span class="font-medium text-white">${escape_html(status.brightness)}%</span></div> <input type="range" min="1" max="100"${attr("value", status.brightness)} class="w-full"/></div> <div><div class="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Color Temperature</span> <span class="font-medium text-white">${escape_html(status.color_temp)}K</span></div> <input type="range" min="1700" max="6500" step="100"${attr("value", status.color_temp)} class="w-full"/> <div class="flex justify-between text-xs text-[var(--muted)] mt-1"><span>Warm</span> <span>Cool</span></div></div>`);
+            $$renderer3.push(`<div><p class="text-sm text-[var(--muted)] mb-2">Presets</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
+            const each_array = ensure_array_like(presets);
+            for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+              let preset = each_array[$$index];
+              $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2.5 text-sm rounded-lg transition-all ${stringify(isPresetActive(preset) ? preset.moonlight ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")} disabled:opacity-50`)}>${escape_html(preset.label)}</button>`);
+            }
+            $$renderer3.push(`<!--]--></div></div> `);
+            if (!status.moonlight_mode) {
+              $$renderer3.push("<!--[-->");
+              $$renderer3.push(`<div><div class="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Brightness</span> <span class="font-medium text-white">${escape_html(displayBrightness)}%</span></div> <input type="range" min="1" max="100"${attr("value", displayBrightness)} class="w-full"/></div> <div><div class="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Color Temperature</span> <span class="font-medium text-white">${escape_html(displayColorTemp)}K</span></div> <input type="range" min="1700" max="6500" step="100"${attr("value", displayColorTemp)} class="w-full"/> <div class="flex justify-between text-xs text-[var(--muted)] mt-1"><span>Warm</span> <span>Cool</span></div></div>`);
+            } else {
+              $$renderer3.push("<!--[!-->");
+              $$renderer3.push(`<div class="py-4 text-center text-sm text-indigo-400/80">Hardware night light mode active</div>`);
+            }
+            $$renderer3.push(`<!--]-->`);
           } else {
             $$renderer3.push("<!--[!-->");
           }
@@ -157,8 +219,24 @@ function RoborockCard($$renderer, $$props) {
       23: "Washing mop",
       26: "Going to wash mop"
     };
+    const FAN_MODES = [
+      { mode: 101, name: "Quiet", icon: "🔇" },
+      { mode: 102, name: "Balanced", icon: "⚖️" },
+      { mode: 103, name: "Turbo", icon: "💨" },
+      { mode: 104, name: "Max", icon: "🔥" }
+    ];
+    const MOP_MODES = [
+      { mode: 200, name: "Off", icon: "❌" },
+      { mode: 201, name: "Low", icon: "💧" },
+      { mode: 202, name: "Med", icon: "💧💧" },
+      { mode: 203, name: "High", icon: "💧💧💧" }
+    ];
     function getStateName(state) {
       return STATE_MAP[state] || `Unknown`;
+    }
+    function getFanModeName(fanPower) {
+      const mode = FAN_MODES.find((m) => m.mode === fanPower);
+      return mode ? mode.name : `${fanPower}%`;
     }
     function stateStyle(state) {
       switch (state) {
@@ -186,7 +264,10 @@ function RoborockCard($$renderer, $$props) {
       }
     }
     let style = status ? stateStyle(status.state) : { color: "text-zinc-500", bg: "bg-zinc-800/60" };
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${stringify(style.bg)} ${stringify(style.color)}`, void 0, {
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(
+      // Load extended data when dialog opens
+      compact ? "p-2.5" : "p-3"
+    )} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${stringify(style.bg)} ${stringify(style.color)}`, void 0, {
       "status-active": status?.state === 5 || status?.state === 11 || status?.state === 17 || status?.state === 18
     })}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"></path></svg></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">Roborock</h4> `);
     if (status) {
@@ -212,7 +293,26 @@ function RoborockCard($$renderer, $$props) {
         $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(style.color)}`)}>${escape_html(status ? getStateName(status.state) : "Offline")}</span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)]">Battery</span> <p${attr_class(`text-3xl font-bold mt-1 ${stringify(status.battery > 20 ? "" : "text-red-400")}`)}>${escape_html(status.battery)}%</p></div> <div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)]">Fan Speed</span> <p class="text-3xl font-bold mt-1">${escape_html(status.fanPower)}%</p></div></div> <div><p class="text-sm text-[var(--muted)] mb-2">Controls</p> <div class="grid grid-cols-3 gap-2"><button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Start</button> <button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm font-medium hover:bg-yellow-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Pause</button> <button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg> Home</button></div></div> <div class="grid grid-cols-2 gap-2"><button${attr("disabled", loading, true)} class="py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium hover:bg-zinc-700/60 disabled:opacity-50 transition-colors">Find Robot</button> <button${attr("disabled", loading, true)} class="py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium hover:bg-zinc-700/60 disabled:opacity-50 transition-colors">Spot Clean</button></div> <div class="pt-4 border-t border-[var(--glass-border)] space-y-2 text-sm"><div class="flex justify-between"><span class="text-[var(--muted)]">Model</span> <span class="font-mono text-xs">Roborock S5 Max</span></div></div>`);
+          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)]">Battery</span> <p${attr_class(`text-3xl font-bold mt-1 ${stringify(status.battery > 20 ? "" : "text-red-400")}`)}>${escape_html(status.battery)}%</p></div> <div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)]">Fan Speed</span> <p class="text-2xl font-bold mt-1">${escape_html(getFanModeName(status.fanPower))}</p></div></div> <div class="flex gap-1 bg-zinc-800/40 rounded-lg p-1"><button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify(
+            "bg-zinc-700 text-white"
+          )}`)}>Controls</button> <button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify("text-zinc-400 hover:text-white")}`)}>Rooms</button> <button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify("text-zinc-400 hover:text-white")}`)}>Settings</button></div> `);
+          {
+            $$renderer3.push("<!--[-->");
+            $$renderer3.push(`<div><p class="text-sm text-[var(--muted)] mb-2">Actions</p> <div class="grid grid-cols-3 gap-2"><button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Start</button> <button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm font-medium hover:bg-yellow-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Pause</button> <button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg> Home</button></div></div> <div><button${attr("disabled", loading, true)} class="w-full py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium hover:bg-zinc-700/60 disabled:opacity-50 transition-colors">Find Robot</button></div> <div><p class="text-sm text-[var(--muted)] mb-2">Suction Power</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
+            const each_array = ensure_array_like(FAN_MODES);
+            for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+              let fan = each_array[$$index];
+              $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors ${stringify(status.fanPower === fan.mode ? "bg-purple-500/30 text-purple-400 ring-1 ring-purple-500/50" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")} disabled:opacity-50`)}><div class="text-base mb-0.5">${escape_html(fan.icon)}</div> ${escape_html(fan.name)}</button>`);
+            }
+            $$renderer3.push(`<!--]--></div></div> <div><p class="text-sm text-[var(--muted)] mb-2">Mop Intensity</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
+            const each_array_1 = ensure_array_like(MOP_MODES);
+            for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
+              let mop = each_array_1[$$index_1];
+              $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors ${stringify(status.waterBoxMode === mop.mode ? "bg-cyan-500/30 text-cyan-400 ring-1 ring-cyan-500/50" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")} disabled:opacity-50`)}><div class="text-base mb-0.5">${escape_html(mop.icon)}</div> ${escape_html(mop.name)}</button>`);
+            }
+            $$renderer3.push(`<!--]--></div></div>`);
+          }
+          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-[var(--glass-border)] space-y-2 text-sm"><div class="flex justify-between"><span class="text-[var(--muted)]">Model</span> <span class="font-mono text-xs">Roborock S8</span></div></div>`);
         } else {
           $$renderer3.push("<!--[!-->");
           $$renderer3.push(`<div class="text-center py-8 text-[var(--muted)]">Start bridge to control robot</div>`);
@@ -243,32 +343,55 @@ function TuyaSensorCard($$renderer, $$props) {
       wfcon: { label: "Gateway", icon: "📡" },
       cz: { label: "Remote", icon: "📺" }
     };
+    const LOW_BATTERY_THRESHOLD = 15;
     function getStatusInfo(status, category) {
       if (!status) {
-        if (category === "sj") return { text: "Monitoring", alert: false, color: "text-green-400" };
-        return { text: "No data", alert: false, color: "text-zinc-500" };
+        if (category === "sj" || category === "mcs") return {
+          text: "Monitoring",
+          alert: false,
+          color: "text-zinc-500",
+          lowBattery: false
+        };
+        return {
+          text: "No data",
+          alert: false,
+          color: "text-zinc-500",
+          lowBattery: false
+        };
       }
       switch (category) {
         case "sj": {
           const waterValue = status["1"];
           const isWet = waterValue === "alarm" || waterValue === "1" || waterValue === 1;
           const battery = status["4"];
+          const lowBattery = battery !== void 0 && battery <= LOW_BATTERY_THRESHOLD;
           if (isWet) {
-            return { text: "Water detected!", alert: true, color: "text-red-400" };
+            return {
+              text: "Water detected!",
+              alert: true,
+              color: "text-red-400",
+              lowBattery,
+              batteryPercent: battery
+            };
           }
           return {
-            text: `Dry${battery ? ` · ${battery}%` : ""}`,
+            text: lowBattery ? `Dry · ${battery}%` : "Dry",
             alert: false,
-            color: "text-green-400"
+            color: "text-green-400",
+            lowBattery,
+            batteryPercent: battery
           };
         }
         case "mcs": {
           const isOpen = status["101"] === true || status["1"] === true;
           const battery = status["103"] || status["4"];
+          const lowBattery = battery !== void 0 && battery <= LOW_BATTERY_THRESHOLD;
           return {
-            text: isOpen ? "Open" : `Closed${battery ? ` · ${battery}%` : ""}`,
+            text: lowBattery ? `${isOpen ? "Open" : "Closed"} · ${battery}%` : isOpen ? "Open" : "Closed",
             alert: isOpen,
-            color: isOpen ? "text-amber-400" : "text-green-400"
+            color: isOpen ? "text-amber-400" : "text-green-400",
+            lowBattery,
+            batteryPercent: battery
           };
         }
         case "wsdcg": {
@@ -278,22 +401,33 @@ function TuyaSensorCard($$renderer, $$props) {
             return {
               text: `${(temp / 100).toFixed(1)}°C · ${humidity}%`,
               alert: false,
-              color: "text-cyan-400"
+              color: "text-cyan-400",
+              lowBattery: false
             };
           }
-          return { text: "N/A", alert: false, color: "text-zinc-500" };
+          return {
+            text: "N/A",
+            alert: false,
+            color: "text-zinc-500",
+            lowBattery: false
+          };
         }
         default:
           return {
             text: device.online ? "Online" : "Offline",
             alert: false,
-            color: device.online ? "text-green-400" : "text-zinc-500"
+            color: device.online ? "text-green-400" : "text-zinc-500",
+            lowBattery: false
           };
       }
     }
     let config = categoryConfig[device.category] || { label: device.category, icon: "📱" };
     let statusInfo = getStatusInfo(parsedStatus(), device.category);
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 ${stringify(statusInfo.alert ? "bg-red-500/20" : "bg-zinc-800/60")}`, void 0, { "status-active": statusInfo.alert })}>${escape_html(config.icon)}</div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-green-500" : "bg-zinc-600")}`, void 0, { "status-dot": device.online })}></div></div></div> `);
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer ${stringify(statusInfo.lowBattery ? "border-amber-500/50 bg-amber-500/10" : "")}`)}><div class="flex items-center gap-2.5"><div${attr_class(
+      `w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 ${stringify(statusInfo.alert ? "bg-red-500/20" : statusInfo.lowBattery ? "bg-amber-500/20" : "bg-zinc-800/60")}`,
+      void 0,
+      { "status-active": statusInfo.alert }
+    )}>${escape_html(config.icon)}</div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.lowBattery ? "text-amber-400" : statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-green-500" : "bg-zinc-600")}`, void 0, { "status-dot": device.online })}></div></div></div> `);
     DeviceDialog($$renderer2, {
       open: dialogOpen,
       onclose: () => dialogOpen = false,
@@ -457,6 +591,7 @@ function AirPurifierCard($$renderer, $$props) {
       if (aqi <= 150) return "Unhealthy";
       return "Very Unhealthy";
     }
+    const modeLabels = { auto: "Auto", silent: "Night", favorite: "Manual" };
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
       `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${stringify(status?.power ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
@@ -469,7 +604,7 @@ function AirPurifierCard($$renderer, $$props) {
     $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">Air Purifier</h4> `);
     if (status?.power) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status.mode)} · ${escape_html(status.aqi)} AQI</p>`);
+      $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(modeLabels[status.mode] || status.mode)} · ${escape_html(status.aqi)} AQI</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status ? "Off" : "Offline")}</p>`);
@@ -494,10 +629,14 @@ function AirPurifierCard($$renderer, $$props) {
           if (status.power) {
             $$renderer3.push("<!--[-->");
             $$renderer3.push(`<div${attr_class(`rounded-xl p-4 text-center ${stringify(aqiColor(status.aqi))}`)}><span class="text-xs uppercase tracking-wide opacity-80">Air Quality Index</span> <p class="text-4xl font-bold mt-1">${escape_html(status.aqi)}</p> <p class="text-sm mt-1">${escape_html(aqiLabel(status.aqi))}</p></div> <div><p class="text-sm text-[var(--muted)] mb-2">Mode</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
-            const each_array = ensure_array_like(["auto", "silent", "favorite"]);
+            const each_array = ensure_array_like([
+              { value: "auto", label: "Auto" },
+              { value: "silent", label: "Night" },
+              { value: "favorite", label: "Manual" }
+            ]);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let mode = each_array[$$index];
-              $$renderer3.push(`<button${attr_class(`py-3 text-sm rounded-lg transition-colors capitalize ${stringify(status.mode === mode ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(mode)}</button>`);
+              $$renderer3.push(`<button${attr_class(`py-3 text-sm rounded-lg transition-colors ${stringify(status.mode === mode.value ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(mode.label)}</button>`);
             }
             $$renderer3.push(`<!--]--></div></div> <div class="grid grid-cols-3 gap-3">`);
             if (status.humidity !== void 0) {
@@ -532,45 +671,6 @@ function AirPurifierCard($$renderer, $$props) {
       }
     });
     $$renderer2.push(`<!---->`);
-  });
-}
-function QuickActionBar($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let presets = {};
-    let loading = null;
-    $$renderer2.push(`<div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">`);
-    {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> <div class="quick-bar rounded-2xl px-2 py-2 flex items-center gap-0.5"><button${attr("disabled", loading !== null, true)} class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"><span${attr_class(`text-xl ${stringify("")}`)}>⚡</span> <span class="text-[10px] text-[var(--muted)]">All Off</span></button> `);
-    if (presets["day"]) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button${attr("disabled", loading !== null, true)} class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"><span${attr_class(`text-xl ${stringify("")}`)}>☀️</span> <span class="text-[10px] text-[var(--muted)]">Day</span></button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> `);
-    if (presets["evening"]) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button${attr("disabled", loading !== null, true)} class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"><span${attr_class(`text-xl ${stringify("")}`)}>🌆</span> <span class="text-[10px] text-[var(--muted)]">Evening</span></button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> `);
-    if (presets["night"]) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button${attr("disabled", loading !== null, true)} class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"><span${attr_class(`text-xl ${stringify("")}`)}>🌙</span> <span class="text-[10px] text-[var(--muted)]">Night</span></button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> `);
-    if (Object.keys(presets).length > 3) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="w-px h-8 bg-[var(--glass-border)] mx-1"></div> <button${attr_class(`flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all hover:bg-white/5 active:scale-95 ${stringify("")}`)}><span class="text-xl">${escape_html("⋯")}</span> <span class="text-[10px] text-[var(--muted)]">${escape_html("More")}</span></button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></div></div>`);
   });
 }
 function _page($$renderer, $$props) {
@@ -664,9 +764,7 @@ function _page($$renderer, $$props) {
       RoborockCard($$renderer2, { status: store.roborock, compact: true });
       $$renderer2.push(`<!----></div></section>`);
     }
-    $$renderer2.push(`<!--]--></div> `);
-    QuickActionBar($$renderer2);
-    $$renderer2.push(`<!---->`);
+    $$renderer2.push(`<!--]--></div>`);
   });
 }
 export {
