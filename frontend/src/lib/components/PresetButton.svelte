@@ -2,6 +2,8 @@
   import type { Preset, ApplyResult } from '$lib/types';
   import { applyPreset } from '$lib/api';
   import { store } from '$lib/stores.svelte';
+  import { Sun, Moon, Power, Lightbulb } from 'lucide-svelte';
+  import type { ComponentType } from 'svelte';
 
   let { name, preset }: { name: string; preset: Preset } = $props();
   let isPending = $state(false);
@@ -19,19 +21,19 @@
     isPending = false;
   }
 
-  function icon(presetName: string): string {
+  function getIcon(presetName: string): ComponentType {
     switch (presetName) {
-      case 'day': return '\u2600\uFE0F'; // sun
-      case 'night': return '\uD83C\uDF19'; // moon
-      case 'off': return '\u26A1'; // power
-      default: return '\uD83D\uDCA1'; // bulb
+      case 'day': return Sun;
+      case 'night': return Moon;
+      case 'off': return Power;
+      default: return Lightbulb;
     }
   }
 </script>
 
 <div class="card p-4">
   <div class="flex items-center gap-3 mb-3">
-    <span class="text-2xl">{icon(name)}</span>
+    <svelte:component this={getIcon(name)} class="w-6 h-6 text-accent" />
     <div>
       <h3 class="font-medium text-content-primary">{preset.name}</h3>
       <p class="text-xs text-content-secondary">

@@ -1,4 +1,4 @@
-import { r as run_all, c as deferred, f as safe_equals, h as equals, o as object_prototype, i as array_prototype, j as get_descriptor, k as get_prototype_of, l as is_array, m as is_extensible, p as index_of, e as escape_html, n as noop, q as set_ssr_context, t as ssr_context, u as push$1, v as pop$1 } from "./context.js";
+import { r as run_all, c as deferred, h as safe_equals, i as equals, o as object_prototype, j as array_prototype, k as get_descriptor, l as get_prototype_of, m as is_array, p as is_extensible, q as index_of, e as escape_html, n as noop, t as set_ssr_context, u as ssr_context, v as push$1, w as pop$1 } from "./context.js";
 import { clsx as clsx$1 } from "clsx";
 import { B as BROWSER } from "./false.js";
 const DERIVED = 1 << 1;
@@ -1708,6 +1708,27 @@ const STATUS_MASK = -7169;
 function set_signal_status(signal, status) {
   signal.f = signal.f & STATUS_MASK | status;
 }
+const VOID_ELEMENT_NAMES = [
+  "area",
+  "base",
+  "br",
+  "col",
+  "command",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "keygen",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr"
+];
+function is_void(name) {
+  return VOID_ELEMENT_NAMES.includes(name) || name.toLowerCase() === "!doctype";
+}
 const DOM_BOOLEAN_ATTRIBUTES = [
   "allowfullscreen",
   "async",
@@ -1744,6 +1765,16 @@ function is_boolean_attribute(name) {
 const PASSIVE_EVENTS = ["touchstart", "touchmove"];
 function is_passive_event(name) {
   return PASSIVE_EVENTS.includes(name);
+}
+const RAW_TEXT_ELEMENTS = (
+  /** @type {const} */
+  ["textarea", "script", "style", "title"]
+);
+function is_raw_text_element(name) {
+  return RAW_TEXT_ELEMENTS.includes(
+    /** @type {typeof RAW_TEXT_ELEMENTS[number]} */
+    name
+  );
 }
 const replacements = {
   translate: /* @__PURE__ */ new Map([
@@ -2568,6 +2599,22 @@ class SSRState {
   }
 }
 const INVALID_ATTR_NAME_CHAR_REGEX = /[\s'">/=\u{FDD0}-\u{FDEF}\u{FFFE}\u{FFFF}\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]/u;
+function element(renderer, tag, attributes_fn = noop, children_fn = noop) {
+  renderer.push("<!---->");
+  if (tag) {
+    renderer.push(`<${tag}`);
+    attributes_fn();
+    renderer.push(`>`);
+    if (!is_void(tag)) {
+      children_fn();
+      if (!is_raw_text_element(tag)) {
+        renderer.push(EMPTY_COMMENT);
+      }
+      renderer.push(`</${tag}>`);
+    }
+  }
+  renderer.push("<!---->");
+}
 function render(component, options = {}) {
   if (options.csp?.hash && options.csp.nonce) {
     invalid_csp();
@@ -2618,6 +2665,22 @@ function attributes(attrs, css_hash, classes, styles, flags = 0) {
   }
   return attr_str;
 }
+function spread_props(props) {
+  const merged_props = {};
+  let key;
+  for (let i = 0; i < props.length; i++) {
+    const obj = props[i];
+    for (key in obj) {
+      const desc = Object.getOwnPropertyDescriptor(obj, key);
+      if (desc) {
+        Object.defineProperty(merged_props, key, desc);
+      } else {
+        merged_props[key] = obj[key];
+      }
+    }
+  }
+  return merged_props;
+}
 function stringify(value) {
   return typeof value === "string" ? value : value == null ? "" : value + "";
 }
@@ -2648,6 +2711,38 @@ function unsubscribe_stores(store_values) {
     store_values[store_name][1]();
   }
 }
+function slot(renderer, $$props, name, slot_props, fallback_fn) {
+  var slot_fn = $$props.$$slots?.[name];
+  if (slot_fn === true) {
+    slot_fn = $$props["children"];
+  }
+  if (slot_fn !== void 0) {
+    slot_fn(renderer, slot_props);
+  }
+}
+function rest_props(props, rest) {
+  const rest_props2 = {};
+  let key;
+  for (key in props) {
+    if (!rest.includes(key)) {
+      rest_props2[key] = props[key];
+    }
+  }
+  return rest_props2;
+}
+function sanitize_props(props) {
+  const { children, $$slots, ...sanitized } = props;
+  return sanitized;
+}
+function bind_props(props_parent, props_now) {
+  for (const key in props_now) {
+    const initial_value = props_parent[key];
+    const value = props_now[key];
+    if (initial_value === void 0 && value !== void 0 && Object.getOwnPropertyDescriptor(props_parent, key)?.set) {
+      props_parent[key] = value;
+    }
+  }
+}
 function ensure_array_like(array_like_or_iterator) {
   if (array_like_or_iterator) {
     return array_like_or_iterator.length !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
@@ -2655,7 +2750,7 @@ function ensure_array_like(array_like_or_iterator) {
   return [];
 }
 export {
-  head as $,
+  store_get as $,
   svelte_boundary_reset_onerror as A,
   Batch as B,
   COMMENT_NODE as C,
@@ -2676,14 +2771,22 @@ export {
   flushSync as R,
   mutable_source as S,
   render as T,
-  ensure_array_like as U,
-  attr as V,
-  attr_class as W,
-  stringify as X,
-  store_get as Y,
-  unsubscribe_stores as Z,
-  attr_style as _,
+  sanitize_props as U,
+  spread_props as V,
+  slot as W,
+  ensure_array_like as X,
+  attr as Y,
+  attr_class as Z,
+  stringify as _,
   HYDRATION_END as a,
+  unsubscribe_stores as a0,
+  attr_style as a1,
+  head as a2,
+  rest_props as a3,
+  attributes as a4,
+  clsx as a5,
+  element as a6,
+  bind_props as a7,
   HYDRATION_START as b,
   HYDRATION_START_ELSE as c,
   get as d,

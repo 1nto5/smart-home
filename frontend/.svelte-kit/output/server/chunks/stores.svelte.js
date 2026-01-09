@@ -71,8 +71,12 @@ function createStore() {
         const msg = JSON.parse(event.data);
         if (msg.type === "lamp_status" && msg.deviceId && msg.status) {
           lampStatuses.set(msg.deviceId, msg.status);
+          const lamp = lamps.find((l) => l.id === msg.deviceId);
+          if (lamp) lamp.online = 1;
         } else if (msg.type === "lamp_offline" && msg.deviceId) {
           lampStatuses.delete(msg.deviceId);
+          const lamp = lamps.find((l) => l.id === msg.deviceId);
+          if (lamp) lamp.online = 0;
         }
       } catch {
       }

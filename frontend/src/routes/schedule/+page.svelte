@@ -44,30 +44,32 @@
   <!-- Create Schedule -->
   <section class="bg-surface-elevated border border-stroke-default rounded-xl p-4">
     <h2 class="text-lg font-medium text-content-primary mb-4">Create Schedule</h2>
-    <div class="flex flex-wrap gap-3">
+    <div class="flex flex-col sm:flex-row flex-wrap gap-3">
       <input
         type="text"
         placeholder="Schedule name"
         bind:value={newName}
-        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 flex-1 min-w-[150px] text-content-primary placeholder:text-content-tertiary"
+        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 w-full sm:flex-1 sm:min-w-[150px] text-content-primary placeholder:text-content-tertiary"
       />
-      <select
-        bind:value={newPreset}
-        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
-      >
-        <option value="day">Day Mode</option>
-        <option value="night">Night Mode</option>
-        <option value="off">All Off</option>
-      </select>
-      <input
-        type="time"
-        bind:value={newTime}
-        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
-      />
+      <div class="flex gap-3">
+        <select
+          bind:value={newPreset}
+          class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary flex-1 sm:flex-initial"
+        >
+          <option value="day">Day Mode</option>
+          <option value="night">Night Mode</option>
+          <option value="off">All Off</option>
+        </select>
+        <input
+          type="time"
+          bind:value={newTime}
+          class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+        />
+      </div>
       <button
         onclick={handleCreate}
         disabled={loading || !newName.trim()}
-        class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium"
+        class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium w-full sm:w-auto"
       >
         Add
       </button>

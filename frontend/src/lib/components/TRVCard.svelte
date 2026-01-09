@@ -4,6 +4,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
+  import { Flame, Radio } from 'lucide-svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -122,13 +123,9 @@
       class:status-active={valve === 'opened'}
     >
       {#if valve === 'opened'}
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-        </svg>
+        <Flame class="w-4 h-4" />
       {:else}
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M5.05 3.636a1 1 0 010 1.414 7 7 0 000 9.9 1 1 0 11-1.414 1.414 9 9 0 010-12.728 1 1 0 011.414 0zm9.9 0a1 1 0 011.414 0 9 9 0 010 12.728 1 1 0 11-1.414-1.414 7 7 0 000-9.9 1 1 0 010-1.414zM7.879 6.464a1 1 0 010 1.414 3 3 0 000 4.243 1 1 0 11-1.415 1.414 5 5 0 010-7.07 1 1 0 011.415 0zm4.242 0a1 1 0 011.415 0 5 5 0 010 7.072 1 1 0 01-1.415-1.415 3 3 0 000-4.242 1 1 0 010-1.415zM10 9a1 1 0 011 1v.01a1 1 0 11-2 0V10a1 1 0 011-1z"/>
-        </svg>
+        <Radio class="w-4 h-4" />
       {/if}
     </div>
 
@@ -162,11 +159,11 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-surface-recessed rounded-xl p-4 text-center">
           <span class="text-xs text-content-secondary uppercase tracking-wide">Current</span>
-          <p class="text-3xl font-bold mt-1 text-content-primary">{currentTemp}°C</p>
+          <p class="text-2xl sm:text-3xl font-bold mt-1 text-content-primary">{currentTemp}°C</p>
         </div>
         <div class="bg-surface-recessed rounded-xl p-4 text-center">
           <span class="text-xs text-content-secondary uppercase tracking-wide">Target</span>
-          <p class="text-3xl font-bold mt-1 text-device-climate-heat-text">{targetTemp}°C</p>
+          <p class="text-2xl sm:text-3xl font-bold mt-1 text-device-climate-heat-text">{targetTemp}°C</p>
         </div>
       </div>
 
