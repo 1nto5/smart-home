@@ -1,75 +1,147 @@
 """
 Roborock HTTP Bridge
-FastAPI server using python-roborock library for local vacuum control.
+FastAPI server using python-roborock library for vacuum control.
+Uses local connection with credentials from environment.
 """
 
 import asyncio
+import json
 import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from roborock import RoborockCommand
-from roborock.containers import DeviceData, UserData
-from roborock.api import RoborockLocalClientV2
+from roborock import RoborockCommand, UserData, RRiot
+from roborock.devices.device_manager import DeviceManager, UserParams, create_device_manager
+from roborock.devices.device import RoborockDevice
 
-# Device config from environment
+# Config from environment
 DEVICE_NAME = os.environ.get("ROBOROCK_DEVICE_NAME", "Vacuum")
 DEVICE_ID = os.environ.get("ROBOROCK_DEVICE_ID", "")
-DEVICE_IP = os.environ.get("ROBOROCK_DEVICE_IP", "")
-DEVICE_LOCAL_KEY = os.environ.get("ROBOROCK_LOCAL_KEY", "")
 ROBOROCK_PORT = int(os.environ.get("ROBOROCK_PORT", "3002"))
 
-# Global client instance
-client: RoborockLocalClientV2 | None = None
+# RRiot credentials from environment
+RRIOT_U = os.environ.get("ROBOROCK_RRIOT_U", "")
+RRIOT_S = os.environ.get("ROBOROCK_RRIOT_S", "")
+RRIOT_H = os.environ.get("ROBOROCK_RRIOT_H", "")
+RRIOT_K = os.environ.get("ROBOROCK_RRIOT_K", "")
+RRIOT_REGION = os.environ.get("ROBOROCK_RRIOT_REGION", "EU")
+RRIOT_API = os.environ.get("ROBOROCK_RRIOT_API", "https://api-eu.roborock.com")
+RRIOT_MQTT = os.environ.get("ROBOROCK_RRIOT_MQTT", "ssl://mqtt-eu.roborock.com:8883")
+
+# User data from environment
+USER_UID = int(os.environ.get("ROBOROCK_USER_UID", "0"))
+USER_TOKEN = os.environ.get("ROBOROCK_USER_TOKEN", "")
+USER_RRUID = os.environ.get("ROBOROCK_USER_RRUID", "")
+USER_EMAIL = os.environ.get("ROBOROCK_USER_EMAIL", "")
+
+# Global device manager and device
+manager: DeviceManager | None = None
+device: RoborockDevice | None = None
 
 
 class CommandRequest(BaseModel):
-    cmd: str  # start, pause, stop, home, find
+    cmd: str
 
 
 class VolumeRequest(BaseModel):
-    volume: int  # 0-100
+    volume: int
 
 
 class FanSpeedRequest(BaseModel):
-    mode: int  # 101=quiet, 102=balanced, 103=turbo, 104=max
+    mode: int
 
 
 class MopModeRequest(BaseModel):
-    mode: int  # 200=off, 201=low, 202=medium, 203=high
+    mode: int
 
 
 class CleanSegmentsRequest(BaseModel):
-    segments: list[int]  # segment IDs to clean
+    segments: list[int]
 
 
 class ResetConsumableRequest(BaseModel):
     consumable: str
 
 
-async def get_client() -> RoborockLocalClientV2:
-    global client
-    if client is None or not client._is_connected:
-        device_data = DeviceData(
-            device={"duid": DEVICE_ID, "localKey": DEVICE_LOCAL_KEY, "name": DEVICE_NAME},
-            model="roborock.vacuum.a51"
+async def init_device():
+    """Initialize device manager and connect to device."""
+    global manager, device
+
+    if not RRIOT_U or not DEVICE_ID:
+        print("Missing RRIOT credentials or DEVICE_ID")
+        return False
+
+    try:
+        # Create RRiot data
+        rriot = RRiot(
+            u=RRIOT_U,
+            s=RRIOT_S,
+            h=RRIOT_H,
+            k=RRIOT_K,
+            r={
+                "r": RRIOT_REGION,
+                "a": RRIOT_API,
+                "m": RRIOT_MQTT,
+                "l": RRIOT_API.replace("api", "wood"),
+            }
         )
-        client = RoborockLocalClientV2(device_data, DEVICE_IP)
-        await client.async_connect()
-    return client
+
+        # Create UserData
+        user_data = UserData(
+            rriot=rriot,
+            uid=USER_UID,
+            token=USER_TOKEN,
+            rruid=USER_RRUID,
+            region="eu",
+        )
+
+        # Create UserParams
+        user_params = UserParams(
+            username=USER_EMAIL,
+            user_data=user_data,
+            base_url=RRIOT_API,
+        )
+
+        # Create device manager
+        manager = await create_device_manager(user_params, prefer_cache=False)
+
+        # Find our device
+        devices = await manager.get_devices()
+        for d in devices:
+            if d.device_info.duid == DEVICE_ID:
+                device = d
+                await device.connect()
+                print(f"Connected to device: {device.device_info.name}")
+                return True
+
+        print(f"Device {DEVICE_ID} not found")
+        return False
+
+    except Exception as e:
+        print(f"Init error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+async def get_device() -> RoborockDevice:
+    """Get connected device, reconnecting if needed."""
+    global device
+    if device is None:
+        await init_device()
+    if device is None:
+        raise HTTPException(503, "Device not available")
+    return device
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print(f"Roborock bridge ready for device: {DEVICE_NAME}")
-    print(f"  Device ID: {DEVICE_ID}")
-    print(f"  IP: {DEVICE_IP}")
+    print(f"Roborock bridge starting for device: {DEVICE_NAME}")
+    await init_device()
     yield
-    # Cleanup on shutdown
-    global client
-    if client:
-        await client.async_disconnect()
+    if manager:
+        await manager.close()
 
 
 app = FastAPI(title="Roborock Bridge", lifespan=lifespan)
@@ -79,8 +151,11 @@ app = FastAPI(title="Roborock Bridge", lifespan=lifespan)
 async def get_status():
     """Get vacuum status"""
     try:
-        c = await get_client()
-        status = await c.get_status()
+        d = await get_device()
+        props = d.v1_properties
+        if not props:
+            raise HTTPException(500, "Device properties not available")
+        status = props.status
         return {
             "state": status.state_name if status else "unknown",
             "state_code": status.state if status else 0,
@@ -92,6 +167,8 @@ async def get_status():
             "clean_area": status.clean_area if status else 0,
             "in_cleaning": status.in_cleaning if status else 0,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Status error: {e}")
         raise HTTPException(500, f"Failed to get status: {e}")
@@ -113,8 +190,8 @@ async def send_command(req: CommandRequest):
         raise HTTPException(400, f"Unknown command: {req.cmd}")
 
     try:
-        c = await get_client()
-        await c.send_command(roborock_cmd)
+        d = await get_device()
+        await d.send_command(roborock_cmd)
         return {"success": True, "command": req.cmd}
     except Exception as e:
         print(f"Command error: {e}")
@@ -125,13 +202,18 @@ async def send_command(req: CommandRequest):
 async def get_clean_summary():
     """Get cleaning summary"""
     try:
-        c = await get_client()
-        summary = await c.get_clean_summary()
+        d = await get_device()
+        props = d.v1_properties
+        if not props:
+            raise HTTPException(500, "Device properties not available")
+        summary = props.clean_summary
         return {
             "clean_time": summary.clean_time if summary else 0,
             "clean_area": summary.clean_area if summary else 0,
             "clean_count": summary.clean_count if summary else 0,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Summary error: {e}")
         raise HTTPException(500, f"Failed to get summary: {e}")
@@ -141,107 +223,34 @@ async def get_clean_summary():
 async def get_rooms():
     """Get room list"""
     try:
-        c = await get_client()
-        rooms = await c.get_room_mapping()
-        return rooms or []
+        d = await get_device()
+        # For now return empty - room mapping requires additional setup
+        return []
     except Exception as e:
         print(f"Rooms error: {e}")
         raise HTTPException(500, f"Failed to get rooms: {e}")
-
-
-@app.get("/volume")
-async def get_volume():
-    """Get current volume"""
-    try:
-        c = await get_client()
-        status = await c.get_sound_volume()
-        return {"volume": status}
-    except Exception as e:
-        print(f"Volume error: {e}")
-        raise HTTPException(500, f"Failed to get volume: {e}")
-
-
-@app.post("/set-volume")
-async def set_volume(req: VolumeRequest):
-    """Set volume (0-100)"""
-    try:
-        c = await get_client()
-        await c.send_command(RoborockCommand.CHANGE_SOUND_VOLUME, [req.volume])
-        return {"success": True, "volume": req.volume}
-    except Exception as e:
-        print(f"Set volume error: {e}")
-        raise HTTPException(500, f"Failed to set volume: {e}")
-
-
-@app.post("/set-fan-speed")
-async def set_fan_speed(req: FanSpeedRequest):
-    """Set fan speed mode (101-104)"""
-    try:
-        c = await get_client()
-        await c.send_command(RoborockCommand.SET_CUSTOM_MODE, [req.mode])
-        return {"success": True, "mode": req.mode}
-    except Exception as e:
-        print(f"Set fan speed error: {e}")
-        raise HTTPException(500, f"Failed to set fan speed: {e}")
-
-
-@app.post("/set-mop-mode")
-async def set_mop_mode(req: MopModeRequest):
-    """Set mop intensity (200=off, 201=low, 202=medium, 203=high)"""
-    try:
-        c = await get_client()
-        await c.send_command(RoborockCommand.SET_WATER_BOX_CUSTOM_MODE, [req.mode])
-        return {"success": True, "mode": req.mode}
-    except Exception as e:
-        print(f"Set mop mode error: {e}")
-        raise HTTPException(500, f"Failed to set mop mode: {e}")
-
-
-@app.post("/clean-segments")
-async def clean_segments(req: CleanSegmentsRequest):
-    """Clean specific rooms by segment IDs"""
-    try:
-        c = await get_client()
-        await c.send_command(
-            RoborockCommand.APP_SEGMENT_CLEAN,
-            [{"segments": req.segments, "repeat": 1}]
-        )
-        return {"success": True, "segments": req.segments}
-    except Exception as e:
-        print(f"Clean segments error: {e}")
-        raise HTTPException(500, f"Failed to start segment cleaning: {e}")
 
 
 @app.get("/consumables")
 async def get_consumables():
     """Get consumables status"""
     try:
-        c = await get_client()
-        consumables = await c.get_consumable()
+        d = await get_device()
+        props = d.v1_properties
+        if not props:
+            raise HTTPException(500, "Device properties not available")
+        consumables = props.consumable
         return {
             "main_brush_work_time": consumables.main_brush_work_time if consumables else 0,
             "side_brush_work_time": consumables.side_brush_work_time if consumables else 0,
             "filter_work_time": consumables.filter_work_time if consumables else 0,
             "sensor_dirty_time": consumables.sensor_dirty_time if consumables else 0,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Consumables error: {e}")
         raise HTTPException(500, f"Failed to get consumables: {e}")
-
-
-@app.post("/reset-consumable")
-async def reset_consumable(req: ResetConsumableRequest):
-    """Reset a consumable timer"""
-    valid = ["sensor_dirty_time", "filter_work_time", "side_brush_work_time", "main_brush_work_time"]
-    if req.consumable not in valid:
-        raise HTTPException(400, f"Invalid consumable. Must be one of: {valid}")
-    try:
-        c = await get_client()
-        await c.send_command(RoborockCommand.RESET_CONSUMABLE, [req.consumable])
-        return {"success": True, "consumable": req.consumable}
-    except Exception as e:
-        print(f"Reset consumable error: {e}")
-        raise HTTPException(500, f"Failed to reset consumable: {e}")
 
 
 def run():
