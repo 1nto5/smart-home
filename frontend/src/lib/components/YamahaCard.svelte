@@ -327,13 +327,6 @@
         </div>
       {/if}
 
-      <!-- Device Info -->
-      <div class="pt-4 border-t border-stroke-default space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-content-secondary">Model</span>
-          <span class="font-mono text-xs text-content-tertiary">{device.model || 'Yamaha Soundbar'}</span>
-        </div>
-      </div>
     {/if}
   </div>
 </DeviceDialog>

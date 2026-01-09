@@ -280,10 +280,6 @@
       <!-- Device Info -->
       <div class="pt-4 border-t border-stroke-default space-y-2 text-sm">
         <div class="flex justify-between">
-          <span class="text-content-secondary">Model</span>
-          <span class="font-mono text-xs text-content-tertiary">{lamp.model}</span>
-        </div>
-        <div class="flex justify-between">
           <span class="text-content-secondary">IP Address</span>
           <span class="font-mono text-xs text-content-tertiary">{lamp.ip}</span>
         </div>
