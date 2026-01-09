@@ -1,5 +1,5 @@
 import "clsx";
-const API_BASE = "http://localhost:3001/api";
+const API_BASE = "/api";
 async function fetcher(path, options) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,

@@ -1,6 +1,7 @@
 import type { Lamp, LampStatus, RoborockStatus, Preset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus } from './types';
 
-const API_BASE = 'http://localhost:3001/api';
+// Use relative URL so it works through nginx proxy
+const API_BASE = '/api';
 
 async function fetcher<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
