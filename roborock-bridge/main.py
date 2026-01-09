@@ -102,24 +102,31 @@ async def send_command(method: str, params: list | dict | None = None) -> dict |
     """Send command and get response."""
     ch = await get_channel()
 
-    # Create message
+    # Generate unique seq for this request
+    seq = get_next_int(10000, 32767)
+
+    # Create message with seq for response matching
     payload = create_request_payload(method, params)
     msg = RoborockMessage(
         timestamp=get_timestamp(),
         protocol=RoborockMessageProtocol.RPC_REQUEST,
         payload=payload,
         version=b"1.0",
+        seq=seq,
     )
 
     # Create response future
     response_future: asyncio.Future = asyncio.Future()
 
     def on_response(resp_msg: RoborockMessage):
-        if not response_future.done():
+        # Match by seq number and RPC_RESPONSE protocol
+        if (resp_msg.protocol == RoborockMessageProtocol.RPC_RESPONSE and
+            resp_msg.seq == seq and
+            not response_future.done()):
             response_future.set_result(resp_msg)
 
-    # Subscribe and publish
-    await ch.subscribe(on_response)
+    # Subscribe returns unsubscribe function
+    unsub = await ch.subscribe(on_response)
     try:
         await ch.publish(msg)
         # Wait for response with timeout
@@ -128,8 +135,7 @@ async def send_command(method: str, params: list | dict | None = None) -> dict |
     except asyncio.TimeoutError:
         raise HTTPException(504, "Device timeout")
     finally:
-        # Note: can't unsubscribe easily, but it's fine for our use case
-        pass
+        unsub()  # Always unsubscribe
 
 
 @asynccontextmanager
