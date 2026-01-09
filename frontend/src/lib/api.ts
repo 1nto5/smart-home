@@ -1,4 +1,4 @@
-import type { Lamp, LampStatus, RoborockStatus, Preset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus } from './types';
+import type { Lamp, LampStatus, RoborockStatus, Preset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction } from './types';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
@@ -187,4 +187,49 @@ export async function controlAirPurifier(
     method: 'POST',
     body: JSON.stringify(cmd),
   });
+}
+
+// Heater presets
+export async function getHeaterPresets(): Promise<HeaterPreset[]> {
+  return fetcher('/heater-presets');
+}
+
+export async function updateHeaterPreset(id: string, target_temp: number): Promise<HeaterPreset> {
+  return fetcher(`/heater-presets/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ target_temp }),
+  });
+}
+
+export async function applyHeaterPreset(id: string): Promise<ApplyResult> {
+  return fetcher(`/heater-presets/${id}/apply`, { method: 'POST' });
+}
+
+// Heater schedules
+export async function getHeaterSchedules(): Promise<HeaterSchedule[]> {
+  return fetcher('/heater-schedules');
+}
+
+export async function createHeaterSchedule(name: string, preset_id: string, time: string): Promise<HeaterSchedule> {
+  return fetcher('/heater-schedules', {
+    method: 'POST',
+    body: JSON.stringify({ name, preset_id, time }),
+  });
+}
+
+export async function deleteHeaterSchedule(id: number): Promise<{ success: boolean }> {
+  return fetcher(`/heater-schedules/${id}`, { method: 'DELETE' });
+}
+
+export async function toggleHeaterSchedule(id: number): Promise<HeaterSchedule> {
+  return fetcher(`/heater-schedules/${id}/toggle`, { method: 'PATCH' });
+}
+
+// Pending heater actions
+export async function getPendingHeaterActions(): Promise<PendingHeaterAction[]> {
+  return fetcher('/pending-heater-actions');
+}
+
+export async function clearPendingHeaterActions(): Promise<{ success: boolean }> {
+  return fetcher('/pending-heater-actions', { method: 'DELETE' });
 }

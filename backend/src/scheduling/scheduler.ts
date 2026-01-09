@@ -4,6 +4,7 @@
  */
 
 import { getSchedulesByTime, applyPresetToAllLamps } from './schedule-service';
+import { getHeaterSchedulesByTime, applyPresetToAllHeaters } from './heater-schedule-service';
 
 let schedulerInterval: Timer | null = null;
 let lastTriggeredMinute: string = '';
@@ -28,14 +29,25 @@ export function startScheduler(): void {
       return;
     }
 
-    // Check for schedules at this time
-    const schedules = getSchedulesByTime(currentTime);
-    if (schedules.length > 0) {
+    // Check for lamp schedules at this time
+    const lampSchedules = getSchedulesByTime(currentTime);
+    if (lampSchedules.length > 0) {
       lastTriggeredMinute = currentTime;
 
-      for (const schedule of schedules) {
-        console.log(`Triggering schedule "${schedule.name}" (${schedule.preset}) at ${currentTime}`);
+      for (const schedule of lampSchedules) {
+        console.log(`Triggering lamp schedule "${schedule.name}" (${schedule.preset}) at ${currentTime}`);
         applyPresetToAllLamps(schedule.preset, schedule.id);
+      }
+    }
+
+    // Check for heater schedules at this time
+    const heaterSchedules = getHeaterSchedulesByTime(currentTime);
+    if (heaterSchedules.length > 0) {
+      lastTriggeredMinute = currentTime;
+
+      for (const schedule of heaterSchedules) {
+        console.log(`Triggering heater schedule "${schedule.name}" (${schedule.preset_id}) at ${currentTime}`);
+        applyPresetToAllHeaters(schedule.preset_id, schedule.id);
       }
     }
   }, 60_000); // Check every minute

@@ -1,5 +1,5 @@
-import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus } from './api';
-import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus } from './types';
+import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions } from './api';
+import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction } from './types';
 
 // WebSocket connection state
 let ws: WebSocket | null = null;
@@ -15,6 +15,9 @@ function createStore() {
   let tuyaDevices = $state<TuyaDevice[]>([]);
   let yamahaDevices = $state<YamahaDevice[]>([]);
   let airPurifier = $state<AirPurifierStatus | null>(null);
+  let heaterPresets = $state<HeaterPreset[]>([]);
+  let heaterSchedules = $state<HeaterSchedule[]>([]);
+  let pendingHeaterActions = $state<PendingHeaterAction[]>([]);
   let loading = $state(false);
   let error = $state<string | null>(null);
   let wsConnected = $state(false);
@@ -46,15 +49,19 @@ function createStore() {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'lamp_status' && msg.deviceId && msg.status) {
-          lampStatuses.set(msg.deviceId, msg.status);
+          // Create new Map for Svelte 5 reactivity
+          const newStatuses = new Map(lampStatuses);
+          newStatuses.set(msg.deviceId, msg.status);
+          lampStatuses = newStatuses;
           // Update online status in lamps array
-          const lamp = lamps.find(l => l.id === msg.deviceId);
-          if (lamp) lamp.online = 1;
+          lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 1 } : l);
         } else if (msg.type === 'lamp_offline' && msg.deviceId) {
-          lampStatuses.delete(msg.deviceId);
+          // Create new Map for Svelte 5 reactivity
+          const newStatuses = new Map(lampStatuses);
+          newStatuses.delete(msg.deviceId);
+          lampStatuses = newStatuses;
           // Update online status in lamps array
-          const lamp = lamps.find(l => l.id === msg.deviceId);
-          if (lamp) lamp.online = 0;
+          lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 0 } : l);
         }
       } catch {}
     };
@@ -69,6 +76,9 @@ function createStore() {
     get tuyaDevices() { return tuyaDevices; },
     get yamahaDevices() { return yamahaDevices; },
     get airPurifier() { return airPurifier; },
+    get heaterPresets() { return heaterPresets; },
+    get heaterSchedules() { return heaterSchedules; },
+    get pendingHeaterActions() { return pendingHeaterActions; },
     get loading() { return loading; },
     get error() { return error; },
     get wsConnected() { return wsConnected; },
@@ -78,20 +88,24 @@ function createStore() {
     },
 
     updateLampStatus(id: string, status: LampStatus) {
-      lampStatuses.set(id, status);
+      const newStatuses = new Map(lampStatuses);
+      newStatuses.set(id, status);
+      lampStatuses = newStatuses;
     },
 
     async refreshLamps() {
       try {
         lamps = await getLamps();
         // Parse cached last_status into lampStatuses map
+        const newStatuses = new Map(lampStatuses);
         for (const lamp of lamps) {
           if (lamp.last_status) {
             try {
-              lampStatuses.set(lamp.id, JSON.parse(lamp.last_status));
+              newStatuses.set(lamp.id, JSON.parse(lamp.last_status));
             } catch {}
           }
         }
+        lampStatuses = newStatuses;
       } catch (e: any) {
         console.error('Failed to fetch lamps:', e);
       }
@@ -145,6 +159,30 @@ function createStore() {
       }
     },
 
+    async refreshHeaterPresets() {
+      try {
+        heaterPresets = await getHeaterPresets();
+      } catch (e: any) {
+        console.error('Failed to fetch heater presets:', e);
+      }
+    },
+
+    async refreshHeaterSchedules() {
+      try {
+        heaterSchedules = await getHeaterSchedules();
+      } catch (e: any) {
+        console.error('Failed to fetch heater schedules:', e);
+      }
+    },
+
+    async refreshPendingHeater() {
+      try {
+        pendingHeaterActions = await getPendingHeaterActions();
+      } catch (e: any) {
+        console.error('Failed to fetch pending heater actions:', e);
+      }
+    },
+
     async refreshAll() {
       loading = true;
       await Promise.all([
@@ -155,6 +193,9 @@ function createStore() {
         this.refreshTuya(),
         this.refreshYamaha(),
         this.refreshAirPurifier(),
+        this.refreshHeaterPresets(),
+        this.refreshHeaterSchedules(),
+        this.refreshPendingHeater(),
       ]);
       loading = false;
     },

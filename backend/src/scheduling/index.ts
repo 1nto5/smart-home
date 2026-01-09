@@ -31,3 +31,29 @@ export { startPoller, stopPoller, isPollerRunning, pollNow } from './poller';
 
 export { getCurrentTimeWindow, getPresetForTimeWindow, type TimeWindow } from './time-windows';
 export { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
+
+// Heater scheduling
+export {
+  getHeaterPresets,
+  getHeaterPreset,
+  updateHeaterPreset,
+  isValidHeaterPreset,
+  type HeaterPreset,
+} from './heater-presets';
+
+export {
+  getHeaterSchedules,
+  getHeaterSchedulesByTime,
+  createHeaterSchedule,
+  deleteHeaterSchedule,
+  toggleHeaterSchedule,
+  applyPresetToHeater,
+  applyPresetToAllHeaters,
+  type HeaterSchedule,
+} from './heater-schedule-service';
+
+export {
+  getPendingHeaterActions,
+  clearAllPendingHeater,
+  type PendingHeaterAction,
+} from './heater-pending-service';

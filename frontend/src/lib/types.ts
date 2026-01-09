@@ -115,3 +115,31 @@ export interface AirPurifierStatus {
   filter_life?: number;
   fan_speed?: number;
 }
+
+// Heater presets and schedules
+export interface HeaterPreset {
+  id: string;
+  name: string;
+  target_temp: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HeaterSchedule {
+  id: number;
+  name: string;
+  preset_id: string;
+  time: string;
+  enabled: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PendingHeaterAction {
+  id: number;
+  device_id: string;
+  preset_id: string;
+  schedule_id: number | null;
+  retry_count: number;
+  created_at: string;
+}

@@ -157,6 +157,78 @@ export function initDatabase(): Database {
     ON pending_lamp_actions(device_id)
   `);
 
+  // Heater presets (configurable via UI)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS heater_presets (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      target_temp REAL NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default heater presets if empty
+  const heaterPresetCount = db.query('SELECT COUNT(*) as count FROM heater_presets').get() as { count: number };
+  if (heaterPresetCount.count === 0) {
+    const defaultPresets = [
+      { id: 'comfort', name: 'Comfort', target_temp: 21 },
+      { id: 'eco', name: 'Eco', target_temp: 18 },
+      { id: 'night', name: 'Night', target_temp: 16 },
+      { id: 'off', name: 'Off', target_temp: 5 },
+    ];
+    const insertPreset = db.prepare('INSERT INTO heater_presets (id, name, target_temp) VALUES (?, ?, ?)');
+    for (const p of defaultPresets) {
+      insertPreset.run(p.id, p.name, p.target_temp);
+    }
+  }
+
+  // Heater schedules
+  db.run(`
+    CREATE TABLE IF NOT EXISTS heater_schedules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      preset_id TEXT NOT NULL,
+      time TEXT NOT NULL,
+      enabled INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (preset_id) REFERENCES heater_presets(id)
+    )
+  `);
+
+  // Insert default heater schedules if empty
+  const heaterScheduleCount = db.query('SELECT COUNT(*) as count FROM heater_schedules').get() as { count: number };
+  if (heaterScheduleCount.count === 0) {
+    const defaultSchedules = [
+      { name: 'Morning Warmup', preset_id: 'comfort', time: '06:00' },
+      { name: 'Night Mode', preset_id: 'night', time: '22:00' },
+    ];
+    const insertSchedule = db.prepare('INSERT INTO heater_schedules (name, preset_id, time) VALUES (?, ?, ?)');
+    for (const s of defaultSchedules) {
+      insertSchedule.run(s.name, s.preset_id, s.time);
+    }
+  }
+
+  // Pending heater actions (for offline TRVs)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS pending_heater_actions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id TEXT NOT NULL,
+      preset_id TEXT NOT NULL,
+      schedule_id INTEGER,
+      retry_count INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (preset_id) REFERENCES heater_presets(id),
+      FOREIGN KEY (schedule_id) REFERENCES heater_schedules(id)
+    )
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_pending_heater_device
+    ON pending_heater_actions(device_id)
+  `);
+
   // Sensor history (temperature, humidity, battery)
   db.run(`
     CREATE TABLE IF NOT EXISTS sensor_history (
