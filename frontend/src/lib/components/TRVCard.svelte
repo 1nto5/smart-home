@@ -24,12 +24,12 @@
   async function setTemperature(temp: number) {
     loading = true;
     try {
-      await fetch(`http://localhost:3001/api/devices/${device.id}/control`, {
+      await fetch(`/api/devices/${device.id}/control`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dps: 4, value: Math.round(temp * 10) }),
       });
-      const res = await fetch(`http://localhost:3001/api/devices/${device.id}/status`);
+      const res = await fetch(`/api/devices/${device.id}/status`);
       if (res.ok) {
         const data = await res.json();
         device.last_status = JSON.stringify(data.status);
