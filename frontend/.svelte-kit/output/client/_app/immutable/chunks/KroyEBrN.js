@@ -1,0 +1,1 @@
+import{n as o,E as p,D as t,o as l}from"./CeX5bisY.js";import{B as c}from"./LV0sw-9a.js";function m(s,a,...r){var e=new c(s);o(()=>{const n=a()??null;t&&n==null&&l(),e.ensure(n,n&&(i=>n(i,...r)))},p)}export{m as s};

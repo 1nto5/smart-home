@@ -1,0 +1,303 @@
+<script lang="ts">
+  import type { YamahaDevice, YamahaStatus } from '$lib/types';
+  import { getYamahaStatus, controlYamaha } from '$lib/api';
+  import { translateDeviceName } from '$lib/translations';
+  import DeviceDialog from './DeviceDialog.svelte';
+
+  let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
+  let displayName = $derived(translateDeviceName(device.name));
+  let status = $state<YamahaStatus | null>(null);
+  let loading = $state(false);
+  let fetched = $state(false);
+  let dialogOpen = $state(false);
+
+  // Local slider state for preview
+  let previewVolume = $state<number | null>(null);
+  let previewSubwooferVol = $state<number | null>(null);
+
+  // Display values (preview or actual)
+  let displayVolume = $derived(previewVolume ?? status?.volume ?? 0);
+  let displaySubwooferVol = $derived(previewSubwooferVol ?? status?.subwoofer_volume ?? 0);
+
+  $effect(() => {
+    if (!fetched && device.last_status) {
+      try {
+        status = JSON.parse(device.last_status);
+      } catch {}
+    }
+  });
+
+  $effect(() => {
+    if (!fetched) {
+      fetched = true;
+      getYamahaStatus(device.id)
+        .then(res => status = res.status)
+        .catch(() => {});
+    }
+  });
+
+  async function togglePower() {
+    loading = true;
+    try {
+      await controlYamaha(device.id, { power: status?.power !== 'on' });
+      const res = await getYamahaStatus(device.id);
+      status = res.status;
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
+
+  async function setVolume(vol: number) {
+    previewVolume = null;
+    try {
+      await controlYamaha(device.id, { volume: vol });
+      if (status) status = { ...status, volume: vol };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function toggleMute() {
+    try {
+      await controlYamaha(device.id, { mute: !status?.mute });
+      if (status) status = { ...status, mute: !status.mute };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function setInput(input: string) {
+    try {
+      await controlYamaha(device.id, { input });
+      if (status) status = { ...status, input };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function setSoundProgram(program: string) {
+    try {
+      await controlYamaha(device.id, { sound_program: program });
+      if (status) status = { ...status, sound_program: program };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function toggleClearVoice() {
+    try {
+      const newVal = !status?.clear_voice;
+      await controlYamaha(device.id, { clear_voice: newVal });
+      if (status) status = { ...status, clear_voice: newVal };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function toggleBassExtension() {
+    try {
+      const newVal = !status?.bass_extension;
+      await controlYamaha(device.id, { bass_extension: newVal });
+      if (status) status = { ...status, bass_extension: newVal };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function setSubwooferVolume(vol: number) {
+    previewSubwooferVol = null;
+    try {
+      await controlYamaha(device.id, { subwoofer_volume: vol });
+      if (status) status = { ...status, subwoofer_volume: vol };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const inputs = ['tv', 'bluetooth'];
+
+  const soundPrograms = [
+    { id: 'movie', label: 'Movie' },
+    { id: 'music', label: 'Music' },
+    { id: 'sports', label: 'Sports' },
+    { id: 'game', label: 'Game' },
+    { id: 'tv_program', label: 'TV' },
+    { id: 'stereo', label: 'Stereo' },
+  ];
+</script>
+
+<!-- Card -->
+<div
+  onclick={() => dialogOpen = true}
+  onkeydown={(e) => e.key === 'Enter' && (dialogOpen = true)}
+  role="button"
+  tabindex="0"
+  class="glass-card rounded-xl transition-card hover:scale-[1.02] {compact ? 'p-2.5' : 'p-3'} w-full text-left cursor-pointer"
+>
+  <div class="flex items-center gap-2.5">
+    <!-- Power toggle -->
+    <button
+      onclick={(e) => { e.stopPropagation(); togglePower(); }}
+      disabled={loading || !status}
+      class="w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0
+             {status?.power === 'on' ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800/60 text-zinc-500'}
+             hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+      class:status-active={status?.power === 'on'}
+    >
+      {#if loading}
+        <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+      {:else}
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+        </svg>
+      {/if}
+    </button>
+
+    <!-- Info -->
+    <div class="min-w-0 flex-1">
+      <h4 class="font-medium text-sm truncate">{displayName}</h4>
+      {#if status?.power === 'on'}
+        <p class="text-xs text-[var(--muted)]">
+          {status.mute ? 'Muted' : `${status.volume}%`} · {status.input}
+        </p>
+      {:else}
+        <p class="text-xs text-[var(--muted)]">{status ? 'Standby' : 'Offline'}</p>
+      {/if}
+    </div>
+  </div>
+</div>
+
+<!-- Detail Dialog -->
+<DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
+  <div class="space-y-4">
+    <!-- Status -->
+    <div class="flex items-center justify-between">
+      <span class="text-[var(--muted)]">Status</span>
+      <span class="font-medium {status?.power === 'on' ? 'text-purple-400' : 'text-zinc-500'}">
+        {status?.power === 'on' ? 'On' : status ? 'Standby' : 'Offline'}
+      </span>
+    </div>
+
+    {#if status}
+      <!-- Power Button -->
+      <button
+        onclick={togglePower}
+        disabled={loading}
+        class="w-full py-4 rounded-xl text-lg font-medium transition-all
+               {status.power === 'on' ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800 text-zinc-400'}
+               hover:scale-[1.02] disabled:opacity-50"
+      >
+        {status.power === 'on' ? 'Turn Off' : 'Turn On'}
+      </button>
+
+      {#if status.power === 'on'}
+        <!-- Volume -->
+        <div>
+          <div class="flex justify-between text-sm text-[var(--muted)] mb-2">
+            <span>Volume</span>
+            <span class="font-medium text-white">{status.mute ? 'Muted' : `${displayVolume}%`}</span>
+          </div>
+          <div class="flex gap-2 items-center">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={displayVolume}
+              oninput={(e) => previewVolume = parseInt(e.currentTarget.value)}
+              onchange={(e) => setVolume(parseInt(e.currentTarget.value))}
+              class="flex-1"
+            />
+            <button
+              onclick={toggleMute}
+              class="w-10 h-10 rounded-lg transition-colors text-lg
+                     {status.mute ? 'bg-red-500/20 text-red-400' : 'bg-zinc-800/60 text-zinc-400'}
+                     hover:bg-zinc-700/60"
+            >
+              {status.mute ? '🔇' : '🔊'}
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Selection -->
+        <div>
+          <p class="text-sm text-[var(--muted)] mb-2">Input</p>
+          <div class="grid grid-cols-2 gap-2">
+            {#each inputs as inp}
+              <button
+                onclick={() => setInput(inp)}
+                class="py-3 text-sm rounded-lg transition-colors uppercase
+                       {status.input === inp ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
+              >
+                {inp === 'bluetooth' ? 'BT' : 'TV'}
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Sound Program -->
+        <div>
+          <p class="text-sm text-[var(--muted)] mb-2">Sound Program</p>
+          <div class="grid grid-cols-3 gap-2">
+            {#each soundPrograms as prog}
+              <button
+                onclick={() => setSoundProgram(prog.id)}
+                class="py-2.5 text-sm rounded-lg transition-colors
+                       {status.sound_program === prog.id ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
+              >
+                {prog.label}
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Audio Toggles -->
+        <div>
+          <p class="text-sm text-[var(--muted)] mb-2">Audio</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              onclick={toggleClearVoice}
+              class="py-3 text-sm rounded-lg transition-colors
+                     {status.clear_voice ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
+            >
+              Clear Voice
+            </button>
+            <button
+              onclick={toggleBassExtension}
+              class="py-3 text-sm rounded-lg transition-colors
+                     {status.bass_extension ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
+            >
+              Bass Ext.
+            </button>
+          </div>
+        </div>
+
+        <!-- Subwoofer Volume -->
+        <div>
+          <div class="flex justify-between text-sm text-[var(--muted)] mb-2">
+            <span>Subwoofer</span>
+            <span class="font-medium text-white">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
+          </div>
+          <input
+            type="range"
+            min="-6"
+            max="6"
+            step="1"
+            value={displaySubwooferVol}
+            oninput={(e) => previewSubwooferVol = parseInt(e.currentTarget.value)}
+            onchange={(e) => setSubwooferVolume(parseInt(e.currentTarget.value))}
+            class="w-full"
+          />
+        </div>
+      {/if}
+
+      <!-- Device Info -->
+      <div class="pt-4 border-t border-[var(--glass-border)] space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-[var(--muted)]">Model</span>
+          <span class="font-mono text-xs">{device.model || 'Yamaha Soundbar'}</span>
+        </div>
+      </div>
+    {/if}
+  </div>
+</DeviceDialog>

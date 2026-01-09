@@ -1,0 +1,173 @@
+/**
+ * Schedule service
+ * Manages lamp schedules and applies presets
+ */
+
+import { getDb } from '../db/database';
+import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
+import { createPendingAction } from './pending-service';
+import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
+
+export interface Schedule {
+  id: number;
+  name: string;
+  preset: PresetName;
+  time: string; // HH:MM format
+  enabled: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplyResult {
+  success: string[];
+  pending: string[];
+  failed: string[];
+}
+
+/**
+ * Get all schedules
+ */
+export function getSchedules(): Schedule[] {
+  const db = getDb();
+  return db.query('SELECT * FROM lamp_schedules ORDER BY time').all() as Schedule[];
+}
+
+/**
+ * Get schedules for a specific time (HH:MM)
+ */
+export function getSchedulesByTime(time: string): Schedule[] {
+  const db = getDb();
+  return db.query('SELECT * FROM lamp_schedules WHERE time = ? AND enabled = 1').all(time) as Schedule[];
+}
+
+/**
+ * Create a new schedule
+ */
+export function createSchedule(name: string, preset: PresetName, time: string): Schedule {
+  const db = getDb();
+
+  if (!isValidPreset(preset)) {
+    throw new Error(`Invalid preset: ${preset}`);
+  }
+
+  // Validate time format (HH:MM)
+  if (!/^\d{2}:\d{2}$/.test(time)) {
+    throw new Error('Time must be in HH:MM format');
+  }
+
+  db.run(
+    'INSERT INTO lamp_schedules (name, preset, time) VALUES (?, ?, ?)',
+    [name, preset, time]
+  );
+
+  const lastId = db.query('SELECT last_insert_rowid() as id').get() as { id: number };
+  return db.query('SELECT * FROM lamp_schedules WHERE id = ?').get(lastId.id) as Schedule;
+}
+
+/**
+ * Delete a schedule
+ */
+export function deleteSchedule(id: number): boolean {
+  const db = getDb();
+  const result = db.run('DELETE FROM lamp_schedules WHERE id = ?', [id]);
+  return result.changes > 0;
+}
+
+/**
+ * Toggle schedule enabled state
+ */
+export function toggleSchedule(id: number): Schedule | null {
+  const db = getDb();
+  db.run('UPDATE lamp_schedules SET enabled = NOT enabled, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [id]);
+  return db.query('SELECT * FROM lamp_schedules WHERE id = ?').get(id) as Schedule | null;
+}
+
+/**
+ * Get all lamp device IDs
+ */
+function getAllLampIds(): string[] {
+  const db = getDb();
+  const lamps = db.query("SELECT id FROM xiaomi_devices WHERE category = 'lamp'").all() as { id: string }[];
+  return lamps.map((l) => l.id);
+}
+
+/**
+ * Apply preset to a single lamp
+ */
+export async function applyPresetToLamp(deviceId: string, presetName: PresetName): Promise<boolean> {
+  const preset = LAMP_PRESETS[presetName];
+
+  try {
+    // Check if lamp is reachable
+    const status = await getLampStatus(deviceId);
+    if (!status) {
+      return false; // Lamp is offline
+    }
+
+    // Apply power state
+    if (preset.power) {
+      // Check if moonlight mode is requested
+      if (preset.moonlight) {
+        const moonlightOk = await setLampMoonlight(deviceId, preset.brightness);
+        if (!moonlightOk) return false;
+      } else {
+        // Exit moonlight mode if currently in it
+        if (status.moonlight_mode) {
+          const daylightOk = await setLampDaylightMode(deviceId);
+          if (!daylightOk) return false;
+        } else {
+          const powerOk = await setLampPower(deviceId, true);
+          if (!powerOk) return false;
+        }
+
+        // Set brightness
+        const brightOk = await setLampBrightness(deviceId, preset.brightness);
+        if (!brightOk) return false;
+
+        // Set color temperature
+        const tempOk = await setLampColorTemp(deviceId, preset.colorTemp);
+        if (!tempOk) return false;
+      }
+    } else {
+      // Just turn off
+      const powerOk = await setLampPower(deviceId, false);
+      if (!powerOk) return false;
+    }
+
+    return true;
+  } catch (error: any) {
+    console.error(`Failed to apply ${presetName} to ${deviceId}:`, error.message);
+    return false;
+  }
+}
+
+/**
+ * Apply preset to all lamps (global schedule)
+ * Returns results: which lamps succeeded, which are pending (offline)
+ */
+export async function applyPresetToAllLamps(
+  presetName: PresetName,
+  scheduleId?: number
+): Promise<ApplyResult> {
+  const lampIds = getAllLampIds();
+  const result: ApplyResult = {
+    success: [],
+    pending: [],
+    failed: [],
+  };
+
+  for (const lampId of lampIds) {
+    const success = await applyPresetToLamp(lampId, presetName);
+
+    if (success) {
+      result.success.push(lampId);
+    } else {
+      // Lamp offline - create pending action
+      createPendingAction(lampId, presetName, scheduleId);
+      result.pending.push(lampId);
+    }
+  }
+
+  console.log(`Applied ${presetName}: ${result.success.length} ok, ${result.pending.length} pending`);
+  return result;
+}

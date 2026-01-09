@@ -1,0 +1,117 @@
+export interface Lamp {
+  id: string;
+  name: string;
+  ip: string;
+  model: string;
+  room: string | null;
+  online: number;
+  last_status: string | null;
+}
+
+export interface LampStatus {
+  power: boolean;
+  brightness: number;
+  color_temp: number;
+  color_mode: number;
+  rgb: number;
+  moonlight_mode?: boolean;
+  moonlight_brightness?: number;
+}
+
+export interface RoborockStatus {
+  state: number;
+  battery: number;
+  fanPower: number;
+  errorCode: number;
+  cleanTime: number;
+  cleanArea: number;
+  waterBoxStatus?: number;
+  waterBoxMode?: number;
+  mopMode?: number;
+  chargeStatus?: number;
+}
+
+export interface Preset {
+  name: string;
+  brightness: number;
+  colorTemp: number;
+  power: boolean;
+}
+
+export interface Schedule {
+  id: number;
+  name: string;
+  preset: string;
+  time: string;
+  enabled: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PendingAction {
+  id: number;
+  device_id: string;
+  preset: string;
+  schedule_id: number | null;
+  retry_count: number;
+  created_at: string;
+}
+
+export interface ApplyResult {
+  success: string[];
+  pending: string[];
+  failed: string[];
+}
+
+// Tuya devices
+export interface TuyaDevice {
+  id: string;
+  name: string;
+  category: string;
+  online: number;
+  ip: string | null;
+  room: string | null;
+  last_status: string | null;
+}
+
+// Category types: sj=water sensor, mcs=door/window, wkf=TRV, wsdcg=weather station
+export interface TuyaSensorStatus {
+  battery?: number;
+  waterLeak?: boolean;
+  doorOpen?: boolean;
+  temperature?: number;
+  humidity?: number;
+}
+
+// Yamaha soundbar
+export interface YamahaDevice {
+  id: string;
+  name: string;
+  ip: string;
+  model: string;
+  room: string | null;
+  online: number;
+  last_status: string | null;
+}
+
+export interface YamahaStatus {
+  power: 'on' | 'standby';
+  volume: number;
+  mute: boolean;
+  input: string;
+  sound_program: string;
+  clear_voice?: boolean;
+  bass_extension?: boolean;
+  subwoofer_volume?: number;
+}
+
+// Air Purifier
+export interface AirPurifierStatus {
+  power: boolean;
+  mode: string;
+  aqi: number;
+  humidity?: number;
+  temperature?: number;
+  filter_life?: number;
+  fan_speed?: number;
+}
