@@ -192,7 +192,7 @@ function LampCard($$renderer, $$props) {
           } else {
             $$renderer3.push("<!--[!-->");
           }
-          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">Model</span> <span class="font-mono text-xs text-content-tertiary">${escape_html(lamp.model)}</span></div> <div class="flex justify-between"><span class="text-content-secondary">IP Address</span> <span class="font-mono text-xs text-content-tertiary">${escape_html(lamp.ip)}</span></div></div>`);
+          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">IP Address</span> <span class="font-mono text-xs text-content-tertiary">${escape_html(lamp.ip)}</span></div></div>`);
         } else {
           $$renderer3.push("<!--[!-->");
         }
@@ -359,7 +359,7 @@ function RoborockCard($$renderer, $$props) {
             }
             $$renderer3.push(`<!--]--></div></div>`);
           }
-          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">Model</span> <span class="font-mono text-xs text-content-tertiary">Roborock S8</span></div></div>`);
+          $$renderer3.push(`<!--]-->`);
         } else {
           $$renderer3.push("<!--[!-->");
           $$renderer3.push(`<div class="text-center py-8 text-content-secondary">Start bridge to control robot</div>`);
@@ -722,7 +722,7 @@ function AirPurifierCard($$renderer, $$props) {
           } else {
             $$renderer3.push("<!--[!-->");
           }
-          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">Model</span> <span class="font-mono text-xs text-content-tertiary">Xiaomi Air Purifier</span></div></div>`);
+          $$renderer3.push(`<!--]-->`);
         } else {
           $$renderer3.push("<!--[!-->");
         }
