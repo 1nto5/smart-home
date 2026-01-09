@@ -6,14 +6,17 @@ Uses asyncio.create_subprocess_exec (safe, no shell injection).
 
 import asyncio
 import json
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-# Device we're controlling
-DEVICE_NAME = "Mania"
-DEVICE_ID = "ROBOROCK_DEVICE_ID_REMOVED"
+# Device config from environment
+DEVICE_NAME = os.environ.get("ROBOROCK_DEVICE_NAME", "Vacuum")
+DEVICE_ID = os.environ.get("ROBOROCK_DEVICE_ID", "")
+ROBOROCK_CLI = os.environ.get("ROBOROCK_CLI_PATH", "roborock")
+ROBOROCK_PORT = int(os.environ.get("ROBOROCK_PORT", "3002"))
 
 
 class CommandRequest(BaseModel):
@@ -53,7 +56,7 @@ async def run_roborock_cmd(args: list[str]) -> dict | None:
     """Run roborock CLI command and return JSON output.
     Uses create_subprocess_exec which is safe (no shell injection).
     """
-    cmd = ["/Users/adrian/.local/bin/roborock"] + args + ["--device_id", DEVICE_ID]
+    cmd = [ROBOROCK_CLI] + args + ["--device_id", DEVICE_ID]
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -194,7 +197,7 @@ async def reset_consumable(req: ResetConsumableRequest):
 
 def run():
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=3002)
+    uvicorn.run(app, host="0.0.0.0", port=ROBOROCK_PORT)
 
 
 if __name__ == "__main__":

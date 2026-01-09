@@ -8,10 +8,10 @@ import json
 import os
 import tinytuya
 
-# Tuya credentials
-API_KEY = "TUYA_ACCESS_ID_REMOVED"
-API_SECRET = "TUYA_ACCESS_SECRET_REMOVED"
-API_REGION = "eu"  # Central Europe
+# Tuya credentials from environment
+API_KEY = os.environ.get("TUYA_ACCESS_ID", "")
+API_SECRET = os.environ.get("TUYA_ACCESS_SECRET", "")
+API_REGION = os.environ.get("TUYA_REGION", "eu")
 
 def main():
     print("Connecting to Tuya Cloud...")
