@@ -9,7 +9,8 @@ process.on('unhandledRejection', (reason: any) => {
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { serveStatic } from 'hono/bun';
+import { serveStatic, createBunWebSocket } from 'hono/bun';
+import { addClient, removeClient } from './ws/broadcast';
 import { config } from './config';
 import { initDatabase, getDb } from './db/database';
 import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from './tuya/tuya-api';
@@ -792,6 +793,18 @@ app.get('/api/sensors', (c) => {
   return c.json(sensors);
 });
 
+// WebSocket for real-time status updates
+const { upgradeWebSocket, websocket } = createBunWebSocket();
+
+app.get('/ws', upgradeWebSocket(() => ({
+  onOpen(_event, ws) {
+    addClient(ws.raw as any);
+  },
+  onClose(_event, ws) {
+    removeClient(ws.raw as any);
+  },
+})));
+
 // Serve static files (frontend) in production
 app.use('/*', serveStatic({ root: '../frontend/dist' }));
 
@@ -802,4 +815,5 @@ console.log(`🏠 Smart Home API running on http://localhost:${port}`);
 export default {
   port,
   fetch: app.fetch,
+  websocket,
 };

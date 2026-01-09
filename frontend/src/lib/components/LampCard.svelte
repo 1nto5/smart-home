@@ -9,7 +9,6 @@
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
   let status = $derived(store.lampStatuses.get(lamp.id));
-  let fetched = $state(false);
   let dialogOpen = $state(false);
 
   // Optimistic states
@@ -25,15 +24,6 @@
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayBrightness = $derived(previewBrightness ?? status?.brightness ?? 0);
   let displayColorTemp = $derived(previewColorTemp ?? status?.color_temp ?? 0);
-
-  $effect(() => {
-    if (!fetched) {
-      fetched = true;
-      getLampStatus(lamp.id)
-        .then(res => store.updateLampStatus(lamp.id, res.status))
-        .catch(() => {});
-    }
-  });
 
   async function togglePower(e: MouseEvent) {
     e.stopPropagation();

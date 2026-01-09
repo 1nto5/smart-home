@@ -7,6 +7,7 @@ import { getDb } from '../db/database';
 import { getLampStatus } from '../xiaomi/xiaomi-lamp';
 import { applyPresetToLamp } from './schedule-service';
 import { getCurrentTimeWindow, getPresetForTimeWindow } from './time-windows';
+import { broadcast } from '../ws/broadcast';
 
 // In-memory cache of last known online state
 const lastOnlineState = new Map<string, boolean>();
@@ -66,16 +67,30 @@ export async function checkOnlineTransitions(): Promise<void> {
       const status = await getLampStatus(lamp.id);
       const isNowOnline = status !== null;
 
-      // Update DB online field
-      db.run(
-        'UPDATE xiaomi_devices SET online = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [isNowOnline ? 1 : 0, lamp.id]
-      );
+      // Update DB online field and last_status
+      if (isNowOnline && status) {
+        db.run(
+          'UPDATE xiaomi_devices SET online = 1, last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+          [JSON.stringify(status), lamp.id]
+        );
+      } else {
+        db.run(
+          'UPDATE xiaomi_devices SET online = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+          [lamp.id]
+        );
+      }
 
       // Detect offline -> online transition
       if (!wasOnline && isNowOnline) {
         console.log(`Lamp ${lamp.name} came online`);
         await handleLampCameOnline(lamp.id, lamp.name);
+      }
+
+      // Broadcast status change via WebSocket
+      if (isNowOnline && status) {
+        broadcast({ type: 'lamp_status', deviceId: lamp.id, status });
+      } else if (wasOnline && !isNowOnline) {
+        broadcast({ type: 'lamp_offline', deviceId: lamp.id });
       }
 
       // Update cache
