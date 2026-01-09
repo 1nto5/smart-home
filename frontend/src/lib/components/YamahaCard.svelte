@@ -4,6 +4,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
+  import { Volume2, VolumeX } from 'lucide-svelte';
 
   let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -182,9 +183,7 @@
              hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
       class:status-active={displayPower === 'on'}
     >
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
-      </svg>
+      <Volume2 class="w-4 h-4" />
       {#if isPowerPending}
         <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-device-audio-text rounded-full animate-pulse"></span>
       {/if}
@@ -247,13 +246,34 @@
             />
             <button
               onclick={toggleMute}
-              class="w-10 h-10 rounded-lg transition-colors text-lg
+              class="w-10 h-10 rounded-lg transition-colors flex items-center justify-center
                      {status.mute ? 'bg-error/20 text-error' : 'bg-surface-recessed text-content-secondary'}
                      hover:bg-stroke-default"
             >
-              {status.mute ? '🔇' : '🔊'}
+              {#if status.mute}
+                <VolumeX class="w-5 h-5" />
+              {:else}
+                <Volume2 class="w-5 h-5" />
+              {/if}
             </button>
           </div>
+        </div>
+
+        <!-- Subwoofer Volume -->
+        <div>
+          <div class="flex justify-between text-sm text-content-secondary mb-2">
+            <span>Subwoofer</span>
+            <span class="font-medium text-content-primary">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
+          </div>
+          <input
+            type="range"
+            min="-4"
+            max="4"
+            step="1"
+            value={displaySubwooferVol}
+            oninput={(e) => handleSubwooferInput(parseInt(e.currentTarget.value))}
+            class="w-full"
+          />
         </div>
 
         <!-- Input Selection -->
@@ -307,23 +327,6 @@
               Bass Ext.
             </button>
           </div>
-        </div>
-
-        <!-- Subwoofer Volume -->
-        <div>
-          <div class="flex justify-between text-sm text-content-secondary mb-2">
-            <span>Subwoofer</span>
-            <span class="font-medium text-content-primary">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
-          </div>
-          <input
-            type="range"
-            min="-6"
-            max="6"
-            step="1"
-            value={displaySubwooferVol}
-            oninput={(e) => handleSubwooferInput(parseInt(e.currentTarget.value))}
-            class="w-full"
-          />
         </div>
       {/if}
 

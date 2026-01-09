@@ -2,6 +2,8 @@
   import type { TuyaDevice } from '$lib/types';
   import { translateDeviceName } from '$lib/translations';
   import DeviceDialog from './DeviceDialog.svelte';
+  import { Droplet, DoorOpen, Thermometer, Radio, Tv, Smartphone } from 'lucide-svelte';
+  import type { ComponentType } from 'svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -16,13 +18,15 @@
     }
   });
 
-  const categoryConfig: Record<string, { label: string; icon: string }> = {
-    sj: { label: 'Water', icon: '💧' },
-    mcs: { label: 'Door', icon: '🚪' },
-    wsdcg: { label: 'Climate', icon: '🌡️' },
-    wfcon: { label: 'Gateway', icon: '📡' },
-    cz: { label: 'Remote', icon: '📺' },
+  const categoryConfig: Record<string, { label: string; icon: ComponentType }> = {
+    sj: { label: 'Water', icon: Droplet },
+    mcs: { label: 'Door', icon: DoorOpen },
+    wsdcg: { label: 'Climate', icon: Thermometer },
+    wfcon: { label: 'Gateway', icon: Radio },
+    cz: { label: 'Remote', icon: Tv },
   };
+
+  const defaultIcon = Smartphone;
 
   const LOW_BATTERY_THRESHOLD = 15;
 
@@ -87,7 +91,7 @@
     }
   }
 
-  let config = $derived(categoryConfig[device.category] || { label: device.category, icon: '📱' });
+  let config = $derived(categoryConfig[device.category] || { label: device.category, icon: defaultIcon });
   let statusInfo = $derived(getStatusInfo(parsedStatus(), device.category));
 </script>
 
@@ -103,11 +107,11 @@
   <div class="flex items-center gap-2.5">
     <!-- Status icon -->
     <div
-      class="w-10 h-10 rounded-xl flex items-center justify-center text-base shrink-0
-             {statusInfo.alert ? 'bg-error/20' : statusInfo.lowBattery ? 'bg-warning/20' : 'badge-sensors'}"
+      class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
+             {statusInfo.alert ? 'bg-error/20 text-error' : statusInfo.lowBattery ? 'bg-warning/20 text-warning' : 'badge-sensors'}"
       class:status-active={statusInfo.alert}
     >
-      {config.icon}
+      <svelte:component this={config.icon} class="w-4 h-4" />
     </div>
 
     <!-- Info -->
@@ -130,7 +134,9 @@
   <div class="space-y-4">
     <!-- Status Display -->
     <div class="rounded-xl p-6 text-center {statusInfo.alert ? 'bg-error/20' : 'bg-surface-recessed'}">
-      <span class="text-4xl">{config.icon}</span>
+      <div class="flex justify-center {statusInfo.alert ? 'text-error' : 'text-device-sensors-text'}">
+        <svelte:component this={config.icon} class="w-10 h-10" />
+      </div>
       <p class="text-2xl font-bold mt-2 {statusInfo.color}">{statusInfo.text}</p>
       <p class="text-sm text-content-secondary mt-1">{config.label} Sensor</p>
     </div>

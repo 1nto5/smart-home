@@ -2,6 +2,8 @@
   import type { Preset } from '$lib/types';
   import { applyPreset, getPresets, controlLamp, getLamps } from '$lib/api';
   import { store } from '$lib/stores.svelte';
+  import { Power, Sun, Sunrise, Sunset, Moon, Lightbulb, Flame, Snowflake, Sofa, Target, Clapperboard, MoreHorizontal, X } from 'lucide-svelte';
+  import type { ComponentType } from 'svelte';
 
   let presets = $state<Record<string, Preset>>({});
   let pendingActions = $state<Set<string>>(new Set());
@@ -39,23 +41,23 @@
     pendingActions = newSet;
   }
 
-  const presetIcons: Record<string, string> = {
-    day: '☀️',
-    morning: '🌅',
-    evening: '🌆',
-    night: '🌙',
-    off: '⚫',
-    bright: '💡',
-    dim: '🕯️',
-    warm: '🔥',
-    cool: '❄️',
-    relax: '🛋️',
-    focus: '🎯',
-    movie: '🎬',
+  const presetIcons: Record<string, ComponentType> = {
+    day: Sun,
+    morning: Sunrise,
+    evening: Sunset,
+    night: Moon,
+    off: Power,
+    bright: Lightbulb,
+    dim: Lightbulb,
+    warm: Flame,
+    cool: Snowflake,
+    relax: Sofa,
+    focus: Target,
+    movie: Clapperboard,
   };
 
-  function getIcon(name: string): string {
-    return presetIcons[name.toLowerCase()] || '💡';
+  function getIcon(name: string): ComponentType {
+    return presetIcons[name.toLowerCase()] || Lightbulb;
   }
 </script>
 
@@ -63,14 +65,16 @@
   <!-- Expanded panel -->
   {#if expanded && Object.keys(presets).length > 0}
     <div class="quick-bar rounded-2xl px-3 py-3 mb-2 animate-fade-in">
-      <div class="grid grid-cols-3 gap-2 min-w-[220px]">
+      <div class="grid grid-cols-3 gap-2 w-full max-w-[280px]">
         {#each Object.entries(presets) as [name, preset] (name)}
           <button
             onclick={() => handlePreset(name)}
             class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all
                    hover:bg-surface-recessed active:scale-95"
           >
-            <span class="text-xl {pendingActions.has(name) ? 'animate-pulse' : ''}">{getIcon(name)}</span>
+            <span class="{pendingActions.has(name) ? 'animate-pulse' : ''}">
+              <svelte:component this={getIcon(name)} class="w-5 h-5" />
+            </span>
             <span class="text-xs text-content-secondary capitalize">{preset.name || name}</span>
           </button>
         {/each}
@@ -79,14 +83,16 @@
   {/if}
 
   <!-- Main bar -->
-  <div class="quick-bar rounded-2xl px-2 py-2 flex items-center gap-0.5">
+  <div class="quick-bar rounded-2xl px-2 py-2 flex items-center gap-0.5 max-w-[95vw]">
     <!-- All Off -->
     <button
       onclick={allLightsOff}
       class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
              hover:bg-surface-recessed active:scale-95"
     >
-      <span class="text-xl {pendingActions.has('off') ? 'animate-pulse' : ''}">⚡</span>
+      <span class="{pendingActions.has('off') ? 'animate-pulse' : ''}">
+        <Power class="w-5 h-5" />
+      </span>
       <span class="text-[10px] text-content-secondary">All Off</span>
     </button>
 
@@ -97,7 +103,9 @@
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
                hover:bg-surface-recessed active:scale-95"
       >
-        <span class="text-xl {pendingActions.has('day') ? 'animate-pulse' : ''}">☀️</span>
+        <span class="{pendingActions.has('day') ? 'animate-pulse' : ''}">
+          <Sun class="w-5 h-5" />
+        </span>
         <span class="text-[10px] text-content-secondary">Day</span>
       </button>
     {/if}
@@ -109,7 +117,9 @@
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
                hover:bg-surface-recessed active:scale-95"
       >
-        <span class="text-xl {pendingActions.has('evening') ? 'animate-pulse' : ''}">🌆</span>
+        <span class="{pendingActions.has('evening') ? 'animate-pulse' : ''}">
+          <Sunset class="w-5 h-5" />
+        </span>
         <span class="text-[10px] text-content-secondary">Evening</span>
       </button>
     {/if}
@@ -121,7 +131,9 @@
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
                hover:bg-surface-recessed active:scale-95"
       >
-        <span class="text-xl {pendingActions.has('night') ? 'animate-pulse' : ''}">🌙</span>
+        <span class="{pendingActions.has('night') ? 'animate-pulse' : ''}">
+          <Moon class="w-5 h-5" />
+        </span>
         <span class="text-[10px] text-content-secondary">Night</span>
       </button>
     {/if}
@@ -137,7 +149,11 @@
                hover:bg-surface-recessed active:scale-95
                {expanded ? 'bg-surface-recessed' : ''}"
       >
-        <span class="text-xl">{expanded ? '✕' : '⋯'}</span>
+        {#if expanded}
+          <X class="w-5 h-5" />
+        {:else}
+          <MoreHorizontal class="w-5 h-5" />
+        {/if}
         <span class="text-[10px] text-content-secondary">{expanded ? 'Close' : 'More'}</span>
       </button>
     {/if}

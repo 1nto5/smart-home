@@ -4,6 +4,8 @@
   import { store } from '$lib/stores.svelte';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
+  import { VolumeX, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Globe, Battery, BatteryLow } from 'lucide-svelte';
+  import type { ComponentType } from 'svelte';
 
   let { status, compact = false }: { status: RoborockStatus | null; compact?: boolean } = $props();
   let dialogOpen = $state(false);
@@ -56,18 +58,18 @@
     26: 'Going to wash mop',
   };
 
-  const FAN_MODES = [
-    { mode: 101, name: 'Quiet', icon: '🔇' },
-    { mode: 102, name: 'Balanced', icon: '⚖️' },
-    { mode: 103, name: 'Turbo', icon: '💨' },
-    { mode: 104, name: 'Max', icon: '🔥' },
+  const FAN_MODES: { mode: number; name: string; icon: ComponentType }[] = [
+    { mode: 101, name: 'Quiet', icon: VolumeX },
+    { mode: 102, name: 'Balanced', icon: Scale },
+    { mode: 103, name: 'Turbo', icon: Wind },
+    { mode: 104, name: 'Max', icon: Flame },
   ];
 
-  const MOP_MODES = [
-    { mode: 200, name: 'Off', icon: '❌' },
-    { mode: 201, name: 'Low', icon: '💧' },
-    { mode: 202, name: 'Med', icon: '💧💧' },
-    { mode: 203, name: 'High', icon: '💧💧💧' },
+  const MOP_MODES: { mode: number; name: string; icon: ComponentType; count?: number }[] = [
+    { mode: 200, name: 'Off', icon: X },
+    { mode: 201, name: 'Low', icon: Droplet, count: 1 },
+    { mode: 202, name: 'Med', icon: Droplet, count: 2 },
+    { mode: 203, name: 'High', icon: Droplet, count: 3 },
   ];
 
   function getStateName(state: number): string {
@@ -241,9 +243,7 @@
       class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {style.bg} {style.color}"
       class:status-active={status?.state === 5 || status?.state === 11 || status?.state === 17 || status?.state === 18}
     >
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"/>
-      </svg>
+      <Globe class="w-4 h-4" />
     </div>
 
     <!-- Info -->
@@ -259,10 +259,11 @@
     <!-- Battery (compact) -->
     {#if compact && status}
       <div class="flex items-center gap-1 text-xs shrink-0">
-        <svg class="w-3.5 h-3.5 {status.battery > 20 ? 'text-success' : 'text-error'}" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M2 11.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1zm4-3a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v4a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-4z"/>
-          <path d="M8 4.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v8a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-8z"/>
-        </svg>
+        {#if status.battery > 20}
+          <Battery class="w-3.5 h-3.5 text-success" />
+        {:else}
+          <BatteryLow class="w-3.5 h-3.5 text-error" />
+        {/if}
         <span class="{status.battery > 20 ? 'text-content-secondary' : 'text-error'}">{status.battery}%</span>
       </div>
     {/if}
@@ -297,21 +298,21 @@
       <div class="flex gap-1 bg-surface-recessed rounded-lg p-1">
         <button
           onclick={() => activeTab = 'controls'}
-          class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors
+          class="flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap
                  {activeTab === 'controls' ? 'bg-surface-elevated text-content-primary' : 'text-content-secondary hover:text-content-primary'}"
         >
           Controls
         </button>
         <button
           onclick={() => activeTab = 'rooms'}
-          class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors
+          class="flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap
                  {activeTab === 'rooms' ? 'bg-surface-elevated text-content-primary' : 'text-content-secondary hover:text-content-primary'}"
         >
           Rooms
         </button>
         <button
           onclick={() => activeTab = 'settings'}
-          class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors
+          class="flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap
                  {activeTab === 'settings' ? 'bg-surface-elevated text-content-primary' : 'text-content-secondary hover:text-content-primary'}"
         >
           Settings
@@ -328,9 +329,7 @@
               class="py-4 rounded-xl bg-success/20 text-success text-sm font-medium relative
                      hover:bg-success/30 transition-colors flex flex-col items-center gap-1"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-              </svg>
+              <Play class="w-5 h-5" />
               Start
               {#if pendingCommand === 'start'}
                 <span class="absolute top-1 right-1 w-2 h-2 bg-success rounded-full animate-pulse"></span>
@@ -341,9 +340,7 @@
               class="py-4 rounded-xl bg-warning/20 text-warning text-sm font-medium relative
                      hover:bg-warning/30 transition-colors flex flex-col items-center gap-1"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-              </svg>
+              <Pause class="w-5 h-5" />
               Pause
               {#if pendingCommand === 'pause'}
                 <span class="absolute top-1 right-1 w-2 h-2 bg-warning rounded-full animate-pulse"></span>
@@ -354,9 +351,7 @@
               class="py-4 rounded-xl bg-info/20 text-info text-sm font-medium relative
                      hover:bg-info/30 transition-colors flex flex-col items-center gap-1"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-              </svg>
+              <Home class="w-5 h-5" />
               Home
               {#if pendingCommand === 'home'}
                 <span class="absolute top-1 right-1 w-2 h-2 bg-info rounded-full animate-pulse"></span>
@@ -391,7 +386,7 @@
                          ? 'badge-audio ring-1 ring-device-audio-text/50'
                          : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
               >
-                <div class="text-base mb-0.5">{fan.icon}</div>
+                <svelte:component this={fan.icon} class="w-4 h-4 mb-0.5" />
                 {fan.name}
                 {#if pendingFanMode === fan.mode}
                   <span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-device-audio-text rounded-full animate-pulse"></span>
@@ -413,7 +408,15 @@
                          ? 'badge-sensors ring-1 ring-device-sensors-text/50'
                          : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
               >
-                <div class="text-base mb-0.5">{mop.icon}</div>
+                <div class="flex items-center justify-center gap-0.5 mb-0.5">
+                  {#if mop.count}
+                    {#each Array(mop.count) as _}
+                      <svelte:component this={mop.icon} class="w-3 h-3" />
+                    {/each}
+                  {:else}
+                    <svelte:component this={mop.icon} class="w-4 h-4" />
+                  {/if}
+                </div>
                 {mop.name}
                 {#if pendingMopMode === mop.mode}
                   <span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-device-sensors-text rounded-full animate-pulse"></span>
@@ -428,7 +431,7 @@
         <div>
           <p class="text-sm text-content-secondary mb-2">Select rooms to clean</p>
           {#if rooms.length > 0}
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {#each rooms as room}
                 <button
                   onclick={() => toggleRoom(room.segmentId)}

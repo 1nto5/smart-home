@@ -4,6 +4,8 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
+  import { Home, Palette, Calendar, House, Monitor, Sun, Moon } from 'lucide-svelte';
+  import type { ComponentType } from 'svelte';
 
   let { children } = $props();
 
@@ -18,16 +20,16 @@
     }
   });
 
-  const navItems = [
-    { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/presets', label: 'Presets', icon: '🎨' },
-    { href: '/schedule', label: 'Schedule', icon: '📅' },
+  const navItems: { href: string; label: string; icon: ComponentType }[] = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/presets', label: 'Presets', icon: Palette },
+    { href: '/schedule', label: 'Schedule', icon: Calendar },
   ];
 
-  const themeIcons = {
-    system: '🌓',
-    light: '☀️',
-    dark: '🌙'
+  const themeIcons: Record<string, ComponentType> = {
+    system: Monitor,
+    light: Sun,
+    dark: Moon
   };
 </script>
 
@@ -36,7 +38,7 @@
   <header class="sticky top-0 z-40 bg-surface-elevated border-b border-stroke-default">
     <nav class="flex items-center justify-between max-w-6xl mx-auto px-4 py-2.5">
       <h1 class="text-base font-semibold text-content-primary flex items-center gap-2">
-        <span class="text-lg">🏡</span>
+        <House class="w-5 h-5 text-accent" />
         <span class="hidden sm:inline">Smart Home</span>
       </h1>
 
@@ -51,7 +53,7 @@
                        ? 'bg-accent/15 text-accent'
                        : 'text-content-secondary hover:text-content-primary hover:bg-surface-recessed'}"
             >
-              <span class="text-sm">{item.icon}</span>
+              <svelte:component this={item.icon} class="w-4 h-4" />
               <span class="hidden sm:inline">{item.label}</span>
             </a>
           {/each}
@@ -65,7 +67,7 @@
                  flex items-center justify-center"
           title="Theme: {theme.mode}"
         >
-          <span class="text-lg">{themeIcons[theme.mode]}</span>
+          <svelte:component this={themeIcons[theme.mode]} class="w-5 h-5" />
         </button>
       </div>
     </nav>
