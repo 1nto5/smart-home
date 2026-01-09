@@ -3,6 +3,9 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.ts"
 	],
+	"/heater-schedule": [
+		"src/routes/+layout.ts"
+	],
 	"/presets": [
 		"src/routes/+layout.ts"
 	],

@@ -34,6 +34,15 @@ async function getYamahaDevices() {
 async function getAirPurifierStatus() {
   return fetcher("/purifier/status");
 }
+async function getHeaterPresets() {
+  return fetcher("/heater-presets");
+}
+async function getHeaterSchedules() {
+  return fetcher("/heater-schedules");
+}
+async function getPendingHeaterActions() {
+  return fetcher("/pending-heater-actions");
+}
 let ws = null;
 let wsReconnectDelay = 1e3;
 function createStore() {
@@ -45,6 +54,9 @@ function createStore() {
   let tuyaDevices = [];
   let yamahaDevices = [];
   let airPurifier = null;
+  let heaterPresets = [];
+  let heaterSchedules = [];
+  let pendingHeaterActions = [];
   let loading = false;
   let error = null;
   let wsConnected = false;
@@ -70,13 +82,15 @@ function createStore() {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === "lamp_status" && msg.deviceId && msg.status) {
-          lampStatuses.set(msg.deviceId, msg.status);
-          const lamp = lamps.find((l) => l.id === msg.deviceId);
-          if (lamp) lamp.online = 1;
+          const newStatuses = new Map(lampStatuses);
+          newStatuses.set(msg.deviceId, msg.status);
+          lampStatuses = newStatuses;
+          lamps = lamps.map((l) => l.id === msg.deviceId ? { ...l, online: 1 } : l);
         } else if (msg.type === "lamp_offline" && msg.deviceId) {
-          lampStatuses.delete(msg.deviceId);
-          const lamp = lamps.find((l) => l.id === msg.deviceId);
-          if (lamp) lamp.online = 0;
+          const newStatuses = new Map(lampStatuses);
+          newStatuses.delete(msg.deviceId);
+          lampStatuses = newStatuses;
+          lamps = lamps.map((l) => l.id === msg.deviceId ? { ...l, online: 0 } : l);
         }
       } catch {
       }
@@ -107,6 +121,15 @@ function createStore() {
     get airPurifier() {
       return airPurifier;
     },
+    get heaterPresets() {
+      return heaterPresets;
+    },
+    get heaterSchedules() {
+      return heaterSchedules;
+    },
+    get pendingHeaterActions() {
+      return pendingHeaterActions;
+    },
     get loading() {
       return loading;
     },
@@ -120,19 +143,23 @@ function createStore() {
       connectWebSocket();
     },
     updateLampStatus(id, status) {
-      lampStatuses.set(id, status);
+      const newStatuses = new Map(lampStatuses);
+      newStatuses.set(id, status);
+      lampStatuses = newStatuses;
     },
     async refreshLamps() {
       try {
         lamps = await getLamps();
+        const newStatuses = new Map(lampStatuses);
         for (const lamp of lamps) {
           if (lamp.last_status) {
             try {
-              lampStatuses.set(lamp.id, JSON.parse(lamp.last_status));
+              newStatuses.set(lamp.id, JSON.parse(lamp.last_status));
             } catch {
             }
           }
         }
+        lampStatuses = newStatuses;
       } catch (e) {
         console.error("Failed to fetch lamps:", e);
       }
@@ -179,6 +206,27 @@ function createStore() {
         airPurifier = null;
       }
     },
+    async refreshHeaterPresets() {
+      try {
+        heaterPresets = await getHeaterPresets();
+      } catch (e) {
+        console.error("Failed to fetch heater presets:", e);
+      }
+    },
+    async refreshHeaterSchedules() {
+      try {
+        heaterSchedules = await getHeaterSchedules();
+      } catch (e) {
+        console.error("Failed to fetch heater schedules:", e);
+      }
+    },
+    async refreshPendingHeater() {
+      try {
+        pendingHeaterActions = await getPendingHeaterActions();
+      } catch (e) {
+        console.error("Failed to fetch pending heater actions:", e);
+      }
+    },
     async refreshAll() {
       loading = true;
       await Promise.all([
@@ -188,7 +236,10 @@ function createStore() {
         this.refreshPending(),
         this.refreshTuya(),
         this.refreshYamaha(),
-        this.refreshAirPurifier()
+        this.refreshAirPurifier(),
+        this.refreshHeaterPresets(),
+        this.refreshHeaterSchedules(),
+        this.refreshPendingHeater()
       ]);
       loading = false;
     }
