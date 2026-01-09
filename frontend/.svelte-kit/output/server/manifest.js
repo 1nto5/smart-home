@@ -10,13 +10,14 @@ return {
 	assets: new Set([]),
 	mimeTypes: {},
 	_: {
-		client: {start:"_app/immutable/entry/start.CFGschdL.js",app:"_app/immutable/entry/app.CILbwN6B.js",imports:["_app/immutable/entry/start.CFGschdL.js","_app/immutable/chunks/BA2B7deI.js","_app/immutable/chunks/-TS2BfOP.js","_app/immutable/chunks/DSyWC8IU.js","_app/immutable/chunks/BZczM5D-.js","_app/immutable/chunks/D_fblim4.js","_app/immutable/chunks/Dl92ZAIs.js","_app/immutable/chunks/Dp1pzeXC.js","_app/immutable/entry/app.CILbwN6B.js","_app/immutable/chunks/Dp1pzeXC.js","_app/immutable/chunks/DSyWC8IU.js","_app/immutable/chunks/DZ0_ip0j.js","_app/immutable/chunks/CXwYO5u8.js","_app/immutable/chunks/BXR5lUZa.js","_app/immutable/chunks/D_fblim4.js","_app/immutable/chunks/-TS2BfOP.js","_app/immutable/chunks/vIkUB9pr.js","_app/immutable/chunks/byg3CW2Z.js","_app/immutable/chunks/Dl92ZAIs.js","_app/immutable/chunks/BNDA24ZJ.js","_app/immutable/chunks/Dvu50Twt.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.CP7Nxhfl.js",app:"_app/immutable/entry/app.BWJgBFyz.js",imports:["_app/immutable/entry/start.CP7Nxhfl.js","_app/immutable/chunks/CgkFBs8D.js","_app/immutable/chunks/-TS2BfOP.js","_app/immutable/chunks/js2fU5d7.js","_app/immutable/chunks/Dhfg4Q9V.js","_app/immutable/chunks/ByN_QlpT.js","_app/immutable/chunks/B5hkrpvM.js","_app/immutable/chunks/Dp1pzeXC.js","_app/immutable/entry/app.BWJgBFyz.js","_app/immutable/chunks/Dp1pzeXC.js","_app/immutable/chunks/js2fU5d7.js","_app/immutable/chunks/1jsiGTgY.js","_app/immutable/chunks/CFFBHRKH.js","_app/immutable/chunks/BBW-ze6J.js","_app/immutable/chunks/ByN_QlpT.js","_app/immutable/chunks/-TS2BfOP.js","_app/immutable/chunks/DykED0dc.js","_app/immutable/chunks/D3_2R_nA.js","_app/immutable/chunks/B-XyxzyO.js","_app/immutable/chunks/D_bOTIDI.js","_app/immutable/chunks/B5hkrpvM.js","_app/immutable/chunks/oDMcWFnN.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
 			__memo(() => import('./nodes/2.js')),
 			__memo(() => import('./nodes/3.js')),
-			__memo(() => import('./nodes/4.js'))
+			__memo(() => import('./nodes/4.js')),
+			__memo(() => import('./nodes/5.js'))
 		],
 		remotes: {
 			
@@ -30,17 +31,24 @@ return {
 				endpoint: null
 			},
 			{
+				id: "/heater-schedule",
+				pattern: /^\/heater-schedule\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				endpoint: null
+			},
+			{
 				id: "/presets",
 				pattern: /^\/presets\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				page: { layouts: [0,], errors: [1,], leaf: 4 },
 				endpoint: null
 			},
 			{
 				id: "/schedule",
 				pattern: /^\/schedule\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				page: { layouts: [0,], errors: [1,], leaf: 5 },
 				endpoint: null
 			}
 		],
