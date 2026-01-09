@@ -84,8 +84,9 @@ function LampCard($$renderer, $$props) {
     let { lamp, compact = false } = $$props;
     let displayName = translateDeviceName(lamp.name);
     let status = store.lampStatuses.get(lamp.id);
-    let loading = false;
     let dialogOpen = false;
+    let activePreset = null;
+    let displayPower = status?.power ?? false;
     let displayBrightness = status?.brightness ?? 0;
     let displayColorTemp = status?.color_temp ?? 0;
     const presets = [
@@ -112,31 +113,30 @@ function LampCard($$renderer, $$props) {
       }
     ];
     function isPresetActive(preset) {
-      if (!status?.power) return false;
+      if (!displayPower) return false;
       if (preset.moonlight) return status?.moonlight_mode ?? false;
       if (status?.moonlight_mode) return false;
-      const brightMatch = Math.abs(status.brightness - preset.brightness) <= 5;
-      const tempMatch = Math.abs(status.color_temp - preset.colorTemp) <= 200;
+      const brightMatch = Math.abs((status?.brightness ?? 0) - preset.brightness) <= 5;
+      const tempMatch = Math.abs((status?.color_temp ?? 0) - preset.colorTemp) <= 200;
       return brightMatch && tempMatch;
     }
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
-      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${stringify(status?.power ? status?.moonlight_mode ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
+      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? status?.moonlight_mode ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
-      { "status-active": status?.power }
-    )}>`);
+      { "status-active": displayPower }
+    )}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75v6.5a.75.75 0 01-1.5 0v-6.5A.75.75 0 0110 2z"></path><path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"></path></svg> `);
     {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75v6.5a.75.75 0 01-1.5 0v-6.5A.75.75 0 0110 2z"></path><path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"></path></svg>`);
     }
     $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">${escape_html(displayName)}</h4> `);
-    if (status?.power) {
+    if (displayPower) {
       $$renderer2.push("<!--[-->");
-      if (status.moonlight_mode) {
+      if (status?.moonlight_mode) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<p class="text-xs text-indigo-400">Moonlight</p>`);
       } else {
         $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status.brightness)}% · ${escape_html(status.color_temp)}K</p>`);
+        $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(displayBrightness)}% · ${escape_html(displayColorTemp)}K</p>`);
       }
       $$renderer2.push(`<!--]-->`);
     } else {
@@ -149,10 +149,10 @@ function LampCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(status?.power ? status?.moonlight_mode ? "text-indigo-400" : "text-amber-400" : "text-zinc-500")}`)}>`);
-        if (status?.power) {
+        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(displayPower ? status?.moonlight_mode ? "text-indigo-400" : "text-amber-400" : "text-zinc-500")}`)}>`);
+        if (displayPower) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`${escape_html(status.moonlight_mode ? "Moonlight" : "On")}`);
+          $$renderer3.push(`${escape_html(status?.moonlight_mode ? "Moonlight" : "On")}`);
         } else {
           $$renderer3.push("<!--[!-->");
           $$renderer3.push(`${escape_html(status ? "Off" : "Offline")}`);
@@ -160,14 +160,25 @@ function LampCard($$renderer, $$props) {
         $$renderer3.push(`<!--]--></span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all ${stringify(status.power ? status.moonlight_mode ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800 text-zinc-400")} hover:scale-[1.02] disabled:opacity-50`)}>${escape_html(status.power ? "Turn Off" : "Turn On")}</button> `);
-          if (status.power) {
+          $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all relative ${stringify(displayPower ? status.moonlight_mode ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800 text-zinc-400")} hover:scale-[1.02]`)}>${escape_html(displayPower ? "Turn Off" : "Turn On")} `);
+          {
+            $$renderer3.push("<!--[!-->");
+          }
+          $$renderer3.push(`<!--]--></button> `);
+          if (displayPower) {
             $$renderer3.push("<!--[-->");
             $$renderer3.push(`<div><p class="text-sm text-[var(--muted)] mb-2">Presets</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
             const each_array = ensure_array_like(presets);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let preset = each_array[$$index];
-              $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2.5 text-sm rounded-lg transition-all ${stringify(isPresetActive(preset) ? preset.moonlight ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")} disabled:opacity-50`)}>${escape_html(preset.label)}</button>`);
+              $$renderer3.push(`<button${attr_class(`py-2.5 text-sm rounded-lg transition-all relative ${stringify(isPresetActive(preset) || activePreset === preset.id ? preset.moonlight ? "bg-indigo-500/20 text-indigo-400" : "bg-amber-500/20 text-amber-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(preset.label)} `);
+              if (activePreset === preset.id) {
+                $$renderer3.push("<!--[-->");
+                $$renderer3.push(`<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>`);
+              } else {
+                $$renderer3.push("<!--[!-->");
+              }
+              $$renderer3.push(`<!--]--></button>`);
             }
             $$renderer3.push(`<!--]--></div></div> `);
             if (!status.moonlight_mode) {
@@ -194,8 +205,11 @@ function LampCard($$renderer, $$props) {
 function RoborockCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { status, compact = false } = $$props;
-    let loading = false;
     let dialogOpen = false;
+    let pendingFanMode = null;
+    let pendingMopMode = null;
+    let displayFanPower = status?.fanPower ?? 102;
+    let displayMopMode = status?.waterBoxMode ?? 200;
     const STATE_MAP = {
       1: "Starting",
       2: "Charger disconnected",
@@ -298,17 +312,47 @@ function RoborockCard($$renderer, $$props) {
           )}`)}>Controls</button> <button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify("text-zinc-400 hover:text-white")}`)}>Rooms</button> <button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify("text-zinc-400 hover:text-white")}`)}>Settings</button></div> `);
           {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div><p class="text-sm text-[var(--muted)] mb-2">Actions</p> <div class="grid grid-cols-3 gap-2"><button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Start</button> <button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm font-medium hover:bg-yellow-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Pause</button> <button${attr("disabled", loading, true)} class="py-4 rounded-xl bg-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg> Home</button></div></div> <div><button${attr("disabled", loading, true)} class="w-full py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium hover:bg-zinc-700/60 disabled:opacity-50 transition-colors">Find Robot</button></div> <div><p class="text-sm text-[var(--muted)] mb-2">Suction Power</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
+            $$renderer3.push(`<div><p class="text-sm text-[var(--muted)] mb-2">Actions</p> <div class="grid grid-cols-3 gap-2"><button class="py-4 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium relative hover:bg-green-500/30 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Start `);
+            {
+              $$renderer3.push("<!--[!-->");
+            }
+            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm font-medium relative hover:bg-yellow-500/30 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Pause `);
+            {
+              $$renderer3.push("<!--[!-->");
+            }
+            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-blue-500/20 text-blue-400 text-sm font-medium relative hover:bg-blue-500/30 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg> Home `);
+            {
+              $$renderer3.push("<!--[!-->");
+            }
+            $$renderer3.push(`<!--]--></button></div></div> <div><button class="w-full py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium relative hover:bg-zinc-700/60 transition-colors">Find Robot `);
+            {
+              $$renderer3.push("<!--[!-->");
+            }
+            $$renderer3.push(`<!--]--></button></div> <div><p class="text-sm text-[var(--muted)] mb-2">Suction Power</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
             const each_array = ensure_array_like(FAN_MODES);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let fan = each_array[$$index];
-              $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors ${stringify(status.fanPower === fan.mode ? "bg-purple-500/30 text-purple-400 ring-1 ring-purple-500/50" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")} disabled:opacity-50`)}><div class="text-base mb-0.5">${escape_html(fan.icon)}</div> ${escape_html(fan.name)}</button>`);
+              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayFanPower === fan.mode ? "bg-purple-500/30 text-purple-400 ring-1 ring-purple-500/50" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}><div class="text-base mb-0.5">${escape_html(fan.icon)}</div> ${escape_html(fan.name)} `);
+              if (pendingFanMode === fan.mode) {
+                $$renderer3.push("<!--[-->");
+                $$renderer3.push(`<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span>`);
+              } else {
+                $$renderer3.push("<!--[!-->");
+              }
+              $$renderer3.push(`<!--]--></button>`);
             }
             $$renderer3.push(`<!--]--></div></div> <div><p class="text-sm text-[var(--muted)] mb-2">Mop Intensity</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
             const each_array_1 = ensure_array_like(MOP_MODES);
             for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
               let mop = each_array_1[$$index_1];
-              $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors ${stringify(status.waterBoxMode === mop.mode ? "bg-cyan-500/30 text-cyan-400 ring-1 ring-cyan-500/50" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")} disabled:opacity-50`)}><div class="text-base mb-0.5">${escape_html(mop.icon)}</div> ${escape_html(mop.name)}</button>`);
+              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayMopMode === mop.mode ? "bg-cyan-500/30 text-cyan-400 ring-1 ring-cyan-500/50" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}><div class="text-base mb-0.5">${escape_html(mop.icon)}</div> ${escape_html(mop.name)} `);
+              if (pendingMopMode === mop.mode) {
+                $$renderer3.push("<!--[-->");
+                $$renderer3.push(`<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span>`);
+              } else {
+                $$renderer3.push("<!--[!-->");
+              }
+              $$renderer3.push(`<!--]--></button>`);
             }
             $$renderer3.push(`<!--]--></div></div>`);
           }
@@ -478,7 +522,6 @@ function TRVCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { device, compact = false } = $$props;
     let displayName = translateDeviceName(device.name);
-    let loading = false;
     let dialogOpen = false;
     let status = () => {
       if (!device.last_status) return null;
@@ -489,7 +532,8 @@ function TRVCard($$renderer, $$props) {
       }
     };
     let currentTemp = status()?.["5"] ? status()["5"] / 10 : null;
-    let targetTemp = status()?.["4"] ? status()["4"] / 10 : null;
+    let serverTargetTemp = status()?.["4"] ? status()["4"] / 10 : null;
+    let targetTemp = serverTargetTemp;
     let valve = status()?.["3"] || "unknown";
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(
       `w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${stringify(valve === "opened" ? "bg-orange-500/20 text-orange-400" : "bg-blue-500/20 text-blue-400")}`,
@@ -520,11 +564,24 @@ function TRVCard($$renderer, $$props) {
         $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Valve</span> <span${attr_class(`font-medium ${stringify(valve === "opened" ? "text-orange-400" : "text-blue-400")}`)}>${escape_html(valve === "opened" ? "Heating" : "Idle")}</span></div> `);
         if (currentTemp !== null && targetTemp !== null) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)] uppercase tracking-wide">Current</span> <p class="text-3xl font-bold mt-1">${escape_html(currentTemp)}°C</p></div> <div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)] uppercase tracking-wide">Target</span> <p class="text-3xl font-bold mt-1 text-orange-400">${escape_html(targetTemp)}°C</p></div></div> <div><p class="text-sm text-[var(--muted)] mb-3">Set Temperature</p> <div class="flex items-center justify-center gap-4"><button${attr("disabled", targetTemp <= 5, true)} class="w-14 h-14 rounded-full bg-blue-500/20 text-blue-400 text-2xl font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-all">−</button> <span class="text-3xl font-bold w-24 text-center">${escape_html(targetTemp)}°C</span> <button${attr("disabled", targetTemp >= 30, true)} class="w-14 h-14 rounded-full bg-orange-500/20 text-orange-400 text-2xl font-medium hover:bg-orange-500/30 disabled:opacity-50 transition-all">+</button></div></div> <div><p class="text-sm text-[var(--muted)] mb-2">Quick Set</p> <div class="grid grid-cols-4 gap-2"><!--[-->`);
+          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)] uppercase tracking-wide">Current</span> <p class="text-3xl font-bold mt-1">${escape_html(currentTemp)}°C</p></div> <div class="bg-zinc-800/40 rounded-xl p-4 text-center"><span class="text-xs text-[var(--muted)] uppercase tracking-wide">Target</span> <p class="text-3xl font-bold mt-1 text-orange-400">${escape_html(targetTemp)}°C</p></div></div> <div><p class="text-sm text-[var(--muted)] mb-3">Set Temperature</p> <div class="flex items-center justify-center gap-4"><button${attr("disabled", targetTemp !== null && targetTemp <= 5, true)} class="w-14 h-14 rounded-full bg-blue-500/20 text-blue-400 text-2xl font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-all">−</button> <div class="relative">`);
+          {
+            $$renderer3.push("<!--[!-->");
+            $$renderer3.push(`<button class="text-3xl font-bold w-24 text-center hover:text-orange-400 transition-colors cursor-text" title="Click to edit">${escape_html(targetTemp)}°C</button>`);
+          }
+          $$renderer3.push(`<!--]--> `);
+          {
+            $$renderer3.push("<!--[!-->");
+          }
+          $$renderer3.push(`<!--]--> `);
+          {
+            $$renderer3.push("<!--[!-->");
+          }
+          $$renderer3.push(`<!--]--></div> <button${attr("disabled", targetTemp !== null && targetTemp >= 30, true)} class="w-14 h-14 rounded-full bg-orange-500/20 text-orange-400 text-2xl font-medium hover:bg-orange-500/30 disabled:opacity-50 transition-all">+</button></div></div> <div><p class="text-sm text-[var(--muted)] mb-2">Quick Set</p> <div class="grid grid-cols-4 gap-2"><!--[-->`);
           const each_array = ensure_array_like([15, 18, 21, 24]);
           for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
             let temp = each_array[$$index];
-            $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`py-2 text-sm rounded-lg transition-colors ${stringify(targetTemp === temp ? "bg-orange-500/20 text-orange-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(temp)}°</button>`);
+            $$renderer3.push(`<button${attr_class(`py-2 text-sm rounded-lg transition-colors ${stringify(targetTemp === temp ? "bg-orange-500/20 text-orange-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(temp)}°</button>`);
           }
           $$renderer3.push(`<!--]--></div></div>`);
         } else {
@@ -541,16 +598,15 @@ function YamahaCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { device, compact = false } = $$props;
     let displayName = translateDeviceName(device.name);
-    let status = null;
     let dialogOpen = false;
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
-      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${stringify("bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
+    let displayPower = "standby";
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", true, true)}${attr_class(
+      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 relative ${stringify("bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
-      { "status-active": status?.power === "on" }
-    )}>`);
+      { "status-active": displayPower === "on" }
+    )}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path></svg> `);
     {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path></svg>`);
     }
     $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">${escape_html(displayName)}</h4> `);
     {
@@ -577,8 +633,9 @@ function AirPurifierCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { compact = false } = $$props;
     let status = store.airPurifier;
-    let loading = false;
     let dialogOpen = false;
+    let displayPower = status?.power ?? false;
+    let displayMode = status?.mode ?? "auto";
     function aqiColor(aqi) {
       if (aqi <= 50) return "text-green-400 bg-green-500/20";
       if (aqi <= 100) return "text-yellow-400 bg-yellow-500/20";
@@ -593,18 +650,17 @@ function AirPurifierCard($$renderer, $$props) {
     }
     const modeLabels = { auto: "Auto", silent: "Night", favorite: "Manual" };
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`glass-card rounded-xl transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
-      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${stringify(status?.power ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
+      `w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-500")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
-      { "status-active": status?.power }
-    )}>`);
+      { "status-active": displayPower }
+    )}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.414 1.415l.708-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path></svg> `);
     {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.414 1.415l.708-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path></svg>`);
     }
     $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm truncate">Air Purifier</h4> `);
-    if (status?.power) {
+    if (displayPower) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(modeLabels[status.mode] || status.mode)} · ${escape_html(status.aqi)} AQI</p>`);
+      $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(modeLabels[displayMode] || displayMode)} · ${escape_html(status?.aqi ?? 0)} AQI</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<p class="text-xs text-[var(--muted)]">${escape_html(status ? "Off" : "Offline")}</p>`);
@@ -622,11 +678,15 @@ function AirPurifierCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: "Air Purifier",
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(status?.power ? "text-cyan-400" : "text-zinc-500")}`)}>${escape_html(status?.power ? "On" : status ? "Off" : "Offline")}</span></div> `);
+        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-[var(--muted)]">Status</span> <span${attr_class(`font-medium ${stringify(displayPower ? "text-cyan-400" : "text-zinc-500")}`)}>${escape_html(displayPower ? "On" : status ? "Off" : "Offline")}</span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<button${attr("disabled", loading, true)}${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all ${stringify(status.power ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800 text-zinc-400")} hover:scale-[1.02] disabled:opacity-50`)}>${escape_html(status.power ? "Turn Off" : "Turn On")}</button> `);
-          if (status.power) {
+          $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all relative ${stringify(displayPower ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800 text-zinc-400")} hover:scale-[1.02]`)}>${escape_html(displayPower ? "Turn Off" : "Turn On")} `);
+          {
+            $$renderer3.push("<!--[!-->");
+          }
+          $$renderer3.push(`<!--]--></button> `);
+          if (displayPower) {
             $$renderer3.push("<!--[-->");
             $$renderer3.push(`<div${attr_class(`rounded-xl p-4 text-center ${stringify(aqiColor(status.aqi))}`)}><span class="text-xs uppercase tracking-wide opacity-80">Air Quality Index</span> <p class="text-4xl font-bold mt-1">${escape_html(status.aqi)}</p> <p class="text-sm mt-1">${escape_html(aqiLabel(status.aqi))}</p></div> <div><p class="text-sm text-[var(--muted)] mb-2">Mode</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
             const each_array = ensure_array_like([
@@ -636,7 +696,7 @@ function AirPurifierCard($$renderer, $$props) {
             ]);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let mode = each_array[$$index];
-              $$renderer3.push(`<button${attr_class(`py-3 text-sm rounded-lg transition-colors ${stringify(status.mode === mode.value ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(mode.label)}</button>`);
+              $$renderer3.push(`<button${attr_class(`py-3 text-sm rounded-lg transition-colors ${stringify(displayMode === mode.value ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60")}`)}>${escape_html(mode.label)}</button>`);
             }
             $$renderer3.push(`<!--]--></div></div> <div class="grid grid-cols-3 gap-3">`);
             if (status.humidity !== void 0) {

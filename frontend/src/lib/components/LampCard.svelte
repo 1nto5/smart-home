@@ -3,20 +3,26 @@
   import { controlLamp, getLampStatus } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import { translateDeviceName } from '$lib/translations';
+  import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
   let status = $derived(store.lampStatuses.get(lamp.id));
-  let loading = $state(false);
   let fetched = $state(false);
   let dialogOpen = $state(false);
+
+  // Optimistic states
+  let optimisticPower = $state<boolean | null>(null);
+  let isPowerPending = $state(false);
+  let activePreset = $state<string | null>(null);
 
   // Local slider state for preview
   let previewBrightness = $state<number | null>(null);
   let previewColorTemp = $state<number | null>(null);
 
   // Display values (preview or actual)
+  let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayBrightness = $derived(previewBrightness ?? status?.brightness ?? 0);
   let displayColorTemp = $derived(previewColorTemp ?? status?.color_temp ?? 0);
 
@@ -31,35 +37,60 @@
 
   async function togglePower(e: MouseEvent) {
     e.stopPropagation();
-    loading = true;
+    const newPower = !displayPower;
+    optimisticPower = newPower;
+    isPowerPending = true;
     try {
       await controlLamp(lamp.id, { toggle: true });
+      refreshStatus();
+    } catch (e) {
+      console.error(e);
+      optimisticPower = null;
+      isPowerPending = false;
+    }
+  }
+
+  async function refreshStatus() {
+    try {
       const res = await getLampStatus(lamp.id);
       store.updateLampStatus(lamp.id, res.status);
+      optimisticPower = null;
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    isPowerPending = false;
+    activePreset = null;
   }
 
-  async function setBrightness(value: number) {
-    previewBrightness = null;
+  // Debounced slider API calls
+  const [sendBrightnessDebounced] = debounce(async (value: number) => {
     try {
       await controlLamp(lamp.id, { brightness: value });
       if (status) store.updateLampStatus(lamp.id, { ...status, brightness: value });
     } catch (e) {
       console.error(e);
     }
-  }
+    previewBrightness = null;
+  }, 300);
 
-  async function setColorTemp(value: number) {
-    previewColorTemp = null;
+  const [sendColorTempDebounced] = debounce(async (value: number) => {
     try {
       await controlLamp(lamp.id, { color_temp: value });
       if (status) store.updateLampStatus(lamp.id, { ...status, color_temp: value });
     } catch (e) {
       console.error(e);
     }
+    previewColorTemp = null;
+  }, 300);
+
+  function handleBrightnessInput(value: number) {
+    previewBrightness = value;
+    sendBrightnessDebounced(value);
+  }
+
+  function handleColorTempInput(value: number) {
+    previewColorTemp = value;
+    sendColorTempDebounced(value);
   }
 
   // Preset definitions
@@ -70,12 +101,17 @@
   ] as const;
 
   async function applyPreset(preset: typeof presets[number]) {
-    loading = true;
+    activePreset = preset.id;
+    // Optimistic update
+    if (preset.moonlight) {
+      if (status) store.updateLampStatus(lamp.id, { ...status, power: true, moonlight_mode: true, brightness: preset.brightness });
+    } else {
+      if (status) store.updateLampStatus(lamp.id, { ...status, power: true, moonlight_mode: false, brightness: preset.brightness, color_temp: preset.colorTemp });
+    }
     try {
       if (preset.moonlight) {
         await controlLamp(lamp.id, { moonlight: true, moonlight_brightness: preset.brightness });
       } else {
-        // Exit moonlight mode if needed, then set values
         if (status?.moonlight_mode) {
           await controlLamp(lamp.id, { moonlight: false });
         } else if (!status?.power) {
@@ -83,22 +119,21 @@
         }
         await controlLamp(lamp.id, { brightness: preset.brightness, color_temp: preset.colorTemp });
       }
-      const res = await getLampStatus(lamp.id);
-      store.updateLampStatus(lamp.id, res.status);
+      refreshStatus();
     } catch (e) {
       console.error(e);
+      activePreset = null;
+      refreshStatus();
     }
-    loading = false;
   }
 
   // Check if preset is currently active
   function isPresetActive(preset: typeof presets[number]): boolean {
-    if (!status?.power) return false;
+    if (!displayPower) return false;
     if (preset.moonlight) return status?.moonlight_mode ?? false;
     if (status?.moonlight_mode) return false;
-    // Allow some tolerance for brightness/temp matching
-    const brightMatch = Math.abs(status.brightness - preset.brightness) <= 5;
-    const tempMatch = Math.abs(status.color_temp - preset.colorTemp) <= 200;
+    const brightMatch = Math.abs((status?.brightness ?? 0) - preset.brightness) <= 5;
+    const tempMatch = Math.abs((status?.color_temp ?? 0) - preset.colorTemp) <= 200;
     return brightMatch && tempMatch;
   }
 </script>
@@ -115,30 +150,29 @@
     <!-- Power toggle button -->
     <button
       onclick={togglePower}
-      disabled={loading || !status}
-      class="w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0
-             {status?.power ? (status?.moonlight_mode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400') : 'bg-zinc-800/60 text-zinc-500'}
+      disabled={!status}
+      class="w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 relative
+             {displayPower ? (status?.moonlight_mode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400') : 'bg-zinc-800/60 text-zinc-500'}
              hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-      class:status-active={status?.power}
+      class:status-active={displayPower}
     >
-      {#if loading}
-        <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-      {:else}
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10 2a.75.75 0 01.75.75v6.5a.75.75 0 01-1.5 0v-6.5A.75.75 0 0110 2z"/>
-          <path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"/>
-        </svg>
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 2a.75.75 0 01.75.75v6.5a.75.75 0 01-1.5 0v-6.5A.75.75 0 0110 2z"/>
+        <path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"/>
+      </svg>
+      {#if isPowerPending}
+        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
       {/if}
     </button>
 
     <!-- Info -->
     <div class="min-w-0 flex-1">
       <h4 class="font-medium text-sm truncate">{displayName}</h4>
-      {#if status?.power}
-        {#if status.moonlight_mode}
+      {#if displayPower}
+        {#if status?.moonlight_mode}
           <p class="text-xs text-indigo-400">Moonlight</p>
         {:else}
-          <p class="text-xs text-[var(--muted)]">{status.brightness}% &middot; {status.color_temp}K</p>
+          <p class="text-xs text-[var(--muted)]">{displayBrightness}% &middot; {displayColorTemp}K</p>
         {/if}
       {:else}
         <p class="text-xs text-[var(--muted)]">{status ? 'Off' : 'Offline'}</p>
@@ -153,9 +187,9 @@
     <!-- Status -->
     <div class="flex items-center justify-between">
       <span class="text-[var(--muted)]">Status</span>
-      <span class="font-medium {status?.power ? (status?.moonlight_mode ? 'text-indigo-400' : 'text-amber-400') : 'text-zinc-500'}">
-        {#if status?.power}
-          {status.moonlight_mode ? 'Moonlight' : 'On'}
+      <span class="font-medium {displayPower ? (status?.moonlight_mode ? 'text-indigo-400' : 'text-amber-400') : 'text-zinc-500'}">
+        {#if displayPower}
+          {status?.moonlight_mode ? 'Moonlight' : 'On'}
         {:else}
           {status ? 'Off' : 'Offline'}
         {/if}
@@ -166,15 +200,17 @@
       <!-- Large Power Button -->
       <button
         onclick={togglePower}
-        disabled={loading}
-        class="w-full py-4 rounded-xl text-lg font-medium transition-all
-               {status.power ? (status.moonlight_mode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400') : 'bg-zinc-800 text-zinc-400'}
-               hover:scale-[1.02] disabled:opacity-50"
+        class="w-full py-4 rounded-xl text-lg font-medium transition-all relative
+               {displayPower ? (status.moonlight_mode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400') : 'bg-zinc-800 text-zinc-400'}
+               hover:scale-[1.02]"
       >
-        {status.power ? 'Turn Off' : 'Turn On'}
+        {displayPower ? 'Turn Off' : 'Turn On'}
+        {#if isPowerPending}
+          <span class="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+        {/if}
       </button>
 
-      {#if status.power}
+      {#if displayPower}
         <!-- Presets -->
         <div>
           <p class="text-sm text-[var(--muted)] mb-2">Presets</p>
@@ -182,14 +218,15 @@
             {#each presets as preset}
               <button
                 onclick={() => applyPreset(preset)}
-                disabled={loading}
-                class="py-2.5 text-sm rounded-lg transition-all
-                       {isPresetActive(preset)
+                class="py-2.5 text-sm rounded-lg transition-all relative
+                       {isPresetActive(preset) || activePreset === preset.id
                          ? (preset.moonlight ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400')
-                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}
-                       disabled:opacity-50"
+                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
               >
                 {preset.label}
+                {#if activePreset === preset.id}
+                  <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
+                {/if}
               </button>
             {/each}
           </div>
@@ -207,8 +244,7 @@
               min="1"
               max="100"
               value={displayBrightness}
-              oninput={(e) => previewBrightness = parseInt(e.currentTarget.value)}
-              onchange={(e) => setBrightness(parseInt(e.currentTarget.value))}
+              oninput={(e) => handleBrightnessInput(parseInt(e.currentTarget.value))}
               class="w-full"
             />
           </div>
@@ -225,8 +261,7 @@
               max="6500"
               step="100"
               value={displayColorTemp}
-              oninput={(e) => previewColorTemp = parseInt(e.currentTarget.value)}
-              onchange={(e) => setColorTemp(parseInt(e.currentTarget.value))}
+              oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
               class="w-full"
             />
             <div class="flex justify-between text-xs text-[var(--muted)] mt-1">

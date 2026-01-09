@@ -1,9 +1,9 @@
-import { V as attr, $ as head, U as ensure_array_like } from "../../../chunks/index2.js";
+import { $ as head, U as ensure_array_like } from "../../../chunks/index2.js";
 import { e as escape_html } from "../../../chunks/context.js";
+import "clsx";
 function PresetButton($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { name, preset } = $$props;
-    let loading = false;
     function icon(presetName) {
       switch (presetName) {
         case "day":
@@ -18,7 +18,11 @@ function PresetButton($$renderer, $$props) {
           return "💡";
       }
     }
-    $$renderer2.push(`<div class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4"><div class="flex items-center gap-3 mb-3"><span class="text-2xl">${escape_html(icon(name))}</span> <div><h3 class="font-medium">${escape_html(preset.name)}</h3> <p class="text-xs text-[var(--muted)]">${escape_html(preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : "Off")}</p></div></div> <button${attr("disabled", loading, true)} class="w-full py-2 rounded bg-[var(--accent)] hover:bg-blue-600 disabled:opacity-50">${escape_html("Apply to All Lamps")}</button> `);
+    $$renderer2.push(`<div class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4"><div class="flex items-center gap-3 mb-3"><span class="text-2xl">${escape_html(icon(name))}</span> <div><h3 class="font-medium">${escape_html(preset.name)}</h3> <p class="text-xs text-[var(--muted)]">${escape_html(preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : "Off")}</p></div></div> <button class="w-full py-2 rounded bg-[var(--accent)] hover:bg-blue-600 relative transition-all">Apply to All Lamps `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></button> `);
     {
       $$renderer2.push("<!--[!-->");
     }

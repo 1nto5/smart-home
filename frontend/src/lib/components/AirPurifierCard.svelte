@@ -5,27 +5,43 @@
 
   let { compact = false }: { compact?: boolean } = $props();
   let status = $derived(store.airPurifier);
-  let loading = $state(false);
   let dialogOpen = $state(false);
 
+  // Optimistic states
+  let optimisticPower = $state<boolean | null>(null);
+  let optimisticMode = $state<string | null>(null);
+  let isPowerPending = $state(false);
+
+  // Display values
+  let displayPower = $derived(optimisticPower ?? status?.power ?? false);
+  let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
+
   async function togglePower() {
-    loading = true;
+    const newPower = !displayPower;
+    optimisticPower = newPower;
+    isPowerPending = true;
     try {
-      await controlAirPurifier({ power: !status?.power });
-      await store.refreshAirPurifier();
+      await controlAirPurifier({ power: newPower });
+      store.refreshAirPurifier();
     } catch (e) {
       console.error(e);
+      optimisticPower = null;
     }
-    loading = false;
+    isPowerPending = false;
+    optimisticPower = null;
   }
 
   async function setMode(mode: string) {
+    const oldMode = displayMode;
+    optimisticMode = mode;
     try {
       await controlAirPurifier({ mode });
-      await store.refreshAirPurifier();
+      store.refreshAirPurifier();
     } catch (e) {
       console.error(e);
+      optimisticMode = oldMode;
     }
+    optimisticMode = null;
   }
 
   function aqiColor(aqi: number): string {
@@ -57,26 +73,25 @@
     <!-- Power toggle -->
     <button
       onclick={(e) => { e.stopPropagation(); togglePower(); }}
-      disabled={loading || !status}
-      class="w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0
-             {status?.power ? 'bg-cyan-500/20 text-cyan-400' : 'bg-zinc-800/60 text-zinc-500'}
+      disabled={!status}
+      class="w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 relative
+             {displayPower ? 'bg-cyan-500/20 text-cyan-400' : 'bg-zinc-800/60 text-zinc-500'}
              hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-      class:status-active={status?.power}
+      class:status-active={displayPower}
     >
-      {#if loading}
-        <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-      {:else}
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.414 1.415l.708-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"/>
-        </svg>
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.414 1.415l.708-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"/>
+      </svg>
+      {#if isPowerPending}
+        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
       {/if}
     </button>
 
     <!-- Info -->
     <div class="min-w-0 flex-1">
       <h4 class="font-medium text-sm truncate">Air Purifier</h4>
-      {#if status?.power}
-        <p class="text-xs text-[var(--muted)]">{modeLabels[status.mode] || status.mode} · {status.aqi} AQI</p>
+      {#if displayPower}
+        <p class="text-xs text-[var(--muted)]">{modeLabels[displayMode] || displayMode} · {status?.aqi ?? 0} AQI</p>
       {:else}
         <p class="text-xs text-[var(--muted)]">{status ? 'Off' : 'Offline'}</p>
       {/if}
@@ -97,8 +112,8 @@
     <!-- Status -->
     <div class="flex items-center justify-between">
       <span class="text-[var(--muted)]">Status</span>
-      <span class="font-medium {status?.power ? 'text-cyan-400' : 'text-zinc-500'}">
-        {status?.power ? 'On' : status ? 'Off' : 'Offline'}
+      <span class="font-medium {displayPower ? 'text-cyan-400' : 'text-zinc-500'}">
+        {displayPower ? 'On' : status ? 'Off' : 'Offline'}
       </span>
     </div>
 
@@ -106,15 +121,17 @@
       <!-- Power Button -->
       <button
         onclick={togglePower}
-        disabled={loading}
-        class="w-full py-4 rounded-xl text-lg font-medium transition-all
-               {status.power ? 'bg-cyan-500/20 text-cyan-400' : 'bg-zinc-800 text-zinc-400'}
-               hover:scale-[1.02] disabled:opacity-50"
+        class="w-full py-4 rounded-xl text-lg font-medium transition-all relative
+               {displayPower ? 'bg-cyan-500/20 text-cyan-400' : 'bg-zinc-800 text-zinc-400'}
+               hover:scale-[1.02]"
       >
-        {status.power ? 'Turn Off' : 'Turn On'}
+        {displayPower ? 'Turn Off' : 'Turn On'}
+        {#if isPowerPending}
+          <span class="absolute top-2 right-2 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+        {/if}
       </button>
 
-      {#if status.power}
+      {#if displayPower}
         <!-- AQI Display -->
         <div class="rounded-xl p-4 text-center {aqiColor(status.aqi)}">
           <span class="text-xs uppercase tracking-wide opacity-80">Air Quality Index</span>
@@ -130,7 +147,7 @@
               <button
                 onclick={() => setMode(mode.value)}
                 class="py-3 text-sm rounded-lg transition-colors
-                       {status.mode === mode.value ? 'bg-cyan-500/20 text-cyan-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
+                       {displayMode === mode.value ? 'bg-cyan-500/20 text-cyan-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
               >
                 {mode.label}
               </button>

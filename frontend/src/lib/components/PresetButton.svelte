@@ -4,19 +4,19 @@
   import { store } from '$lib/stores.svelte';
 
   let { name, preset }: { name: string; preset: Preset } = $props();
-  let loading = $state(false);
+  let isPending = $state(false);
   let result = $state<ApplyResult | null>(null);
 
   async function apply() {
-    loading = true;
+    isPending = true;
     result = null;
     try {
       result = await applyPreset(name);
-      await store.refreshPending();
+      store.refreshPending();
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    isPending = false;
   }
 
   function icon(presetName: string): string {
@@ -42,10 +42,12 @@
 
   <button
     onclick={apply}
-    disabled={loading}
-    class="w-full py-2 rounded bg-[var(--accent)] hover:bg-blue-600 disabled:opacity-50"
+    class="w-full py-2 rounded bg-[var(--accent)] hover:bg-blue-600 relative transition-all"
   >
-    {loading ? 'Applying...' : 'Apply to All Lamps'}
+    Apply to All Lamps
+    {#if isPending}
+      <span class="absolute top-1 right-1 w-2 h-2 bg-white rounded-full animate-pulse"></span>
+    {/if}
   </button>
 
   {#if result}
