@@ -34,6 +34,8 @@ async function getYamahaDevices() {
 async function getAirPurifierStatus() {
   return fetcher("/purifier/status");
 }
+let ws = null;
+let wsReconnectDelay = 1e3;
 function createStore() {
   let lamps = [];
   let lampStatuses = /* @__PURE__ */ new Map();
@@ -45,6 +47,37 @@ function createStore() {
   let airPurifier = null;
   let loading = false;
   let error = null;
+  let wsConnected = false;
+  function connectWebSocket() {
+    if (ws?.readyState === WebSocket.OPEN) return;
+    const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+    ws = new WebSocket(`${protocol}//${location.host}/ws`);
+    ws.onopen = () => {
+      console.log("WebSocket connected");
+      wsConnected = true;
+      wsReconnectDelay = 1e3;
+    };
+    ws.onclose = () => {
+      console.log(`WebSocket disconnected, reconnecting in ${wsReconnectDelay}ms`);
+      wsConnected = false;
+      setTimeout(connectWebSocket, wsReconnectDelay);
+      wsReconnectDelay = Math.min(wsReconnectDelay * 2, 3e4);
+    };
+    ws.onerror = () => {
+      ws?.close();
+    };
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "lamp_status" && msg.deviceId && msg.status) {
+          lampStatuses.set(msg.deviceId, msg.status);
+        } else if (msg.type === "lamp_offline" && msg.deviceId) {
+          lampStatuses.delete(msg.deviceId);
+        }
+      } catch {
+      }
+    };
+  }
   return {
     get lamps() {
       return lamps;
@@ -76,13 +109,26 @@ function createStore() {
     get error() {
       return error;
     },
+    get wsConnected() {
+      return wsConnected;
+    },
+    initWebSocket() {
+      connectWebSocket();
+    },
     updateLampStatus(id, status) {
       lampStatuses.set(id, status);
     },
     async refreshLamps() {
       try {
         lamps = await getLamps();
-        console.log("Refreshed lamps:", lamps.length, lamps);
+        for (const lamp of lamps) {
+          if (lamp.last_status) {
+            try {
+              lampStatuses.set(lamp.id, JSON.parse(lamp.last_status));
+            } catch {
+            }
+          }
+        }
       } catch (e) {
         console.error("Failed to fetch lamps:", e);
       }
