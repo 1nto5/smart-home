@@ -4,7 +4,7 @@
 
 set -e
 
-cd /c/smart-home
+cd /mnt/c/smart-home
 
 echo "[$(date)] Checking for updates..."
 
