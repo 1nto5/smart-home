@@ -1,4 +1,4 @@
-import { $ as head, V as attr, U as ensure_array_like, W as attr_class, X as stringify } from "../../../chunks/index2.js";
+import { a2 as head, Y as attr, X as ensure_array_like, Z as attr_class, _ as stringify } from "../../../chunks/index2.js";
 import { s as store } from "../../../chunks/stores.svelte.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function _page($$renderer, $$props) {
@@ -11,11 +11,11 @@ function _page($$renderer, $$props) {
         $$renderer4.push(`<title>Smart Home - Schedule</title>`);
       });
     });
-    $$renderer2.push(`<div class="space-y-8"><section class="bg-surface-elevated border border-stroke-default rounded-xl p-4"><h2 class="text-lg font-medium text-content-primary mb-4">Create Schedule</h2> <div class="flex flex-wrap gap-3"><input type="text" placeholder="Schedule name"${attr("value", newName)} class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 flex-1 min-w-[150px] text-content-primary placeholder:text-content-tertiary"/> `);
+    $$renderer2.push(`<div class="space-y-8"><section class="bg-surface-elevated border border-stroke-default rounded-xl p-4"><h2 class="text-lg font-medium text-content-primary mb-4">Create Schedule</h2> <div class="flex flex-col sm:flex-row flex-wrap gap-3"><input type="text" placeholder="Schedule name"${attr("value", newName)} class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 w-full sm:flex-1 sm:min-w-[150px] text-content-primary placeholder:text-content-tertiary"/> <div class="flex gap-3">`);
     $$renderer2.select(
       {
         value: newPreset,
-        class: "bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+        class: "bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary flex-1 sm:flex-initial"
       },
       ($$renderer3) => {
         $$renderer3.option({ value: "day" }, ($$renderer4) => {
@@ -29,7 +29,7 @@ function _page($$renderer, $$props) {
         });
       }
     );
-    $$renderer2.push(` <input type="time"${attr("value", newTime)} class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"/> <button${attr("disabled", !newName.trim(), true)} class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium">Add</button></div></section> <section><h2 class="text-lg font-medium text-content-primary mb-4">Schedules (${escape_html(store.schedules.length)})</h2> `);
+    $$renderer2.push(` <input type="time"${attr("value", newTime)} class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"/></div> <button${attr("disabled", !newName.trim(), true)} class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium w-full sm:w-auto">Add</button></div></section> <section><h2 class="text-lg font-medium text-content-primary mb-4">Schedules (${escape_html(store.schedules.length)})</h2> `);
     if (store.schedules.length === 0) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<p class="text-content-secondary">No schedules yet</p>`);

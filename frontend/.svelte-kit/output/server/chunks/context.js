@@ -23,6 +23,15 @@ function deferred() {
   });
   return { promise, resolve, reject };
 }
+function fallback(value, fallback2, lazy = false) {
+  return value === void 0 ? lazy ? (
+    /** @type {() => V} */
+    fallback2()
+  ) : (
+    /** @type {V} */
+    fallback2
+  ) : value;
+}
 function equals(value) {
   return value === this.v;
 }
@@ -99,21 +108,22 @@ export {
   deferred as c,
   define_property as d,
   escape_html as e,
-  safe_equals as f,
+  fallback as f,
   getContext as g,
-  equals as h,
-  array_prototype as i,
-  get_descriptor as j,
-  get_prototype_of as k,
-  is_array as l,
-  is_extensible as m,
+  safe_equals as h,
+  equals as i,
+  array_prototype as j,
+  get_descriptor as k,
+  get_prototype_of as l,
+  is_array as m,
   noop as n,
   object_prototype as o,
-  index_of as p,
-  set_ssr_context as q,
+  is_extensible as p,
+  index_of as q,
   run_all as r,
   setContext as s,
-  ssr_context as t,
-  push as u,
-  pop as v
+  set_ssr_context as t,
+  ssr_context as u,
+  push as v,
+  pop as w
 };

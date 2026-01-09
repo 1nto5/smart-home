@@ -1,7 +1,1356 @@
-import { W as attr_class, V as attr, X as stringify, U as ensure_array_like, _ as attr_style, $ as head } from "../../chunks/index2.js";
+import { U as sanitize_props, V as spread_props, W as slot, Z as attr_class, Y as attr, _ as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
 import { s as store } from "../../chunks/stores.svelte.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
+import { I as Icon } from "../../chunks/Icon.js";
+import { P as Power } from "../../chunks/power.js";
+import { H as House } from "../../chunks/house.js";
+function Battery_low($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M22 14v-4" }],
+    ["path", { "d": "M6 14v-4" }],
+    [
+      "rect",
+      { "x": "2", "y": "6", "width": "16", "height": "12", "rx": "2" }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "battery-low" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name BatteryLow
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMjIgMTR2LTQiIC8+CiAgPHBhdGggZD0iTTYgMTR2LTQiIC8+CiAgPHJlY3QgeD0iMiIgeT0iNiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiByeD0iMiIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/battery-low
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Battery($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M 22 14 L 22 10" }],
+    [
+      "rect",
+      { "x": "2", "y": "6", "width": "16", "height": "12", "rx": "2" }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "battery" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Battery
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNIDIyIDE0IEwgMjIgMTAiIC8+CiAgPHJlY3QgeD0iMiIgeT0iNiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiByeD0iMiIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/battery
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Door_open($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M11 20H2" }],
+    [
+      "path",
+      {
+        "d": "M11 4.562v16.157a1 1 0 0 0 1.242.97L19 20V5.562a2 2 0 0 0-1.515-1.94l-4-1A2 2 0 0 0 11 4.561z"
+      }
+    ],
+    ["path", { "d": "M11 4H8a2 2 0 0 0-2 2v14" }],
+    ["path", { "d": "M14 12h.01" }],
+    ["path", { "d": "M22 20h-3" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "door-open" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name DoorOpen
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTEgMjBIMiIgLz4KICA8cGF0aCBkPSJNMTEgNC41NjJ2MTYuMTU3YTEgMSAwIDAgMCAxLjI0Mi45N0wxOSAyMFY1LjU2MmEyIDIgMCAwIDAtMS41MTUtMS45NGwtNC0xQTIgMiAwIDAgMCAxMSA0LjU2MXoiIC8+CiAgPHBhdGggZD0iTTExIDRIOGEyIDIgMCAwIDAtMiAydjE0IiAvPgogIDxwYXRoIGQ9Ik0xNCAxMmguMDEiIC8+CiAgPHBhdGggZD0iTTIyIDIwaC0zIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/door-open
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Droplet($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"
+      }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "droplet" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Droplet
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIgMjJhNyA3IDAgMCAwIDctN2MwLTItMS0zLjktMy01LjVzLTMuNS00LTQtNi41Yy0uNSAyLjUtMiA0LjktNCA2LjVDNiAxMS4xIDUgMTMgNSAxNWE3IDcgMCAwIDAgNyA3eiIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/droplet
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Flame($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"
+      }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "flame" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Flame
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIgM3ExIDQgNCA2LjV0MyA1LjVhMSAxIDAgMCAxLTE0IDAgNSA1IDAgMCAxIDEtMyAxIDEgMCAwIDAgNSAwYzAtMi0xLjUtMy0xLjUtNXEwLTIgMi41LTQiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/flame
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Globe($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["circle", { "cx": "12", "cy": "12", "r": "10" }],
+    [
+      "path",
+      { "d": "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" }
+    ],
+    ["path", { "d": "M2 12h20" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "globe" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Globe
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgLz4KICA8cGF0aCBkPSJNMTIgMmExNC41IDE0LjUgMCAwIDAgMCAyMCAxNC41IDE0LjUgMCAwIDAgMC0yMCIgLz4KICA8cGF0aCBkPSJNMiAxMmgyMCIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/globe
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Pause($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "rect",
+      { "x": "14", "y": "3", "width": "5", "height": "18", "rx": "1" }
+    ],
+    [
+      "rect",
+      { "x": "5", "y": "3", "width": "5", "height": "18", "rx": "1" }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "pause" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Pause
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cmVjdCB4PSIxNCIgeT0iMyIgd2lkdGg9IjUiIGhlaWdodD0iMTgiIHJ4PSIxIiAvPgogIDxyZWN0IHg9IjUiIHk9IjMiIHdpZHRoPSI1IiBoZWlnaHQ9IjE4IiByeD0iMSIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/pause
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Play($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+      }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "play" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Play
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNNSA1YTIgMiAwIDAgMSAzLjAwOC0xLjcyOGwxMS45OTcgNi45OThhMiAyIDAgMCAxIC4wMDMgMy40NThsLTEyIDdBMiAyIDAgMCAxIDUgMTl6IiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/play
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Radio($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M16.247 7.761a6 6 0 0 1 0 8.478" }],
+    ["path", { "d": "M19.075 4.933a10 10 0 0 1 0 14.134" }],
+    ["path", { "d": "M4.925 19.067a10 10 0 0 1 0-14.134" }],
+    ["path", { "d": "M7.753 16.239a6 6 0 0 1 0-8.478" }],
+    ["circle", { "cx": "12", "cy": "12", "r": "2" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "radio" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Radio
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTYuMjQ3IDcuNzYxYTYgNiAwIDAgMSAwIDguNDc4IiAvPgogIDxwYXRoIGQ9Ik0xOS4wNzUgNC45MzNhMTAgMTAgMCAwIDEgMCAxNC4xMzQiIC8+CiAgPHBhdGggZD0iTTQuOTI1IDE5LjA2N2ExMCAxMCAwIDAgMSAwLTE0LjEzNCIgLz4KICA8cGF0aCBkPSJNNy43NTMgMTYuMjM5YTYgNiAwIDAgMSAwLTguNDc4IiAvPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjIiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/radio
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Scale($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M12 3v18" }],
+    ["path", { "d": "m19 8 3 8a5 5 0 0 1-6 0zV7" }],
+    ["path", { "d": "M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" }],
+    ["path", { "d": "m5 8 3 8a5 5 0 0 1-6 0zV7" }],
+    ["path", { "d": "M7 21h10" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "scale" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Scale
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIgM3YxOCIgLz4KICA8cGF0aCBkPSJtMTkgOCAzIDhhNSA1IDAgMCAxLTYgMHpWNyIgLz4KICA8cGF0aCBkPSJNMyA3aDFhMTcgMTcgMCAwIDAgOC0yIDE3IDE3IDAgMCAwIDggMmgxIiAvPgogIDxwYXRoIGQ9Im01IDggMyA4YTUgNSAwIDAgMS02IDB6VjciIC8+CiAgPHBhdGggZD0iTTcgMjFoMTAiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/scale
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Smartphone($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "rect",
+      {
+        "width": "14",
+        "height": "20",
+        "x": "5",
+        "y": "2",
+        "rx": "2",
+        "ry": "2"
+      }
+    ],
+    ["path", { "d": "M12 18h.01" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "smartphone" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Smartphone
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cmVjdCB3aWR0aD0iMTQiIGhlaWdodD0iMjAiIHg9IjUiIHk9IjIiIHJ4PSIyIiByeT0iMiIgLz4KICA8cGF0aCBkPSJNMTIgMThoLjAxIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/smartphone
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Thermometer($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      { "d": "M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "thermometer" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Thermometer
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTQgNHYxMC41NGE0IDQgMCAxIDEtNCAwVjRhMiAyIDAgMCAxIDQgMFoiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/thermometer
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Tv($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "m17 2-5 5-5-5" }],
+    [
+      "rect",
+      { "width": "20", "height": "15", "x": "2", "y": "7", "rx": "2" }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "tv" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Tv
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJtMTcgMi01IDUtNS01IiAvPgogIDxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIxNSIgeD0iMiIgeT0iNyIgcng9IjIiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/tv
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Volume_2($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+      }
+    ],
+    ["path", { "d": "M16 9a5 5 0 0 1 0 6" }],
+    ["path", { "d": "M19.364 18.364a9 9 0 0 0 0-12.728" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "volume-2" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Volume2
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTEgNC43MDJhLjcwNS43MDUgMCAwIDAtMS4yMDMtLjQ5OEw2LjQxMyA3LjU4N0ExLjQgMS40IDAgMCAxIDUuNDE2IDhIM2ExIDEgMCAwIDAtMSAxdjZhMSAxIDAgMCAwIDEgMWgyLjQxNmExLjQgMS40IDAgMCAxIC45OTcuNDEzbDMuMzgzIDMuMzg0QS43MDUuNzA1IDAgMCAwIDExIDE5LjI5OHoiIC8+CiAgPHBhdGggZD0iTTE2IDlhNSA1IDAgMCAxIDAgNiIgLz4KICA8cGF0aCBkPSJNMTkuMzY0IDE4LjM2NGE5IDkgMCAwIDAgMC0xMi43MjgiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/volume-2
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Volume_x($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+      }
+    ],
+    ["line", { "x1": "22", "x2": "16", "y1": "9", "y2": "15" }],
+    ["line", { "x1": "16", "x2": "22", "y1": "9", "y2": "15" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "volume-x" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name VolumeX
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTEgNC43MDJhLjcwNS43MDUgMCAwIDAtMS4yMDMtLjQ5OEw2LjQxMyA3LjU4N0ExLjQgMS40IDAgMCAxIDUuNDE2IDhIM2ExIDEgMCAwIDAtMSAxdjZhMSAxIDAgMCAwIDEgMWgyLjQxNmExLjQgMS40IDAgMCAxIC45OTcuNDEzbDMuMzgzIDMuMzg0QS43MDUuNzA1IDAgMCAwIDExIDE5LjI5OHoiIC8+CiAgPGxpbmUgeDE9IjIyIiB4Mj0iMTYiIHkxPSI5IiB5Mj0iMTUiIC8+CiAgPGxpbmUgeDE9IjE2IiB4Mj0iMjIiIHkxPSI5IiB5Mj0iMTUiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/volume-x
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Wind($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M12.8 19.6A2 2 0 1 0 14 16H2" }],
+    ["path", { "d": "M17.5 8a2.5 2.5 0 1 1 2 4H2" }],
+    ["path", { "d": "M9.8 4.4A2 2 0 1 1 11 8H2" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "wind" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Wind
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIuOCAxOS42QTIgMiAwIDEgMCAxNCAxNkgyIiAvPgogIDxwYXRoIGQ9Ik0xNy41IDhhMi41IDIuNSAwIDEgMSAyIDRIMiIgLz4KICA8cGF0aCBkPSJNOS44IDQuNEEyIDIgMCAxIDEgMTEgOEgyIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/wind
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function X($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M18 6 6 18" }],
+    ["path", { "d": "m6 6 12 12" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "x" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name X
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTggNiA2IDE4IiAvPgogIDxwYXRoIGQ9Im02IDYgMTIgMTIiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/x
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 const deviceNameTranslations = {
   // Exact device name mappings (case-insensitive matching)
   "korytarz 1": "Hallway 1",
@@ -70,7 +1419,9 @@ function DeviceDialog($$renderer, $$props) {
     let { open = false, onclose, title, children } = $$props;
     if (open) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4 dialog-overlay animate-fade-in svelte-alpl3u" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1"><div class="dialog-content w-full max-w-md max-h-[80vh] overflow-hidden"><div class="flex items-center justify-between p-4 border-b border-stroke-default"><h2 id="dialog-title" class="text-lg font-semibold text-content-primary">${escape_html(title)}</h2> <button aria-label="Close dialog" class="w-10 h-10 rounded-xl bg-surface-recessed text-content-secondary hover:text-content-primary hover:bg-stroke-default transition-colors flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div> <div class="p-4 overflow-y-auto max-h-[calc(80vh-64px)]">`);
+      $$renderer2.push(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4 dialog-overlay animate-fade-in svelte-alpl3u" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1"><div class="dialog-content w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[80vh] overflow-hidden"><div class="flex items-center justify-between p-4 border-b border-stroke-default"><h2 id="dialog-title" class="text-lg font-semibold text-content-primary">${escape_html(title)}</h2> <button aria-label="Close dialog" class="w-10 h-10 rounded-xl bg-surface-recessed text-content-secondary hover:text-content-primary hover:bg-stroke-default transition-colors flex items-center justify-center">`);
+      X($$renderer2, { class: "w-5 h-5" });
+      $$renderer2.push(`<!----></button></div> <div class="p-4 overflow-y-auto max-h-[calc(80vh-64px)]">`);
       children($$renderer2);
       $$renderer2.push(`<!----></div></div></div>`);
     } else {
@@ -125,7 +1476,9 @@ function LampCard($$renderer, $$props) {
       `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? status?.moonlight_mode ? "bg-device-audio-bg text-device-audio-text" : "badge-lights" : "bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
       { "status-active": displayPower }
-    )}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75v6.5a.75.75 0 01-1.5 0v-6.5A.75.75 0 0110 2z"></path><path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"></path></svg> `);
+    )}>`);
+    Power($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----> `);
     {
       $$renderer2.push("<!--[!-->");
     }
@@ -249,16 +1602,16 @@ function RoborockCard($$renderer, $$props) {
       26: "Going to wash mop"
     };
     const FAN_MODES = [
-      { mode: 101, name: "Quiet", icon: "🔇" },
-      { mode: 102, name: "Balanced", icon: "⚖️" },
-      { mode: 103, name: "Turbo", icon: "💨" },
-      { mode: 104, name: "Max", icon: "🔥" }
+      { mode: 101, name: "Quiet", icon: Volume_x },
+      { mode: 102, name: "Balanced", icon: Scale },
+      { mode: 103, name: "Turbo", icon: Wind },
+      { mode: 104, name: "Max", icon: Flame }
     ];
     const MOP_MODES = [
-      { mode: 200, name: "Off", icon: "❌" },
-      { mode: 201, name: "Low", icon: "💧" },
-      { mode: 202, name: "Med", icon: "💧💧" },
-      { mode: 203, name: "High", icon: "💧💧💧" }
+      { mode: 200, name: "Off", icon: X },
+      { mode: 201, name: "Low", icon: Droplet, count: 1 },
+      { mode: 202, name: "Med", icon: Droplet, count: 2 },
+      { mode: 203, name: "High", icon: Droplet, count: 3 }
     ];
     function getStateName(state) {
       return STATE_MAP[state] || `Unknown`;
@@ -301,7 +1654,9 @@ function RoborockCard($$renderer, $$props) {
       compact ? "p-2.5" : "p-3"
     )} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stringify(style.bg)} ${stringify(style.color)}`, void 0, {
       "status-active": status?.state === 5 || status?.state === 11 || status?.state === 17 || status?.state === 18
-    })}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"></path></svg></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">Roborock</h4> `);
+    })}>`);
+    Globe($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">Roborock</h4> `);
     if (status) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<p${attr_class(`text-xs ${stringify(style.color)}`)}>${escape_html(getStateName(status.state))}</p>`);
@@ -312,7 +1667,15 @@ function RoborockCard($$renderer, $$props) {
     $$renderer2.push(`<!--]--></div> `);
     if (compact && status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="flex items-center gap-1 text-xs shrink-0"><svg${attr_class(`w-3.5 h-3.5 ${stringify(status.battery > 20 ? "text-success" : "text-error")}`)} fill="currentColor" viewBox="0 0 20 20"><path d="M2 11.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1zm4-3a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v4a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-4z"></path><path d="M8 4.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v8a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-8z"></path></svg> <span${attr_class(status.battery > 20 ? "text-content-secondary" : "text-error")}>${escape_html(status.battery)}%</span></div>`);
+      $$renderer2.push(`<div class="flex items-center gap-1 text-xs shrink-0">`);
+      if (status.battery > 20) {
+        $$renderer2.push("<!--[-->");
+        Battery($$renderer2, { class: "w-3.5 h-3.5 text-success" });
+      } else {
+        $$renderer2.push("<!--[!-->");
+        Battery_low($$renderer2, { class: "w-3.5 h-3.5 text-error" });
+      }
+      $$renderer2.push(`<!--]--> <span${attr_class(status.battery > 20 ? "text-content-secondary" : "text-error")}>${escape_html(status.battery)}%</span></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
@@ -325,20 +1688,26 @@ function RoborockCard($$renderer, $$props) {
         $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Status</span> <span${attr_class(`font-medium ${stringify(style.color)}`)}>${escape_html(status ? getStateName(status.state) : "Offline")}</span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Battery</span> <p${attr_class(`text-3xl font-bold mt-1 ${stringify(status.battery > 20 ? "text-content-primary" : "text-error")}`)}>${escape_html(status.battery)}%</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Fan Speed</span> <p class="text-2xl font-bold mt-1 text-content-primary">${escape_html(getFanModeName(status.fanPower))}</p></div></div> <div class="flex gap-1 bg-surface-recessed rounded-lg p-1"><button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify(
+          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Battery</span> <p${attr_class(`text-3xl font-bold mt-1 ${stringify(status.battery > 20 ? "text-content-primary" : "text-error")}`)}>${escape_html(status.battery)}%</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Fan Speed</span> <p class="text-2xl font-bold mt-1 text-content-primary">${escape_html(getFanModeName(status.fanPower))}</p></div></div> <div class="flex gap-1 bg-surface-recessed rounded-lg p-1"><button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${stringify(
             "bg-surface-elevated text-content-primary"
-          )}`)}>Controls</button> <button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify("text-content-secondary hover:text-content-primary")}`)}>Rooms</button> <button${attr_class(`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${stringify("text-content-secondary hover:text-content-primary")}`)}>Settings</button></div> `);
+          )}`)}>Controls</button> <button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${stringify("text-content-secondary hover:text-content-primary")}`)}>Rooms</button> <button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${stringify("text-content-secondary hover:text-content-primary")}`)}>Settings</button></div> `);
           {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div><p class="text-sm text-content-secondary mb-2">Actions</p> <div class="grid grid-cols-3 gap-2"><button class="py-4 rounded-xl bg-success/20 text-success text-sm font-medium relative hover:bg-success/30 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Start `);
+            $$renderer3.push(`<div><p class="text-sm text-content-secondary mb-2">Actions</p> <div class="grid grid-cols-3 gap-2"><button class="py-4 rounded-xl bg-success/20 text-success text-sm font-medium relative hover:bg-success/30 transition-colors flex flex-col items-center gap-1">`);
+            Play($$renderer3, { class: "w-5 h-5" });
+            $$renderer3.push(`<!----> Start `);
             {
               $$renderer3.push("<!--[!-->");
             }
-            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-warning/20 text-warning text-sm font-medium relative hover:bg-warning/30 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Pause `);
+            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-warning/20 text-warning text-sm font-medium relative hover:bg-warning/30 transition-colors flex flex-col items-center gap-1">`);
+            Pause($$renderer3, { class: "w-5 h-5" });
+            $$renderer3.push(`<!----> Pause `);
             {
               $$renderer3.push("<!--[!-->");
             }
-            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-info/20 text-info text-sm font-medium relative hover:bg-info/30 transition-colors flex flex-col items-center gap-1"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg> Home `);
+            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-info/20 text-info text-sm font-medium relative hover:bg-info/30 transition-colors flex flex-col items-center gap-1">`);
+            House($$renderer3, { class: "w-5 h-5" });
+            $$renderer3.push(`<!----> Home `);
             {
               $$renderer3.push("<!--[!-->");
             }
@@ -350,7 +1719,9 @@ function RoborockCard($$renderer, $$props) {
             const each_array = ensure_array_like(FAN_MODES);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let fan = each_array[$$index];
-              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayFanPower === fan.mode ? "badge-audio ring-1 ring-device-audio-text/50" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}><div class="text-base mb-0.5">${escape_html(fan.icon)}</div> ${escape_html(fan.name)} `);
+              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayFanPower === fan.mode ? "badge-audio ring-1 ring-device-audio-text/50" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}><!---->`);
+              fan.icon?.($$renderer3, { class: "w-4 h-4 mb-0.5" });
+              $$renderer3.push(`<!----> ${escape_html(fan.name)} `);
               if (pendingFanMode === fan.mode) {
                 $$renderer3.push("<!--[-->");
                 $$renderer3.push(`<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-device-audio-text rounded-full animate-pulse"></span>`);
@@ -361,9 +1732,27 @@ function RoborockCard($$renderer, $$props) {
             }
             $$renderer3.push(`<!--]--></div></div> <div><p class="text-sm text-content-secondary mb-2">Mop Intensity</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
             const each_array_1 = ensure_array_like(MOP_MODES);
-            for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
-              let mop = each_array_1[$$index_1];
-              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayMopMode === mop.mode ? "badge-sensors ring-1 ring-device-sensors-text/50" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}><div class="text-base mb-0.5">${escape_html(mop.icon)}</div> ${escape_html(mop.name)} `);
+            for (let $$index_2 = 0, $$length = each_array_1.length; $$index_2 < $$length; $$index_2++) {
+              let mop = each_array_1[$$index_2];
+              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayMopMode === mop.mode ? "badge-sensors ring-1 ring-device-sensors-text/50" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}><div class="flex items-center justify-center gap-0.5 mb-0.5">`);
+              if (mop.count) {
+                $$renderer3.push("<!--[-->");
+                $$renderer3.push(`<!--[-->`);
+                const each_array_2 = ensure_array_like(Array(mop.count));
+                for (let $$index_1 = 0, $$length2 = each_array_2.length; $$index_1 < $$length2; $$index_1++) {
+                  each_array_2[$$index_1];
+                  $$renderer3.push(`<!---->`);
+                  mop.icon?.($$renderer3, { class: "w-3 h-3" });
+                  $$renderer3.push(`<!---->`);
+                }
+                $$renderer3.push(`<!--]-->`);
+              } else {
+                $$renderer3.push("<!--[!-->");
+                $$renderer3.push(`<!---->`);
+                mop.icon?.($$renderer3, { class: "w-4 h-4" });
+                $$renderer3.push(`<!---->`);
+              }
+              $$renderer3.push(`<!--]--></div> ${escape_html(mop.name)} `);
               if (pendingMopMode === mop.mode) {
                 $$renderer3.push("<!--[-->");
                 $$renderer3.push(`<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-device-sensors-text rounded-full animate-pulse"></span>`);
@@ -399,12 +1788,13 @@ function TuyaSensorCard($$renderer, $$props) {
       }
     };
     const categoryConfig = {
-      sj: { label: "Water", icon: "💧" },
-      mcs: { label: "Door", icon: "🚪" },
-      wsdcg: { label: "Climate", icon: "🌡️" },
-      wfcon: { label: "Gateway", icon: "📡" },
-      cz: { label: "Remote", icon: "📺" }
+      sj: { label: "Water", icon: Droplet },
+      mcs: { label: "Door", icon: Door_open },
+      wsdcg: { label: "Climate", icon: Thermometer },
+      wfcon: { label: "Gateway", icon: Radio },
+      cz: { label: "Remote", icon: Tv }
     };
+    const defaultIcon = Smartphone;
     const LOW_BATTERY_THRESHOLD = 15;
     function getStatusInfo(status, category) {
       if (!status) {
@@ -483,19 +1873,23 @@ function TuyaSensorCard($$renderer, $$props) {
           };
       }
     }
-    let config = categoryConfig[device.category] || { label: device.category, icon: "📱" };
+    let config = categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
     let statusInfo = getStatusInfo(parsedStatus(), device.category);
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer ${stringify(statusInfo.lowBattery ? "border-warning/50 bg-warning/10" : "")}`)}><div class="flex items-center gap-2.5"><div${attr_class(
-      `w-10 h-10 rounded-xl flex items-center justify-center text-base shrink-0 ${stringify(statusInfo.alert ? "bg-error/20" : statusInfo.lowBattery ? "bg-warning/20" : "badge-sensors")}`,
+      `w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stringify(statusInfo.alert ? "bg-error/20 text-error" : statusInfo.lowBattery ? "bg-warning/20 text-warning" : "badge-sensors")}`,
       void 0,
       { "status-active": statusInfo.alert }
-    )}>${escape_html(config.icon)}</div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.lowBattery ? "text-warning" : statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-success" : "bg-content-tertiary")}`, void 0, { "status-dot": device.online })}></div></div></div> `);
+    )}><!---->`);
+    config.icon?.($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.lowBattery ? "text-warning" : statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-success" : "bg-content-tertiary")}`, void 0, { "status-dot": device.online })}></div></div></div> `);
     DeviceDialog($$renderer2, {
       open: dialogOpen,
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div${attr_class(`rounded-xl p-6 text-center ${stringify(statusInfo.alert ? "bg-error/20" : "bg-surface-recessed")}`)}><span class="text-4xl">${escape_html(config.icon)}</span> <p${attr_class(`text-2xl font-bold mt-2 ${stringify(statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-secondary mt-1">${escape_html(config.label)} Sensor</p></div> `);
+        $$renderer3.push(`<div class="space-y-4"><div${attr_class(`rounded-xl p-6 text-center ${stringify(statusInfo.alert ? "bg-error/20" : "bg-surface-recessed")}`)}><div${attr_class(`flex justify-center ${stringify(statusInfo.alert ? "text-error" : "text-device-sensors-text")}`)}><!---->`);
+        config.icon?.($$renderer3, { class: "w-10 h-10" });
+        $$renderer3.push(`<!----></div> <p${attr_class(`text-2xl font-bold mt-2 ${stringify(statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-secondary mt-1">${escape_html(config.label)} Sensor</p></div> `);
         if (device.category === "wsdcg") {
           $$renderer3.push("<!--[-->");
           const status = parsedStatus();
@@ -556,10 +1950,10 @@ function TRVCard($$renderer, $$props) {
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stringify(valve === "opened" ? "badge-climate-heat" : "badge-climate-cool")}`, void 0, { "status-active": valve === "opened" })}>`);
     if (valve === "opened") {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>`);
+      Flame($$renderer2, { class: "w-4 h-4" });
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.05 3.636a1 1 0 010 1.414 7 7 0 000 9.9 1 1 0 11-1.414 1.414 9 9 0 010-12.728 1 1 0 011.414 0zm9.9 0a1 1 0 011.414 0 9 9 0 010 12.728 1 1 0 11-1.414-1.414 7 7 0 000-9.9 1 1 0 010-1.414zM7.879 6.464a1 1 0 010 1.414 3 3 0 000 4.243 1 1 0 11-1.415 1.414 5 5 0 010-7.07 1 1 0 011.415 0zm4.242 0a1 1 0 011.415 0 5 5 0 010 7.072 1 1 0 01-1.415-1.415 3 3 0 000-4.242 1 1 0 010-1.415zM10 9a1 1 0 011 1v.01a1 1 0 11-2 0V10a1 1 0 011-1z"></path></svg>`);
+      Radio($$renderer2, { class: "w-4 h-4" });
     }
     $$renderer2.push(`<!--]--></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
     if (currentTemp !== null) {
@@ -578,7 +1972,7 @@ function TRVCard($$renderer, $$props) {
         $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Valve</span> <span${attr_class(`font-medium ${stringify(valve === "opened" ? "text-device-climate-heat-text" : "text-device-climate-cool-text")}`)}>${escape_html(valve === "opened" ? "Heating" : "Idle")}</span></div> `);
         if (currentTemp !== null && targetTemp !== null) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary uppercase tracking-wide">Current</span> <p class="text-3xl font-bold mt-1 text-content-primary">${escape_html(currentTemp)}°C</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary uppercase tracking-wide">Target</span> <p class="text-3xl font-bold mt-1 text-device-climate-heat-text">${escape_html(targetTemp)}°C</p></div></div> <div><p class="text-sm text-content-secondary mb-3">Set Temperature</p> <div class="flex items-center justify-center gap-4"><button${attr("disabled", targetTemp !== null && targetTemp <= 5, true)} class="w-14 h-14 rounded-full badge-climate-cool text-2xl font-medium hover:opacity-80 disabled:opacity-50 transition-all">−</button> <div class="relative">`);
+          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary uppercase tracking-wide">Current</span> <p class="text-2xl sm:text-3xl font-bold mt-1 text-content-primary">${escape_html(currentTemp)}°C</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary uppercase tracking-wide">Target</span> <p class="text-2xl sm:text-3xl font-bold mt-1 text-device-climate-heat-text">${escape_html(targetTemp)}°C</p></div></div> <div><p class="text-sm text-content-secondary mb-3">Set Temperature</p> <div class="flex items-center justify-center gap-4"><button${attr("disabled", targetTemp !== null && targetTemp <= 5, true)} class="w-14 h-14 rounded-full badge-climate-cool text-2xl font-medium hover:opacity-80 disabled:opacity-50 transition-all">−</button> <div class="relative">`);
           {
             $$renderer3.push("<!--[!-->");
             $$renderer3.push(`<button class="text-3xl font-bold w-24 text-center text-content-primary hover:text-device-climate-heat-text transition-colors cursor-text" title="Click to edit">${escape_html(targetTemp)}°C</button>`);
@@ -618,7 +2012,9 @@ function YamahaCard($$renderer, $$props) {
       `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify("bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
       { "status-active": displayPower === "on" }
-    )}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path></svg> `);
+    )}>`);
+    Volume_2($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----> `);
     {
       $$renderer2.push("<!--[!-->");
     }
@@ -667,7 +2063,9 @@ function AirPurifierCard($$renderer, $$props) {
       `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? "badge-air" : "bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
       { "status-active": displayPower }
-    )}><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.414 1.415l.708-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path></svg> `);
+    )}>`);
+    Wind($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----> `);
     {
       $$renderer2.push("<!--[!-->");
     }
