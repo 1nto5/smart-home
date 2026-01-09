@@ -3,7 +3,8 @@
  * Bridge runs on port 3002
  */
 
-const BRIDGE_URL = 'http://127.0.0.1:3002';
+// In Docker, use service name; locally use localhost
+const BRIDGE_URL = process.env.ROBOROCK_BRIDGE_URL || 'http://roborock:3002';
 
 export interface RoborockStatus {
   state: string;
