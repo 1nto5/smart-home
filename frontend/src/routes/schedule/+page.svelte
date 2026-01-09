@@ -42,18 +42,18 @@
 
 <div class="space-y-8">
   <!-- Create Schedule -->
-  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4">
-    <h2 class="text-lg font-medium mb-4">Create Schedule</h2>
+  <section class="bg-surface-elevated border border-stroke-default rounded-xl p-4">
+    <h2 class="text-lg font-medium text-content-primary mb-4">Create Schedule</h2>
     <div class="flex flex-wrap gap-3">
       <input
         type="text"
         placeholder="Schedule name"
         bind:value={newName}
-        class="bg-zinc-800 border border-[var(--border)] rounded px-3 py-2 flex-1 min-w-[150px]"
+        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 flex-1 min-w-[150px] text-content-primary placeholder:text-content-tertiary"
       />
       <select
         bind:value={newPreset}
-        class="bg-zinc-800 border border-[var(--border)] rounded px-3 py-2"
+        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
       >
         <option value="day">Day Mode</option>
         <option value="night">Night Mode</option>
@@ -62,12 +62,12 @@
       <input
         type="time"
         bind:value={newTime}
-        class="bg-zinc-800 border border-[var(--border)] rounded px-3 py-2"
+        class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
       />
       <button
         onclick={handleCreate}
         disabled={loading || !newName.trim()}
-        class="bg-[var(--accent)] hover:bg-blue-600 disabled:opacity-50 px-4 py-2 rounded"
+        class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium"
       >
         Add
       </button>
@@ -76,35 +76,34 @@
 
   <!-- Schedules List -->
   <section>
-    <h2 class="text-lg font-medium mb-4">Schedules ({store.schedules.length})</h2>
+    <h2 class="text-lg font-medium text-content-primary mb-4">Schedules ({store.schedules.length})</h2>
     {#if store.schedules.length === 0}
-      <p class="text-[var(--muted)]">No schedules yet</p>
+      <p class="text-content-secondary">No schedules yet</p>
     {:else}
       <div class="space-y-2">
         {#each store.schedules as schedule (schedule.id)}
           <div
-            class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 flex items-center justify-between"
+            class="bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between"
             class:opacity-50={!schedule.enabled}
           >
             <div class="flex items-center gap-4">
-              <span class="text-xl font-mono">{schedule.time}</span>
+              <span class="text-xl font-mono text-content-primary">{schedule.time}</span>
               <div>
-                <span class="font-medium">{schedule.name}</span>
-                <span class="text-sm text-[var(--muted)] ml-2">({schedule.preset})</span>
+                <span class="font-medium text-content-primary">{schedule.name}</span>
+                <span class="text-sm text-content-secondary ml-2">({schedule.preset})</span>
               </div>
             </div>
             <div class="flex gap-2">
               <button
                 onclick={() => handleToggle(schedule.id)}
-                class="text-sm px-3 py-1 rounded"
-                class:bg-green-800={schedule.enabled}
-                class:bg-zinc-700={!schedule.enabled}
+                class="text-sm px-3 py-1 rounded-lg font-medium transition-colors
+                       {schedule.enabled ? 'bg-success/20 text-success' : 'bg-surface-recessed text-content-secondary'}"
               >
                 {schedule.enabled ? 'On' : 'Off'}
               </button>
               <button
                 onclick={() => handleDelete(schedule.id)}
-                class="text-sm px-3 py-1 rounded bg-red-900 hover:bg-red-800"
+                class="text-sm px-3 py-1 rounded-lg bg-error/20 text-error hover:bg-error/30 font-medium transition-colors"
               >
                 Delete
               </button>
@@ -118,27 +117,27 @@
   <!-- Pending Actions -->
   <section>
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-medium">Pending Actions ({store.pendingActions.length})</h2>
+      <h2 class="text-lg font-medium text-content-primary">Pending Actions ({store.pendingActions.length})</h2>
       {#if store.pendingActions.length > 0}
         <button
           onclick={handleClearPending}
-          class="text-sm px-3 py-1 rounded bg-zinc-700 hover:bg-zinc-600"
+          class="text-sm px-3 py-1 rounded-lg bg-surface-recessed text-content-secondary hover:bg-stroke-default transition-colors"
         >
           Clear All
         </button>
       {/if}
     </div>
     {#if store.pendingActions.length === 0}
-      <p class="text-[var(--muted)]">No pending actions (all lamps online)</p>
+      <p class="text-content-secondary">No pending actions (all lamps online)</p>
     {:else}
       <div class="space-y-2">
         {#each store.pendingActions as action (action.id)}
-          <div class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 flex items-center justify-between">
+          <div class="bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between">
             <div>
-              <span class="font-mono text-sm">{action.device_id}</span>
-              <span class="text-sm text-[var(--muted)] ml-2">→ {action.preset}</span>
+              <span class="font-mono text-sm text-content-primary">{action.device_id}</span>
+              <span class="text-sm text-content-secondary ml-2">→ {action.preset}</span>
             </div>
-            <span class="text-xs text-[var(--muted)]">
+            <span class="text-xs text-content-tertiary">
               Retry #{action.retry_count}
             </span>
           </div>

@@ -29,12 +29,12 @@
   }
 </script>
 
-<div class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4">
+<div class="card p-4">
   <div class="flex items-center gap-3 mb-3">
     <span class="text-2xl">{icon(name)}</span>
     <div>
-      <h3 class="font-medium">{preset.name}</h3>
-      <p class="text-xs text-[var(--muted)]">
+      <h3 class="font-medium text-content-primary">{preset.name}</h3>
+      <p class="text-xs text-content-secondary">
         {preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : 'Off'}
       </p>
     </div>
@@ -42,7 +42,7 @@
 
   <button
     onclick={apply}
-    class="w-full py-2 rounded bg-[var(--accent)] hover:bg-blue-600 relative transition-all"
+    class="w-full py-2 rounded-lg bg-accent hover:bg-accent/80 text-white font-medium relative transition-all"
   >
     Apply to All Lamps
     {#if isPending}
@@ -51,7 +51,7 @@
   </button>
 
   {#if result}
-    <p class="text-xs mt-2 text-[var(--muted)]">
+    <p class="text-xs mt-2 text-content-secondary">
       {result.success.length} applied, {result.pending.length} pending
     </p>
   {/if}
