@@ -8,6 +8,6 @@ export const config = {
     port: 3001,
   },
   db: {
-    path: '../data/smart-home.db',
+    path: '/app/data/smart-home.db',
   },
 };
