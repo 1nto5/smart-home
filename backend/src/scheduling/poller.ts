@@ -9,6 +9,8 @@
 import { getPendingActions, removePendingAction, incrementRetryCount } from './pending-service';
 import { applyPresetToLamp } from './schedule-service';
 import type { PresetName } from './presets';
+import { getPendingHeaterActions, removePendingHeaterAction, incrementHeaterRetryCount } from './heater-pending-service';
+import { applyPresetToHeater } from './heater-schedule-service';
 import { getDb, cleanupOldHistory, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
 import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
@@ -237,28 +239,47 @@ export async function startPoller(): Promise<void> {
       }
     }
 
-    const pending = getPendingActions();
+    // Process pending lamp actions
+    const pendingLamps = getPendingActions();
+    if (pendingLamps.length > 0) {
+      console.log(`Poller: checking ${pendingLamps.length} pending lamp actions`);
 
-    if (pending.length === 0) {
-      return;
-    }
+      for (const action of pendingLamps) {
+        try {
+          const success = await applyPresetToLamp(action.device_id, action.preset as PresetName);
 
-    console.log(`Poller: checking ${pending.length} pending actions`);
-
-    for (const action of pending) {
-      try {
-        const success = await applyPresetToLamp(action.device_id, action.preset as PresetName);
-
-        if (success) {
-          removePendingAction(action.id);
-          console.log(`Applied pending ${action.preset} to ${action.device_id}`);
-        } else {
-          // Increment retry count for tracking
+          if (success) {
+            removePendingAction(action.id);
+            console.log(`Applied pending ${action.preset} to lamp ${action.device_id}`);
+          } else {
+            incrementRetryCount(action.id);
+          }
+        } catch (error: any) {
+          console.error(`Poller error for lamp ${action.device_id}:`, error.message);
           incrementRetryCount(action.id);
         }
-      } catch (error: any) {
-        console.error(`Poller error for ${action.device_id}:`, error.message);
-        incrementRetryCount(action.id);
+      }
+    }
+
+    // Process pending heater actions
+    const pendingHeaters = getPendingHeaterActions();
+    if (pendingHeaters.length > 0) {
+      console.log(`Poller: checking ${pendingHeaters.length} pending heater actions`);
+
+      for (const action of pendingHeaters) {
+        try {
+          const success = await applyPresetToHeater(action.device_id, action.preset_id);
+
+          if (success) {
+            removePendingHeaterAction(action.id);
+            console.log(`Applied pending ${action.preset_id} to heater ${action.device_id}`);
+          } else {
+            incrementHeaterRetryCount(action.id);
+          }
+        } catch (error: any) {
+          console.error(`Poller error for heater ${action.device_id}:`, error.message);
+          incrementHeaterRetryCount(action.id);
+        }
       }
     }
   }, 30_000); // Check every 30 seconds

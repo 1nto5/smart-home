@@ -1,13 +1,14 @@
 <script lang="ts">
   import type { Preset } from '$lib/types';
-  import { applyPreset, getPresets, controlLamp, getLamps } from '$lib/api';
+  import { applyPreset, getPresets, controlLamp, getLamps, applyHeaterPreset } from '$lib/api';
   import { store } from '$lib/stores.svelte';
-  import { Power, Sun, Sunrise, Sunset, Moon, Lightbulb, Flame, Snowflake, Sofa, Target, Clapperboard, MoreHorizontal, X } from 'lucide-svelte';
+  import { Power, Sun, Sunrise, Sunset, Moon, Lightbulb, Flame, Snowflake, Sofa, Target, Clapperboard, MoreHorizontal, X, Thermometer } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let presets = $state<Record<string, Preset>>({});
   let pendingActions = $state<Set<string>>(new Set());
   let expanded = $state(false);
+  let heaterExpanded = $state(false);
 
   $effect(() => {
     getPresets().then(p => presets = p).catch(() => {});
@@ -25,6 +26,20 @@
     newSet.delete(name);
     pendingActions = newSet;
     expanded = false;
+  }
+
+  async function handleHeaterPreset(id: string) {
+    pendingActions = new Set([...pendingActions, `heater_${id}`]);
+    try {
+      await applyHeaterPreset(id);
+      await store.refreshPendingHeater();
+    } catch (e) {
+      console.error(e);
+    }
+    const newSet = new Set(pendingActions);
+    newSet.delete(`heater_${id}`);
+    pendingActions = newSet;
+    heaterExpanded = false;
   }
 
   async function allLightsOff() {
@@ -62,7 +77,28 @@
 </script>
 
 <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-  <!-- Expanded panel -->
+  <!-- Heater expanded panel -->
+  {#if heaterExpanded && store.heaterPresets.length > 0}
+    <div class="quick-bar rounded-2xl px-3 py-3 mb-2 animate-fade-in">
+      <div class="grid grid-cols-2 gap-2 w-full max-w-[220px]">
+        {#each store.heaterPresets as preset (preset.id)}
+          <button
+            onclick={() => handleHeaterPreset(preset.id)}
+            class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all
+                   hover:bg-surface-recessed active:scale-95"
+          >
+            <span class="{pendingActions.has(`heater_${preset.id}`) ? 'animate-pulse' : ''}">
+              <Thermometer class="w-5 h-5" />
+            </span>
+            <span class="text-xs text-content-secondary">{preset.name}</span>
+            <span class="text-[10px] text-content-tertiary">{preset.target_temp}°C</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  <!-- Lamp expanded panel -->
   {#if expanded && Object.keys(presets).length > 0}
     <div class="quick-bar rounded-2xl px-3 py-3 mb-2 animate-fade-in">
       <div class="grid grid-cols-3 gap-2 w-full max-w-[280px]">
@@ -144,7 +180,7 @@
 
       <!-- More button -->
       <button
-        onclick={() => expanded = !expanded}
+        onclick={() => { expanded = !expanded; heaterExpanded = false; }}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
                hover:bg-surface-recessed active:scale-95
                {expanded ? 'bg-surface-recessed' : ''}"
@@ -155,6 +191,26 @@
           <MoreHorizontal class="w-5 h-5" />
         {/if}
         <span class="text-[10px] text-content-secondary">{expanded ? 'Close' : 'More'}</span>
+      </button>
+    {/if}
+
+    <!-- Heater divider -->
+    {#if store.heaterPresets.length > 0}
+      <div class="w-px h-8 bg-stroke-default mx-1"></div>
+
+      <!-- Heater button -->
+      <button
+        onclick={() => { heaterExpanded = !heaterExpanded; expanded = false; }}
+        class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
+               hover:bg-surface-recessed active:scale-95
+               {heaterExpanded ? 'bg-surface-recessed' : ''}"
+      >
+        {#if heaterExpanded}
+          <X class="w-5 h-5" />
+        {:else}
+          <Thermometer class="w-5 h-5" />
+        {/if}
+        <span class="text-[10px] text-content-secondary">{heaterExpanded ? 'Close' : 'Heat'}</span>
       </button>
     {/if}
   </div>

@@ -65,6 +65,17 @@ import {
   clearAllPending,
   startScheduler,
   startPoller,
+  // Heater scheduling
+  getHeaterPresets,
+  updateHeaterPreset,
+  isValidHeaterPreset,
+  getHeaterSchedules,
+  createHeaterSchedule,
+  deleteHeaterSchedule,
+  toggleHeaterSchedule,
+  applyPresetToAllHeaters,
+  getPendingHeaterActions,
+  clearAllPendingHeater,
 } from './scheduling';
 
 const app = new Hono();
@@ -629,6 +640,104 @@ app.get('/api/pending-actions', (c) => {
 // Clear all pending actions
 app.delete('/api/pending-actions', (c) => {
   clearAllPending();
+  return c.json({ success: true });
+});
+
+// === HEATER SCHEDULING ===
+
+// Get heater presets
+app.get('/api/heater-presets', (c) => {
+  const presets = getHeaterPresets();
+  return c.json(presets);
+});
+
+// Update heater preset temperature
+app.patch('/api/heater-presets/:id', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+
+  if (body.target_temp === undefined) {
+    return c.json({ error: 'target_temp required' }, 400);
+  }
+
+  if (typeof body.target_temp !== 'number' || body.target_temp < 5 || body.target_temp > 30) {
+    return c.json({ error: 'target_temp must be 5-30' }, 400);
+  }
+
+  const updated = updateHeaterPreset(id, body.target_temp);
+  if (!updated) {
+    return c.json({ error: 'Preset not found' }, 404);
+  }
+
+  const presets = getHeaterPresets();
+  const preset = presets.find(p => p.id === id);
+  return c.json(preset);
+});
+
+// Apply heater preset to all TRVs
+app.post('/api/heater-presets/:id/apply', async (c) => {
+  const presetId = c.req.param('id');
+
+  if (!isValidHeaterPreset(presetId)) {
+    return c.json({ error: `Invalid preset: ${presetId}` }, 400);
+  }
+
+  const result = await applyPresetToAllHeaters(presetId);
+  return c.json(result);
+});
+
+// Get all heater schedules
+app.get('/api/heater-schedules', (c) => {
+  const schedules = getHeaterSchedules();
+  return c.json(schedules);
+});
+
+// Create heater schedule
+app.post('/api/heater-schedules', async (c) => {
+  const body = await c.req.json();
+
+  if (!body.name || !body.preset_id || !body.time) {
+    return c.json({ error: 'name, preset_id, and time required' }, 400);
+  }
+
+  if (!isValidHeaterPreset(body.preset_id)) {
+    return c.json({ error: `Invalid preset: ${body.preset_id}` }, 400);
+  }
+
+  try {
+    const schedule = createHeaterSchedule(body.name, body.preset_id, body.time);
+    return c.json(schedule, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 400);
+  }
+});
+
+// Delete heater schedule
+app.delete('/api/heater-schedules/:id', (c) => {
+  const id = parseInt(c.req.param('id'));
+  const deleted = deleteHeaterSchedule(id);
+  return c.json({ success: deleted });
+});
+
+// Toggle heater schedule enabled
+app.patch('/api/heater-schedules/:id/toggle', (c) => {
+  const id = parseInt(c.req.param('id'));
+  const schedule = toggleHeaterSchedule(id);
+  if (!schedule) {
+    return c.json({ error: 'Schedule not found' }, 404);
+  }
+  return c.json(schedule);
+});
+
+// Get pending heater actions
+app.get('/api/pending-heater-actions', (c) => {
+  const pending = getPendingHeaterActions();
+  return c.json(pending);
+});
+
+// Clear all pending heater actions
+app.delete('/api/pending-heater-actions', (c) => {
+  clearAllPendingHeater();
   return c.json({ success: true });
 });
 
