@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { X } from 'lucide-svelte';
 
   let {
     open = false,
@@ -40,7 +41,7 @@
     tabindex="-1"
   >
     <!-- Dialog -->
-    <div class="dialog-content w-full max-w-md max-h-[80vh] overflow-hidden">
+    <div class="dialog-content w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[80vh] overflow-hidden">
       <!-- Header -->
       <div class="flex items-center justify-between p-4 border-b border-stroke-default">
         <h2 id="dialog-title" class="text-lg font-semibold text-content-primary">{title}</h2>
@@ -50,9 +51,7 @@
           class="w-10 h-10 rounded-xl bg-surface-recessed text-content-secondary hover:text-content-primary
                  hover:bg-stroke-default transition-colors flex items-center justify-center"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+          <X class="w-5 h-5" />
         </button>
       </div>
 

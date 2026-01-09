@@ -5,6 +5,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
+  import { Power } from 'lucide-svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
@@ -147,10 +148,7 @@
              hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
       class:status-active={displayPower}
     >
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 2a.75.75 0 01.75.75v6.5a.75.75 0 01-1.5 0v-6.5A.75.75 0 0110 2z"/>
-        <path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"/>
-      </svg>
+      <Power class="w-4 h-4" />
       {#if isPowerPending}
         <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-device-lights-text rounded-full animate-pulse"></span>
       {/if}
