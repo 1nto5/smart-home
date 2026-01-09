@@ -157,6 +157,43 @@ export function initDatabase(): Database {
     ON pending_lamp_actions(device_id)
   `);
 
+  // Sensor history (temperature, humidity, battery)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sensor_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id TEXT NOT NULL,
+      device_name TEXT,
+      temperature REAL,
+      humidity REAL,
+      target_temp REAL,
+      battery INTEGER,
+      recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (device_id) REFERENCES devices(id)
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_sensor_history_device_time
+          ON sensor_history(device_id, recorded_at DESC)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_sensor_history_time
+          ON sensor_history(recorded_at DESC)`);
+
+  // Contact history (door/window open/close events)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS contact_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id TEXT NOT NULL,
+      device_name TEXT,
+      is_open INTEGER NOT NULL,
+      recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (device_id) REFERENCES devices(id)
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_contact_history_device_time
+          ON contact_history(device_id, recorded_at DESC)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_contact_history_time
+          ON contact_history(recorded_at DESC)`);
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
@@ -166,4 +203,62 @@ export function closeDatabase(): void {
     db.close();
     db = null;
   }
+}
+
+// Data retention: cleanup records older than specified days (default 180 = 6 months)
+export function cleanupOldHistory(days: number = 180): number {
+  const database = getDb();
+  const deviceHistory = database.run(
+    `DELETE FROM device_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
+    [days]
+  );
+  const sensorHistory = database.run(
+    `DELETE FROM sensor_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
+    [days]
+  );
+  const contactHistory = database.run(
+    `DELETE FROM contact_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
+    [days]
+  );
+  return deviceHistory.changes + sensorHistory.changes + contactHistory.changes;
+}
+
+// Record temperature/humidity reading from weather station or TRV
+export function recordSensorReading(
+  deviceId: string,
+  deviceName: string,
+  temperature: number | null,
+  humidity: number | null,
+  targetTemp: number | null,
+  battery: number | null
+): void {
+  const database = getDb();
+  database.run(
+    `INSERT INTO sensor_history (device_id, device_name, temperature, humidity, target_temp, battery)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [deviceId, deviceName, temperature, humidity, targetTemp, battery]
+  );
+}
+
+// Record door/window state change
+export function recordContactChange(
+  deviceId: string,
+  deviceName: string,
+  isOpen: boolean
+): void {
+  const database = getDb();
+  database.run(
+    `INSERT INTO contact_history (device_id, device_name, is_open)
+     VALUES (?, ?, ?)`,
+    [deviceId, deviceName, isOpen ? 1 : 0]
+  );
+}
+
+// Get last known contact state for a device
+export function getLastContactState(deviceId: string): boolean | null {
+  const database = getDb();
+  const result = database.query(
+    `SELECT is_open FROM contact_history WHERE device_id = ? ORDER BY recorded_at DESC LIMIT 1`
+  ).get(deviceId) as { is_open: number } | null;
+  return result ? result.is_open === 1 : null;
 }

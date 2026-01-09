@@ -1,5 +1,5 @@
 import TuyAPI from 'tuyapi';
-import { getDb } from '../db/database';
+import { getDb, recordContactChange, getLastContactState, recordSensorReading } from '../db/database';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -39,6 +39,79 @@ function getCid(device: TuyaDevice): string {
   if (device.node_id) return device.node_id;
   if (device.uuid && device.uuid !== device.id) return device.uuid;
   return device.id;
+}
+
+/**
+ * Find device by node_id (cid) - used for subdevice event handling
+ */
+function findDeviceByNodeId(nodeId: string): TuyaDevice | null {
+  const db = getDb();
+  return db.query(
+    'SELECT id, name, local_key, uuid, node_id, gateway_id, ip, category FROM devices WHERE node_id = ? OR uuid = ?'
+  ).get(nodeId, nodeId) as TuyaDevice | null;
+}
+
+/**
+ * Handle subdevice data event from gateway (door/window/water sensor state change)
+ */
+function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
+  const device = findDeviceByNodeId(cid);
+  if (!device) {
+    console.log(`Unknown subdevice with cid: ${cid}`);
+    return;
+  }
+
+  // Door/window sensor (mcs) - DPS 101 = contact state
+  if (device.category === 'mcs' && dps['101'] !== undefined) {
+    const isOpen = dps['101'] === true || dps['101'] === 'true';
+    const lastState = getLastContactState(device.id);
+
+    // Only record if state changed
+    if (lastState === null || lastState !== isOpen) {
+      recordContactChange(device.id, device.name, isOpen);
+      console.log(`📍 ${device.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
+    }
+  }
+
+  // Water sensor (sj) - DPS 1 = leak state
+  if (device.category === 'sj' && dps['1'] !== undefined) {
+    const isLeaking = dps['1'] === '1' || dps['1'] === 1;
+    const lastState = getLastContactState(device.id);
+
+    // Only record if state changed (treat leak as "open")
+    if (lastState === null || lastState !== isLeaking) {
+      recordContactChange(device.id, device.name, isLeaking);
+      if (isLeaking) {
+        console.log(`🚨 WATER LEAK DETECTED: ${device.name}`);
+      } else {
+        console.log(`✓ ${device.name}: Water sensor normal`);
+      }
+    }
+  }
+
+  // Weather station (wsdcg) - temperature/humidity
+  if (device.category === 'wsdcg') {
+    const temp = dps['103'] !== undefined ? dps['103'] / 100 : null;
+    const humidity = dps['101'] !== undefined ? dps['101'] / 100 : null;
+    const battery = dps['102'] !== undefined ? dps['102'] : null;
+
+    if (temp !== null || humidity !== null) {
+      recordSensorReading(device.id, device.name, temp, humidity, null, battery);
+      console.log(`🌡️ ${device.name}: ${temp}°C, ${humidity}%`);
+    }
+  }
+
+  // TRV (wkf) - temperature data
+  if (device.category === 'wkf') {
+    const currentTemp = dps['5'] !== undefined ? dps['5'] / 10 : null;
+    const targetTemp = dps['4'] !== undefined ? dps['4'] / 10 : null;
+    const battery = dps['35'] !== undefined ? dps['35'] : null;
+
+    if (currentTemp !== null) {
+      recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
+      console.log(`🔥 ${device.name}: ${currentTemp}°C (target: ${targetTemp}°C)`);
+    }
+  }
 }
 
 /**
@@ -139,6 +212,11 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
       connection.lastStatus = data.dps;
       // Save to history
       saveDeviceHistory(deviceId, data.dps);
+
+      // If this is the gateway and data has cid, it's a subdevice event
+      if (deviceId === GATEWAY_ID && data.cid) {
+        handleSubdeviceEvent(data.cid, data.dps);
+      }
     }
   });
 

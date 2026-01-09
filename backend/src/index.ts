@@ -667,6 +667,131 @@ app.post('/api/purifier/control', async (c) => {
   return c.json({ success: allSuccess, results });
 });
 
+// === SENSOR HISTORY ===
+
+// Get sensor history (temperature/humidity readings)
+app.get('/api/sensors/history', (c) => {
+  const db = getDb();
+  const deviceId = c.req.query('device_id');
+  const from = c.req.query('from');
+  const to = c.req.query('to');
+  const limit = parseInt(c.req.query('limit') || '100');
+
+  let query = 'SELECT * FROM sensor_history WHERE 1=1';
+  const params: any[] = [];
+
+  if (deviceId) {
+    query += ' AND device_id = ?';
+    params.push(deviceId);
+  }
+  if (from) {
+    query += ' AND recorded_at >= ?';
+    params.push(from);
+  }
+  if (to) {
+    query += ' AND recorded_at <= ?';
+    params.push(to);
+  }
+
+  query += ' ORDER BY recorded_at DESC LIMIT ?';
+  params.push(limit);
+
+  const history = db.query(query).all(...params);
+  return c.json(history);
+});
+
+// Get averaged sensor readings (for charts)
+app.get('/api/sensors/history/averaged', (c) => {
+  const db = getDb();
+  const deviceId = c.req.query('device_id');
+  const interval = c.req.query('interval') || 'hour'; // 'hour' or 'day'
+  const from = c.req.query('from');
+  const to = c.req.query('to');
+
+  // SQLite date formatting for grouping
+  const dateFormat = interval === 'day' ? '%Y-%m-%d' : '%Y-%m-%d %H:00';
+
+  let query = `
+    SELECT
+      device_id,
+      device_name,
+      strftime('${dateFormat}', recorded_at) as period,
+      AVG(temperature) as avg_temperature,
+      AVG(humidity) as avg_humidity,
+      AVG(target_temp) as avg_target_temp,
+      MIN(temperature) as min_temperature,
+      MAX(temperature) as max_temperature,
+      COUNT(*) as reading_count
+    FROM sensor_history
+    WHERE 1=1
+  `;
+  const params: any[] = [];
+
+  if (deviceId) {
+    query += ' AND device_id = ?';
+    params.push(deviceId);
+  }
+  if (from) {
+    query += ' AND recorded_at >= ?';
+    params.push(from);
+  }
+  if (to) {
+    query += ' AND recorded_at <= ?';
+    params.push(to);
+  }
+
+  query += ` GROUP BY device_id, period ORDER BY period DESC`;
+
+  const history = db.query(query).all(...params);
+  return c.json(history);
+});
+
+// Get contact history (door/window/water sensor state changes)
+app.get('/api/contacts/history', (c) => {
+  const db = getDb();
+  const deviceId = c.req.query('device_id');
+  const from = c.req.query('from');
+  const to = c.req.query('to');
+  const limit = parseInt(c.req.query('limit') || '100');
+
+  let query = 'SELECT * FROM contact_history WHERE 1=1';
+  const params: any[] = [];
+
+  if (deviceId) {
+    query += ' AND device_id = ?';
+    params.push(deviceId);
+  }
+  if (from) {
+    query += ' AND recorded_at >= ?';
+    params.push(from);
+  }
+  if (to) {
+    query += ' AND recorded_at <= ?';
+    params.push(to);
+  }
+
+  query += ' ORDER BY recorded_at DESC LIMIT ?';
+  params.push(limit);
+
+  const history = db.query(query).all(...params);
+  return c.json(history);
+});
+
+// Get all sensors with latest readings
+app.get('/api/sensors', (c) => {
+  const db = getDb();
+  const sensors = db.query(`
+    SELECT d.id, d.name, d.category, d.room, d.last_status,
+      (SELECT temperature FROM sensor_history WHERE device_id = d.id ORDER BY recorded_at DESC LIMIT 1) as latest_temp,
+      (SELECT humidity FROM sensor_history WHERE device_id = d.id ORDER BY recorded_at DESC LIMIT 1) as latest_humidity,
+      (SELECT recorded_at FROM sensor_history WHERE device_id = d.id ORDER BY recorded_at DESC LIMIT 1) as latest_reading_at
+    FROM devices d
+    WHERE d.category IN ('wsdcg', 'wkf', 'sj', 'mcs')
+    ORDER BY d.room, d.name
+  `).all();
+  return c.json(sensors);
+});
+
 // Serve static files (frontend) in production
 app.use('/*', serveStatic({ root: '../frontend/dist' }));
 
