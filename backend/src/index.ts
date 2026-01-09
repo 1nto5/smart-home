@@ -85,8 +85,28 @@ app.get('/api/health', (c) => {
 });
 
 // Get all devices
-app.get('/api/devices', (c) => {
+app.get('/api/devices', async (c) => {
   const db = getDb();
+  const refresh = c.req.query('refresh') === 'true';
+
+  if (refresh) {
+    // Refresh TRV statuses from local API
+    const trvs = db.query("SELECT id, name FROM devices WHERE category = 'wkf'").all() as { id: string; name: string }[];
+    for (const trv of trvs) {
+      try {
+        const status = await getLocalStatus(trv.id);
+        if (status && status.dps) {
+          db.run(
+            'UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [JSON.stringify(status.dps), trv.id]
+          );
+        }
+      } catch (e: any) {
+        console.error(`TRV refresh failed for ${trv.name}:`, e.message);
+      }
+    }
+  }
+
   const devices = db.query('SELECT * FROM devices ORDER BY room, name').all();
   return c.json(devices);
 });

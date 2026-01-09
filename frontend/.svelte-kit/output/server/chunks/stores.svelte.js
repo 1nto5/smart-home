@@ -25,8 +25,8 @@ async function getSchedules() {
 async function getPendingActions() {
   return fetcher("/pending-actions");
 }
-async function getTuyaDevices() {
-  return fetcher("/devices");
+async function getTuyaDevices(refresh = false) {
+  return fetcher(`/devices${refresh ? "?refresh=true" : ""}`);
 }
 async function getYamahaDevices() {
   return fetcher("/yamaha");
@@ -108,9 +108,9 @@ function createStore() {
         console.error("Failed to fetch pending actions:", e);
       }
     },
-    async refreshTuya() {
+    async refreshTuya(refresh = true) {
       try {
-        tuyaDevices = await getTuyaDevices();
+        tuyaDevices = await getTuyaDevices(refresh);
       } catch (e) {
         console.error("Failed to fetch Tuya devices:", e);
       }

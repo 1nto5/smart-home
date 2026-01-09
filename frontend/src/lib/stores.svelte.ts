@@ -63,9 +63,9 @@ function createStore() {
       }
     },
 
-    async refreshTuya() {
+    async refreshTuya(refresh = true) {
       try {
-        tuyaDevices = await getTuyaDevices();
+        tuyaDevices = await getTuyaDevices(refresh);
       } catch (e: any) {
         console.error('Failed to fetch Tuya devices:', e);
       }
