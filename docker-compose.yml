@@ -4,22 +4,26 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     restart: always
-    # Host network for local device discovery (Tuya, Xiaomi, Yeelight)
-    network_mode: host
+    ports:
+      - "3001:3001"
     volumes:
       - ./data:/app/data
     environment:
       - NODE_ENV=production
+    networks:
+      - smart-home
 
   roborock:
     build:
       context: .
       dockerfile: Dockerfile.roborock
     restart: always
-    # Host network for Roborock discovery
-    network_mode: host
+    ports:
+      - "3002:3002"
     environment:
       - PYTHONUNBUFFERED=1
+    networks:
+      - smart-home
 
   frontend:
     build:
@@ -28,9 +32,12 @@ services:
     restart: always
     ports:
       - "80:80"
-    extra_hosts:
-      - "backend:host-gateway"
-      - "roborock:host-gateway"
     depends_on:
       - backend
       - roborock
+    networks:
+      - smart-home
+
+networks:
+  smart-home:
+    driver: bridge
