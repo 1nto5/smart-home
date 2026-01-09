@@ -4,7 +4,7 @@
   import { store } from '$lib/stores.svelte';
 
   let presets = $state<Record<string, Preset>>({});
-  let loading = $state<string | null>(null);
+  let pendingActions = $state<Set<string>>(new Set());
   let expanded = $state(false);
 
   $effect(() => {
@@ -12,28 +12,31 @@
   });
 
   async function handlePreset(name: string) {
-    loading = name;
+    pendingActions = new Set([...pendingActions, name]);
     try {
       await applyPreset(name);
-      await store.refreshLamps();
+      store.refreshLamps();
     } catch (e) {
       console.error(e);
     }
-    loading = null;
+    const newSet = new Set(pendingActions);
+    newSet.delete(name);
+    pendingActions = newSet;
     expanded = false;
   }
 
   async function allLightsOff() {
-    loading = 'off';
+    pendingActions = new Set([...pendingActions, 'off']);
     try {
-      // Turn off all lamps
       const lamps = store.lamps.filter(l => l.category === 'lamp');
       await Promise.all(lamps.map(l => controlLamp(l.id, { power: false })));
-      await store.refreshLamps();
+      store.refreshLamps();
     } catch (e) {
       console.error(e);
     }
-    loading = null;
+    const newSet = new Set(pendingActions);
+    newSet.delete('off');
+    pendingActions = newSet;
   }
 
   const presetIcons: Record<string, string> = {
@@ -64,11 +67,10 @@
         {#each Object.entries(presets) as [name, preset] (name)}
           <button
             onclick={() => handlePreset(name)}
-            disabled={loading !== null}
             class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all
-                   hover:bg-white/5 active:scale-95 disabled:opacity-50"
+                   hover:bg-white/5 active:scale-95"
           >
-            <span class="text-xl {loading === name ? 'animate-pulse' : ''}">{getIcon(name)}</span>
+            <span class="text-xl {pendingActions.has(name) ? 'animate-pulse' : ''}">{getIcon(name)}</span>
             <span class="text-xs text-[var(--muted)] capitalize">{preset.name || name}</span>
           </button>
         {/each}
@@ -81,11 +83,10 @@
     <!-- All Off -->
     <button
       onclick={allLightsOff}
-      disabled={loading !== null}
       class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-             hover:bg-white/5 active:scale-95 disabled:opacity-50"
+             hover:bg-white/5 active:scale-95"
     >
-      <span class="text-xl {loading === 'off' ? 'animate-pulse' : ''}">⚡</span>
+      <span class="text-xl {pendingActions.has('off') ? 'animate-pulse' : ''}">⚡</span>
       <span class="text-[10px] text-[var(--muted)]">All Off</span>
     </button>
 
@@ -93,11 +94,10 @@
     {#if presets['day']}
       <button
         onclick={() => handlePreset('day')}
-        disabled={loading !== null}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95 disabled:opacity-50"
+               hover:bg-white/5 active:scale-95"
       >
-        <span class="text-xl {loading === 'day' ? 'animate-pulse' : ''}">☀️</span>
+        <span class="text-xl {pendingActions.has('day') ? 'animate-pulse' : ''}">☀️</span>
         <span class="text-[10px] text-[var(--muted)]">Day</span>
       </button>
     {/if}
@@ -106,11 +106,10 @@
     {#if presets['evening']}
       <button
         onclick={() => handlePreset('evening')}
-        disabled={loading !== null}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95 disabled:opacity-50"
+               hover:bg-white/5 active:scale-95"
       >
-        <span class="text-xl {loading === 'evening' ? 'animate-pulse' : ''}">🌆</span>
+        <span class="text-xl {pendingActions.has('evening') ? 'animate-pulse' : ''}">🌆</span>
         <span class="text-[10px] text-[var(--muted)]">Evening</span>
       </button>
     {/if}
@@ -119,11 +118,10 @@
     {#if presets['night']}
       <button
         onclick={() => handlePreset('night')}
-        disabled={loading !== null}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95 disabled:opacity-50"
+               hover:bg-white/5 active:scale-95"
       >
-        <span class="text-xl {loading === 'night' ? 'animate-pulse' : ''}">🌙</span>
+        <span class="text-xl {pendingActions.has('night') ? 'animate-pulse' : ''}">🌙</span>
         <span class="text-[10px] text-[var(--muted)]">Night</span>
       </button>
     {/if}

@@ -2,16 +2,33 @@
   import type { RoborockStatus } from '$lib/types';
   import { sendRoborockCommand, getRoborockRooms, getRoborockVolume, setRoborockVolume, setRoborockFanSpeed, setRoborockMopMode, cleanRoborockSegments, getRoborockConsumables, resetRoborockConsumable } from '$lib/api';
   import { store } from '$lib/stores.svelte';
+  import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
 
   let { status, compact = false }: { status: RoborockStatus | null; compact?: boolean } = $props();
-  let loading = $state(false);
   let dialogOpen = $state(false);
+
+  // Per-action pending states (instead of global loading)
+  let pendingCommand = $state<string | null>(null);
+  let pendingFanMode = $state<number | null>(null);
+  let pendingMopMode = $state<number | null>(null);
+  let cleaningRooms = $state(false);
+  let resettingConsumable = $state<string | null>(null);
+
+  // Optimistic states
+  let optimisticFanPower = $state<number | null>(null);
+  let optimisticMopMode = $state<number | null>(null);
+
+  // Display values
+  let displayFanPower = $derived(optimisticFanPower ?? status?.fanPower ?? 102);
+  let displayMopMode = $derived(optimisticMopMode ?? status?.waterBoxMode ?? 200);
 
   // New state for extended controls
   let rooms = $state<{ segmentId: number; name: string }[]>([]);
   let selectedRooms = $state<Set<number>>(new Set());
   let volume = $state(30);
+  let previewVolume = $state<number | null>(null);
+  let displayVolume = $derived(previewVolume ?? volume);
   let consumables = $state<{ mainBrushWorkTime: number; sideBrushWorkTime: number; filterWorkTime: number; sensorDirtyTime: number } | null>(null);
   let activeTab = $state<'controls' | 'rooms' | 'settings'>('controls');
 
@@ -83,45 +100,56 @@
   }
 
   async function sendCommand(cmd: string) {
-    loading = true;
+    pendingCommand = cmd;
     try {
       await sendRoborockCommand(cmd);
-      await store.refreshRoborock();
+      store.refreshRoborock();
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    pendingCommand = null;
   }
 
   async function handleFanSpeed(mode: number) {
-    loading = true;
+    optimisticFanPower = mode;
+    pendingFanMode = mode;
     try {
       await setRoborockFanSpeed(mode);
-      await store.refreshRoborock();
+      store.refreshRoborock();
     } catch (e) {
       console.error(e);
+      optimisticFanPower = null;
     }
-    loading = false;
+    pendingFanMode = null;
   }
 
   async function handleMopMode(mode: number) {
-    loading = true;
+    optimisticMopMode = mode;
+    pendingMopMode = mode;
     try {
       await setRoborockMopMode(mode);
-      await store.refreshRoborock();
+      store.refreshRoborock();
     } catch (e) {
       console.error(e);
+      optimisticMopMode = null;
     }
-    loading = false;
+    pendingMopMode = null;
   }
 
-  async function handleVolumeChange(newVolume: number) {
-    volume = newVolume;
+  // Debounced volume control
+  const [sendVolumeDebounced] = debounce(async (vol: number) => {
     try {
-      await setRoborockVolume(newVolume);
+      await setRoborockVolume(vol);
+      volume = vol;
     } catch (e) {
       console.error(e);
     }
+    previewVolume = null;
+  }, 300);
+
+  function handleVolumeInput(newVolume: number) {
+    previewVolume = newVolume;
+    sendVolumeDebounced(newVolume);
   }
 
   function toggleRoom(segmentId: number) {
@@ -136,15 +164,15 @@
 
   async function cleanSelectedRooms() {
     if (selectedRooms.size === 0) return;
-    loading = true;
+    cleaningRooms = true;
     try {
       await cleanRoborockSegments([...selectedRooms]);
       selectedRooms = new Set();
-      await store.refreshRoborock();
+      store.refreshRoborock();
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    cleaningRooms = false;
   }
 
   function getConsumablePercent(seconds: number, maxHours: number): number {
@@ -159,7 +187,7 @@
   }
 
   async function handleResetConsumable(consumable: string) {
-    loading = true;
+    resettingConsumable = consumable;
     try {
       await resetRoborockConsumable(consumable);
       const consRes = await getRoborockConsumables();
@@ -167,7 +195,7 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    resettingConsumable = null;
   }
 
   function stateStyle(state: number): { color: string; bg: string } {
@@ -297,36 +325,42 @@
           <div class="grid grid-cols-3 gap-2">
             <button
               onclick={() => sendCommand('start')}
-              disabled={loading}
-              class="py-4 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium
-                     hover:bg-green-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"
+              class="py-4 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium relative
+                     hover:bg-green-500/30 transition-colors flex flex-col items-center gap-1"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
               </svg>
               Start
+              {#if pendingCommand === 'start'}
+                <span class="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              {/if}
             </button>
             <button
               onclick={() => sendCommand('pause')}
-              disabled={loading}
-              class="py-4 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm font-medium
-                     hover:bg-yellow-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"
+              class="py-4 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm font-medium relative
+                     hover:bg-yellow-500/30 transition-colors flex flex-col items-center gap-1"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
               </svg>
               Pause
+              {#if pendingCommand === 'pause'}
+                <span class="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+              {/if}
             </button>
             <button
               onclick={() => sendCommand('home')}
-              disabled={loading}
-              class="py-4 rounded-xl bg-blue-500/20 text-blue-400 text-sm font-medium
-                     hover:bg-blue-500/30 disabled:opacity-50 transition-colors flex flex-col items-center gap-1"
+              class="py-4 rounded-xl bg-blue-500/20 text-blue-400 text-sm font-medium relative
+                     hover:bg-blue-500/30 transition-colors flex flex-col items-center gap-1"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
               </svg>
               Home
+              {#if pendingCommand === 'home'}
+                <span class="absolute top-1 right-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+              {/if}
             </button>
           </div>
         </div>
@@ -335,11 +369,13 @@
         <div>
           <button
             onclick={() => sendCommand('find')}
-            disabled={loading}
-            class="w-full py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium
-                   hover:bg-zinc-700/60 disabled:opacity-50 transition-colors"
+            class="w-full py-3 rounded-xl bg-zinc-800/60 text-zinc-400 text-sm font-medium relative
+                   hover:bg-zinc-700/60 transition-colors"
           >
             Find Robot
+            {#if pendingCommand === 'find'}
+              <span class="absolute top-2 right-2 w-2 h-2 bg-zinc-400 rounded-full animate-pulse"></span>
+            {/if}
           </button>
         </div>
 
@@ -350,15 +386,16 @@
             {#each FAN_MODES as fan}
               <button
                 onclick={() => handleFanSpeed(fan.mode)}
-                disabled={loading}
-                class="py-2 px-1 rounded-lg text-xs font-medium transition-colors
-                       {status.fanPower === fan.mode
+                class="py-2 px-1 rounded-lg text-xs font-medium transition-colors relative
+                       {displayFanPower === fan.mode
                          ? 'bg-purple-500/30 text-purple-400 ring-1 ring-purple-500/50'
-                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}
-                       disabled:opacity-50"
+                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
               >
                 <div class="text-base mb-0.5">{fan.icon}</div>
                 {fan.name}
+                {#if pendingFanMode === fan.mode}
+                  <span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span>
+                {/if}
               </button>
             {/each}
           </div>
@@ -371,15 +408,16 @@
             {#each MOP_MODES as mop}
               <button
                 onclick={() => handleMopMode(mop.mode)}
-                disabled={loading}
-                class="py-2 px-1 rounded-lg text-xs font-medium transition-colors
-                       {status.waterBoxMode === mop.mode
+                class="py-2 px-1 rounded-lg text-xs font-medium transition-colors relative
+                       {displayMopMode === mop.mode
                          ? 'bg-cyan-500/30 text-cyan-400 ring-1 ring-cyan-500/50'
-                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}
-                       disabled:opacity-50"
+                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
               >
                 <div class="text-base mb-0.5">{mop.icon}</div>
                 {mop.name}
+                {#if pendingMopMode === mop.mode}
+                  <span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span>
+                {/if}
               </button>
             {/each}
           </div>
@@ -406,11 +444,13 @@
             {#if selectedRooms.size > 0}
               <button
                 onclick={cleanSelectedRooms}
-                disabled={loading}
-                class="w-full mt-3 py-3 rounded-xl bg-cyan-500/20 text-cyan-400 text-sm font-medium
-                       hover:bg-cyan-500/30 disabled:opacity-50 transition-colors"
+                class="w-full mt-3 py-3 rounded-xl bg-cyan-500/20 text-cyan-400 text-sm font-medium relative
+                       hover:bg-cyan-500/30 transition-colors"
               >
                 Clean {selectedRooms.size} room{selectedRooms.size > 1 ? 's' : ''}
+                {#if cleaningRooms}
+                  <span class="absolute top-2 right-2 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                {/if}
               </button>
             {/if}
           {:else}
@@ -423,15 +463,15 @@
         <div>
           <div class="flex justify-between items-center mb-2">
             <span class="text-sm text-[var(--muted)]">Volume</span>
-            <span class="text-sm font-medium">{volume}%</span>
+            <span class="text-sm font-medium">{displayVolume}%</span>
           </div>
           <input
             type="range"
             min="0"
             max="100"
             step="10"
-            bind:value={volume}
-            onchange={() => handleVolumeChange(volume)}
+            value={displayVolume}
+            oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
             class="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer
                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
                    [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
@@ -448,7 +488,7 @@
                   <span class="text-zinc-400">Main Brush</span>
                   <div class="flex items-center gap-2">
                     <span class="text-zinc-500">{Math.round(consumables.mainBrushWorkTime / 3600)}h</span>
-                    <button onclick={() => handleResetConsumable('main_brush_work_time')} disabled={loading} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 disabled:opacity-50">Reset</button>
+                    <button onclick={() => handleResetConsumable('main_brush_work_time')} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 relative {resettingConsumable === 'main_brush_work_time' ? 'opacity-50' : ''}">Reset</button>
                   </div>
                 </div>
                 <div class="h-2 bg-zinc-700 rounded-full overflow-hidden">
@@ -461,7 +501,7 @@
                   <span class="text-zinc-400">Side Brush</span>
                   <div class="flex items-center gap-2">
                     <span class="text-zinc-500">{Math.round(consumables.sideBrushWorkTime / 3600)}h</span>
-                    <button onclick={() => handleResetConsumable('side_brush_work_time')} disabled={loading} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 disabled:opacity-50">Reset</button>
+                    <button onclick={() => handleResetConsumable('side_brush_work_time')} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 {resettingConsumable === 'side_brush_work_time' ? 'opacity-50' : ''}">Reset</button>
                   </div>
                 </div>
                 <div class="h-2 bg-zinc-700 rounded-full overflow-hidden">
@@ -474,7 +514,7 @@
                   <span class="text-zinc-400">Filter</span>
                   <div class="flex items-center gap-2">
                     <span class="text-zinc-500">{Math.round(consumables.filterWorkTime / 3600)}h</span>
-                    <button onclick={() => handleResetConsumable('filter_work_time')} disabled={loading} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 disabled:opacity-50">Reset</button>
+                    <button onclick={() => handleResetConsumable('filter_work_time')} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 {resettingConsumable === 'filter_work_time' ? 'opacity-50' : ''}">Reset</button>
                   </div>
                 </div>
                 <div class="h-2 bg-zinc-700 rounded-full overflow-hidden">
@@ -487,7 +527,7 @@
                   <span class="text-zinc-400">Sensors</span>
                   <div class="flex items-center gap-2">
                     <span class="text-zinc-500">{Math.round(consumables.sensorDirtyTime / 3600)}h</span>
-                    <button onclick={() => handleResetConsumable('sensor_dirty_time')} disabled={loading} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 disabled:opacity-50">Reset</button>
+                    <button onclick={() => handleResetConsumable('sensor_dirty_time')} class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 {resettingConsumable === 'sensor_dirty_time' ? 'opacity-50' : ''}">Reset</button>
                   </div>
                 </div>
                 <div class="h-2 bg-zinc-700 rounded-full overflow-hidden">

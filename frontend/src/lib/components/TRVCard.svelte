@@ -1,12 +1,23 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import type { TuyaDevice } from '$lib/types';
   import { translateDeviceName } from '$lib/translations';
+  import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
-  let loading = $state(false);
   let dialogOpen = $state(false);
+
+  // Optimistic state
+  let optimisticTemp = $state<number | null>(null);
+  let isPending = $state(false);
+  let hasError = $state(false);
+
+  // Edit mode
+  let isEditing = $state(false);
+  let inputValue = $state('');
+  let inputRef = $state<HTMLInputElement | null>(null);
 
   let status = $derived(() => {
     if (!device.last_status) return null;
@@ -18,33 +29,80 @@
   });
 
   let currentTemp = $derived(status()?.['5'] ? status()['5'] / 10 : null);
-  let targetTemp = $derived(status()?.['4'] ? status()['4'] / 10 : null);
+  let serverTargetTemp = $derived(status()?.['4'] ? status()['4'] / 10 : null);
+  let targetTemp = $derived(optimisticTemp ?? serverTargetTemp);
   let valve = $derived(status()?.['3'] || 'unknown');
 
-  async function setTemperature(temp: number) {
-    loading = true;
+  // Debounced API call
+  const [sendTempDebounced, cancelDebounce] = debounce((temp: number) => {
+    sendTemperature(temp);
+  }, 500);
+
+  async function sendTemperature(temp: number) {
+    isPending = true;
+    hasError = false;
+    const previousTemp = serverTargetTemp;
     try {
       await fetch(`/api/devices/${device.id}/control`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dps: 4, value: Math.round(temp * 10) }),
       });
+      // Background refresh
+      refreshStatus();
+    } catch (e) {
+      console.error(e);
+      hasError = true;
+      optimisticTemp = previousTemp;
+      setTimeout(() => (hasError = false), 3000);
+    }
+  }
+
+  async function refreshStatus() {
+    try {
       const res = await fetch(`/api/devices/${device.id}/status`);
       if (res.ok) {
         const data = await res.json();
         device.last_status = JSON.stringify(data.status);
+        optimisticTemp = null;
       }
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    isPending = false;
   }
 
   function adjustTemp(delta: number) {
-    if (targetTemp !== null) {
-      const newTemp = Math.max(5, Math.min(30, targetTemp + delta));
-      setTemperature(newTemp);
+    if (targetTemp === null) return;
+    const newTemp = Math.max(5, Math.min(30, targetTemp + delta));
+    optimisticTemp = newTemp;
+    sendTempDebounced(newTemp);
+  }
+
+  function setTempDirect(temp: number) {
+    optimisticTemp = temp;
+    cancelDebounce();
+    sendTemperature(temp);
+  }
+
+  function startEditing() {
+    if (targetTemp === null) return;
+    inputValue = targetTemp.toString();
+    isEditing = true;
+    tick().then(() => inputRef?.select());
+  }
+
+  function commitEdit() {
+    const parsed = parseFloat(inputValue);
+    if (!isNaN(parsed) && parsed >= 5 && parsed <= 30) {
+      const rounded = Math.round(parsed * 2) / 2;
+      setTempDirect(rounded);
     }
+    isEditing = false;
+  }
+
+  function cancelEdit() {
+    isEditing = false;
   }
 </script>
 
@@ -118,14 +176,45 @@
         <div class="flex items-center justify-center gap-4">
           <button
             onclick={() => adjustTemp(-0.5)}
-            disabled={loading || targetTemp <= 5}
+            disabled={targetTemp !== null && targetTemp <= 5}
             class="w-14 h-14 rounded-full bg-blue-500/20 text-blue-400 text-2xl font-medium
                    hover:bg-blue-500/30 disabled:opacity-50 transition-all"
           >−</button>
-          <span class="text-3xl font-bold w-24 text-center">{targetTemp}°C</span>
+          <div class="relative">
+            {#if isEditing}
+              <input
+                bind:this={inputRef}
+                bind:value={inputValue}
+                type="number"
+                min="5"
+                max="30"
+                step="0.5"
+                class="text-3xl font-bold w-24 text-center bg-transparent border-b-2 border-orange-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                onblur={commitEdit}
+                onkeydown={(e) => {
+                  if (e.key === 'Enter') commitEdit();
+                  if (e.key === 'Escape') cancelEdit();
+                }}
+              />
+            {:else}
+              <button
+                onclick={startEditing}
+                class="text-3xl font-bold w-24 text-center hover:text-orange-400 transition-colors cursor-text"
+                title="Click to edit"
+              >
+                {targetTemp}°C
+              </button>
+            {/if}
+            {#if isPending}
+              <span class="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+            {/if}
+            {#if hasError}
+              <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            {/if}
+          </div>
           <button
             onclick={() => adjustTemp(0.5)}
-            disabled={loading || targetTemp >= 30}
+            disabled={targetTemp !== null && targetTemp >= 30}
             class="w-14 h-14 rounded-full bg-orange-500/20 text-orange-400 text-2xl font-medium
                    hover:bg-orange-500/30 disabled:opacity-50 transition-all"
           >+</button>
@@ -138,8 +227,7 @@
         <div class="grid grid-cols-4 gap-2">
           {#each [15, 18, 21, 24] as temp}
             <button
-              onclick={() => setTemperature(temp)}
-              disabled={loading}
+              onclick={() => setTempDirect(temp)}
               class="py-2 text-sm rounded-lg transition-colors
                      {targetTemp === temp ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
             >
