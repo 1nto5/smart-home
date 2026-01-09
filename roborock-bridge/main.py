@@ -119,7 +119,7 @@ async def send_command(method: str, params: list | dict | None = None) -> dict |
             response_future.set_result(resp_msg)
 
     # Subscribe and publish
-    ch.subscribe(on_response)
+    await ch.subscribe(on_response)
     try:
         await ch.publish(msg)
         # Wait for response with timeout
