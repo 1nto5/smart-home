@@ -8,6 +8,8 @@ services:
       - "3001:3001"
     volumes:
       - ./data:/app/data
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
     networks:
@@ -20,6 +22,8 @@ services:
     restart: always
     ports:
       - "3002:3002"
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1
     networks:
