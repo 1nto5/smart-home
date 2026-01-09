@@ -84,9 +84,10 @@ function LampCard($$renderer, $$props) {
     let { lamp, compact = false } = $$props;
     let displayName = translateDeviceName(lamp.name);
     let status = store.lampStatuses.get(lamp.id);
+    let isOnline = lamp.online === 1;
     let dialogOpen = false;
     let activePreset = null;
-    let displayPower = status?.power ?? false;
+    let displayPower = isOnline ? status?.power ?? false : false;
     let displayBrightness = status?.brightness ?? 0;
     let displayColorTemp = status?.color_temp ?? 0;
     const presets = [
@@ -120,7 +121,7 @@ function LampCard($$renderer, $$props) {
       const tempMatch = Math.abs((status?.color_temp ?? 0) - preset.colorTemp) <= 200;
       return brightMatch && tempMatch;
     }
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !isOnline, true)}${attr_class(
       `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? status?.moonlight_mode ? "bg-device-audio-bg text-device-audio-text" : "badge-lights" : "bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
       void 0,
       { "status-active": displayPower }
@@ -129,19 +130,26 @@ function LampCard($$renderer, $$props) {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
-    if (displayPower) {
+    if (!isOnline) {
       $$renderer2.push("<!--[-->");
-      if (status?.moonlight_mode) {
-        $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<p class="text-xs text-device-audio-text">Moonlight</p>`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(displayBrightness)}% · ${escape_html(displayColorTemp)}K</p>`);
-      }
-      $$renderer2.push(`<!--]-->`);
+      $$renderer2.push(`<p class="text-xs text-content-secondary">Offline</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(status ? "Off" : "Offline")}</p>`);
+      if (displayPower) {
+        $$renderer2.push("<!--[-->");
+        if (status?.moonlight_mode) {
+          $$renderer2.push("<!--[-->");
+          $$renderer2.push(`<p class="text-xs text-device-audio-text">Moonlight</p>`);
+        } else {
+          $$renderer2.push("<!--[!-->");
+          $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(displayBrightness)}% · ${escape_html(displayColorTemp)}K</p>`);
+        }
+        $$renderer2.push(`<!--]-->`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<p class="text-xs text-content-secondary">Off</p>`);
+      }
+      $$renderer2.push(`<!--]-->`);
     }
     $$renderer2.push(`<!--]--></div></div></div> `);
     DeviceDialog($$renderer2, {
@@ -150,15 +158,22 @@ function LampCard($$renderer, $$props) {
       title: displayName,
       children: ($$renderer3) => {
         $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Status</span> <span${attr_class(`font-medium ${stringify(displayPower ? status?.moonlight_mode ? "text-device-audio-text" : "text-device-lights-text" : "text-content-tertiary")}`)}>`);
-        if (displayPower) {
+        if (!isOnline) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`${escape_html(status?.moonlight_mode ? "Moonlight" : "On")}`);
+          $$renderer3.push(`Offline`);
         } else {
           $$renderer3.push("<!--[!-->");
-          $$renderer3.push(`${escape_html(status ? "Off" : "Offline")}`);
+          if (displayPower) {
+            $$renderer3.push("<!--[-->");
+            $$renderer3.push(`${escape_html(status?.moonlight_mode ? "Moonlight" : "On")}`);
+          } else {
+            $$renderer3.push("<!--[!-->");
+            $$renderer3.push(`Off`);
+          }
+          $$renderer3.push(`<!--]-->`);
         }
         $$renderer3.push(`<!--]--></span></div> `);
-        if (status) {
+        if (isOnline && status) {
           $$renderer3.push("<!--[-->");
           $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all relative ${stringify(displayPower ? status.moonlight_mode ? "bg-device-audio-bg text-device-audio-text" : "badge-lights" : "bg-surface-recessed text-content-secondary")} hover:scale-[1.02]`)}>${escape_html(displayPower ? "Turn Off" : "Turn On")} `);
           {
