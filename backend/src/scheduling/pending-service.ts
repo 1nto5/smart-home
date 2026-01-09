@@ -15,7 +15,7 @@ export interface PendingAction {
   created_at: string;
 }
 
-const MAX_RETRIES = 120; // 120 * 30s = 1 hour max wait
+// No max retries - keep trying until success or new schedule replaces it
 
 /**
  * Create a pending action for an offline lamp
@@ -70,19 +70,14 @@ export function removePendingForDevice(deviceId: string): void {
 }
 
 /**
- * Increment retry count for a pending action
- * Returns true if still within max retries, false if exceeded
+ * Increment retry count for a pending action (for tracking purposes)
+ * Returns true if action exists, false if not found
  */
 export function incrementRetryCount(id: number): boolean {
   const db = getDb();
-  const action = db.query('SELECT retry_count FROM pending_lamp_actions WHERE id = ?').get(id) as { retry_count: number } | null;
+  const action = db.query('SELECT id FROM pending_lamp_actions WHERE id = ?').get(id);
 
   if (!action) return false;
-
-  if (action.retry_count >= MAX_RETRIES) {
-    removePendingAction(id);
-    return false;
-  }
 
   db.run('UPDATE pending_lamp_actions SET retry_count = retry_count + 1 WHERE id = ?', [id]);
   return true;

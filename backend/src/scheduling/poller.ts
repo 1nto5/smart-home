@@ -94,11 +94,8 @@ export async function startPoller(): Promise<void> {
           removePendingAction(action.id);
           console.log(`Applied pending ${action.preset} to ${action.device_id}`);
         } else {
-          // Increment retry count, remove if max exceeded
-          const stillValid = incrementRetryCount(action.id);
-          if (!stillValid) {
-            console.log(`Max retries for ${action.device_id}, giving up`);
-          }
+          // Increment retry count for tracking
+          incrementRetryCount(action.id);
         }
       } catch (error: any) {
         console.error(`Poller error for ${action.device_id}:`, error.message);
