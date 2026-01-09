@@ -9,6 +9,7 @@
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
   let status = $derived(store.lampStatuses.get(lamp.id));
+  let isOnline = $derived(lamp.online === 1);
   let dialogOpen = $state(false);
 
   // Optimistic states
@@ -20,8 +21,8 @@
   let previewBrightness = $state<number | null>(null);
   let previewColorTemp = $state<number | null>(null);
 
-  // Display values (preview or actual)
-  let displayPower = $derived(optimisticPower ?? status?.power ?? false);
+  // Display values (preview or actual) - only show as on if lamp is online
+  let displayPower = $derived(isOnline ? (optimisticPower ?? status?.power ?? false) : false);
   let displayBrightness = $derived(previewBrightness ?? status?.brightness ?? 0);
   let displayColorTemp = $derived(previewColorTemp ?? status?.color_temp ?? 0);
 
@@ -140,7 +141,7 @@
     <!-- Power toggle button -->
     <button
       onclick={togglePower}
-      disabled={!status}
+      disabled={!isOnline}
       class="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative
              {displayPower ? (status?.moonlight_mode ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights') : 'bg-surface-recessed text-content-tertiary'}
              hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
@@ -158,14 +159,16 @@
     <!-- Info -->
     <div class="min-w-0 flex-1">
       <h4 class="font-medium text-sm text-content-primary truncate">{displayName}</h4>
-      {#if displayPower}
+      {#if !isOnline}
+        <p class="text-xs text-content-secondary">Offline</p>
+      {:else if displayPower}
         {#if status?.moonlight_mode}
           <p class="text-xs text-device-audio-text">Moonlight</p>
         {:else}
           <p class="text-xs text-content-secondary">{displayBrightness}% &middot; {displayColorTemp}K</p>
         {/if}
       {:else}
-        <p class="text-xs text-content-secondary">{status ? 'Off' : 'Offline'}</p>
+        <p class="text-xs text-content-secondary">Off</p>
       {/if}
     </div>
   </div>
@@ -178,15 +181,17 @@
     <div class="flex items-center justify-between">
       <span class="text-content-secondary">Status</span>
       <span class="font-medium {displayPower ? (status?.moonlight_mode ? 'text-device-audio-text' : 'text-device-lights-text') : 'text-content-tertiary'}">
-        {#if displayPower}
+        {#if !isOnline}
+          Offline
+        {:else if displayPower}
           {status?.moonlight_mode ? 'Moonlight' : 'On'}
         {:else}
-          {status ? 'Off' : 'Offline'}
+          Off
         {/if}
       </span>
     </div>
 
-    {#if status}
+    {#if isOnline && status}
       <!-- Large Power Button -->
       <button
         onclick={togglePower}
