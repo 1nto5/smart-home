@@ -5,17 +5,17 @@ No cloud connectivity required.
 """
 
 import asyncio
-import json
 import os
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from roborock import RoborockCommand
 from roborock.devices.transport.local_channel import LocalChannel
+from roborock.protocols.v1_protocol import (
+    RequestMessage,
+    decode_rpc_response,
+)
 from roborock.roborock_message import RoborockMessage, RoborockMessageProtocol
-from roborock.util import get_next_int, get_timestamp
 
 # Config from environment (local only - no cloud needed)
 DEVICE_NAME = os.environ.get("ROBOROCK_DEVICE_NAME", "Vacuum")
@@ -53,34 +53,6 @@ class ResetConsumableRequest(BaseModel):
     consumable: str
 
 
-def create_request_payload(method: str, params: list | dict | None = None) -> bytes:
-    """Create a V1 protocol request payload."""
-    request_id = get_next_int(10000, 32767)
-    timestamp = get_timestamp()
-    inner = {
-        "id": request_id,
-        "method": method,
-        "params": params or [],
-    }
-    payload = {
-        "dps": {"101": json.dumps(inner, separators=(",", ":"))},
-        "t": timestamp,
-    }
-    return json.dumps(payload, separators=(",", ":")).encode()
-
-
-def parse_response(data: bytes) -> dict | None:
-    """Parse V1 protocol response."""
-    try:
-        resp = json.loads(data)
-        if "dps" in resp and "102" in resp["dps"]:
-            inner = json.loads(resp["dps"]["102"])
-            return inner.get("result")
-    except Exception as e:
-        print(f"Parse error: {e}")
-    return None
-
-
 async def get_channel() -> LocalChannel:
     """Get or create local channel."""
     global channel
@@ -98,44 +70,49 @@ async def get_channel() -> LocalChannel:
         return channel
 
 
-async def send_command(method: str, params: list | dict | None = None) -> dict | None:
-    """Send command and get response."""
+async def send_command(method: str, params: list | dict | None = None) -> dict | list | None:
+    """Send command and get response using library's protocol."""
     ch = await get_channel()
 
-    # Generate unique seq for this request
-    seq = get_next_int(10000, 32767)
+    # Create request using library's RequestMessage
+    request = RequestMessage(method=method, params=params)
 
-    # Create message with seq for response matching
-    payload = create_request_payload(method, params)
-    msg = RoborockMessage(
-        timestamp=get_timestamp(),
-        protocol=RoborockMessageProtocol.RPC_REQUEST,
-        payload=payload,
-        version=b"1.0",
-        seq=seq,
+    # Encode for local transport using GENERAL_REQUEST protocol
+    message = request.encode_message(
+        RoborockMessageProtocol.GENERAL_REQUEST,
+        version=ch.protocol_version,
     )
 
     # Create response future
     response_future: asyncio.Future = asyncio.Future()
 
     def on_response(resp_msg: RoborockMessage):
-        # Match by seq number and RPC_RESPONSE protocol
-        if (resp_msg.protocol == RoborockMessageProtocol.RPC_RESPONSE and
-            resp_msg.seq == seq and
-            not response_future.done()):
-            response_future.set_result(resp_msg)
+        try:
+            # Decode using library's decoder
+            decoded = decode_rpc_response(resp_msg)
+            if decoded is None:
+                return
+            # Match by request_id in payload
+            if decoded.request_id == request.request_id:
+                if decoded.api_error:
+                    response_future.set_exception(decoded.api_error)
+                elif not response_future.done():
+                    response_future.set_result(decoded.data)
+        except Exception as e:
+            # Not our message, ignore
+            print(f"Decode error (ignoring): {e}")
 
     # Subscribe returns unsubscribe function
     unsub = await ch.subscribe(on_response)
     try:
-        await ch.publish(msg)
+        await ch.publish(message)
         # Wait for response with timeout
-        resp = await asyncio.wait_for(response_future, timeout=10.0)
-        return parse_response(resp.payload)
+        result = await asyncio.wait_for(response_future, timeout=10.0)
+        return result
     except asyncio.TimeoutError:
         raise HTTPException(504, "Device timeout")
     finally:
-        unsub()  # Always unsubscribe
+        unsub()
 
 
 @asynccontextmanager
@@ -147,7 +124,7 @@ async def lifespan(app: FastAPI):
     yield
     global channel
     if channel:
-        await channel.close()
+        channel.close()
 
 
 app = FastAPI(title="Roborock Bridge (Local)", lifespan=lifespan)
