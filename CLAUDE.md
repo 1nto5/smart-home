@@ -1,0 +1,1 @@
+- Always use a local connection to my devices rather than a cloud-based one.
