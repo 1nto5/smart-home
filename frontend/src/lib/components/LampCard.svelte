@@ -144,15 +144,15 @@
   onkeydown={(e) => e.key === 'Enter' && (dialogOpen = true)}
   role="button"
   tabindex="0"
-  class="glass-card rounded-xl transition-card hover:scale-[1.02] {compact ? 'p-2.5' : 'p-3'} w-full text-left cursor-pointer"
+  class="card transition-card hover:scale-[1.02] {compact ? 'p-2.5' : 'p-3'} w-full text-left cursor-pointer"
 >
   <div class="flex items-center gap-2.5">
     <!-- Power toggle button -->
     <button
       onclick={togglePower}
       disabled={!status}
-      class="w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 relative
-             {displayPower ? (status?.moonlight_mode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400') : 'bg-zinc-800/60 text-zinc-500'}
+      class="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative
+             {displayPower ? (status?.moonlight_mode ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights') : 'bg-surface-recessed text-content-tertiary'}
              hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
       class:status-active={displayPower}
     >
@@ -161,21 +161,21 @@
         <path d="M5.404 4.343a.75.75 0 10-1.06 1.06 6.5 6.5 0 109.192 0 .75.75 0 00-1.06-1.06 5 5 0 11-7.072 0z"/>
       </svg>
       {#if isPowerPending}
-        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-device-lights-text rounded-full animate-pulse"></span>
       {/if}
     </button>
 
     <!-- Info -->
     <div class="min-w-0 flex-1">
-      <h4 class="font-medium text-sm truncate">{displayName}</h4>
+      <h4 class="font-medium text-sm text-content-primary truncate">{displayName}</h4>
       {#if displayPower}
         {#if status?.moonlight_mode}
-          <p class="text-xs text-indigo-400">Moonlight</p>
+          <p class="text-xs text-device-audio-text">Moonlight</p>
         {:else}
-          <p class="text-xs text-[var(--muted)]">{displayBrightness}% &middot; {displayColorTemp}K</p>
+          <p class="text-xs text-content-secondary">{displayBrightness}% &middot; {displayColorTemp}K</p>
         {/if}
       {:else}
-        <p class="text-xs text-[var(--muted)]">{status ? 'Off' : 'Offline'}</p>
+        <p class="text-xs text-content-secondary">{status ? 'Off' : 'Offline'}</p>
       {/if}
     </div>
   </div>
@@ -186,8 +186,8 @@
   <div class="space-y-4">
     <!-- Status -->
     <div class="flex items-center justify-between">
-      <span class="text-[var(--muted)]">Status</span>
-      <span class="font-medium {displayPower ? (status?.moonlight_mode ? 'text-indigo-400' : 'text-amber-400') : 'text-zinc-500'}">
+      <span class="text-content-secondary">Status</span>
+      <span class="font-medium {displayPower ? (status?.moonlight_mode ? 'text-device-audio-text' : 'text-device-lights-text') : 'text-content-tertiary'}">
         {#if displayPower}
           {status?.moonlight_mode ? 'Moonlight' : 'On'}
         {:else}
@@ -201,31 +201,31 @@
       <button
         onclick={togglePower}
         class="w-full py-4 rounded-xl text-lg font-medium transition-all relative
-               {displayPower ? (status.moonlight_mode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400') : 'bg-zinc-800 text-zinc-400'}
+               {displayPower ? (status.moonlight_mode ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights') : 'bg-surface-recessed text-content-secondary'}
                hover:scale-[1.02]"
       >
         {displayPower ? 'Turn Off' : 'Turn On'}
         {#if isPowerPending}
-          <span class="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-device-lights-text rounded-full animate-pulse"></span>
         {/if}
       </button>
 
       {#if displayPower}
         <!-- Presets -->
         <div>
-          <p class="text-sm text-[var(--muted)] mb-2">Presets</p>
+          <p class="text-sm text-content-secondary mb-2">Presets</p>
           <div class="grid grid-cols-3 gap-2">
             {#each presets as preset}
               <button
                 onclick={() => applyPreset(preset)}
                 class="py-2.5 text-sm rounded-lg transition-all relative
                        {isPresetActive(preset) || activePreset === preset.id
-                         ? (preset.moonlight ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400')
-                         : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'}"
+                         ? (preset.moonlight ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights')
+                         : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
               >
                 {preset.label}
                 {#if activePreset === preset.id}
-                  <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
+                  <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-device-lights-text rounded-full animate-pulse"></span>
                 {/if}
               </button>
             {/each}
@@ -235,9 +235,9 @@
         {#if !status.moonlight_mode}
           <!-- Brightness -->
           <div>
-            <div class="flex justify-between text-sm text-[var(--muted)] mb-2">
+            <div class="flex justify-between text-sm text-content-secondary mb-2">
               <span>Brightness</span>
-              <span class="font-medium text-white">{displayBrightness}%</span>
+              <span class="font-medium text-content-primary">{displayBrightness}%</span>
             </div>
             <input
               type="range"
@@ -251,9 +251,9 @@
 
           <!-- Color Temperature -->
           <div>
-            <div class="flex justify-between text-sm text-[var(--muted)] mb-2">
+            <div class="flex justify-between text-sm text-content-secondary mb-2">
               <span>Color Temperature</span>
-              <span class="font-medium text-white">{displayColorTemp}K</span>
+              <span class="font-medium text-content-primary">{displayColorTemp}K</span>
             </div>
             <input
               type="range"
@@ -264,28 +264,28 @@
               oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
               class="w-full"
             />
-            <div class="flex justify-between text-xs text-[var(--muted)] mt-1">
+            <div class="flex justify-between text-xs text-content-tertiary mt-1">
               <span>Warm</span>
               <span>Cool</span>
             </div>
           </div>
         {:else}
           <!-- Moonlight mode info -->
-          <div class="py-4 text-center text-sm text-indigo-400/80">
+          <div class="py-4 text-center text-sm text-device-audio-text/80">
             Hardware night light mode active
           </div>
         {/if}
       {/if}
 
       <!-- Device Info -->
-      <div class="pt-4 border-t border-[var(--glass-border)] space-y-2 text-sm">
+      <div class="pt-4 border-t border-stroke-default space-y-2 text-sm">
         <div class="flex justify-between">
-          <span class="text-[var(--muted)]">Model</span>
-          <span class="font-mono text-xs">{lamp.model}</span>
+          <span class="text-content-secondary">Model</span>
+          <span class="font-mono text-xs text-content-tertiary">{lamp.model}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-[var(--muted)]">IP Address</span>
-          <span class="font-mono text-xs">{lamp.ip}</span>
+          <span class="text-content-secondary">IP Address</span>
+          <span class="font-mono text-xs text-content-tertiary">{lamp.ip}</span>
         </div>
       </div>
     {/if}

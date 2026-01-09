@@ -1,55 +1,278 @@
 @import "tailwindcss";
 
-:root {
-  /* Base colors */
-  --bg: #09090b;
-  --bg-secondary: #111113;
-  --card: rgba(24, 24, 27, 0.7);
-  --card-hover: rgba(39, 39, 42, 0.8);
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #fafafa;
-  --muted: #71717a;
-  --accent: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.25);
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
+/* ===== THEME SYSTEM ===== */
 
-  /* Glass effect */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-blur: 12px;
+:root {
+  /* Light mode (default) */
+
+  /* Backgrounds */
+  --color-bg-base: #F8F9FA;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-recessed: #EEF0F2;
+  --color-bg-overlay: rgba(0, 0, 0, 0.4);
+
+  /* Text */
+  --color-text-primary: #1A1D21;
+  --color-text-secondary: #5C6370;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-inverse: #FFFFFF;
+
+  /* Borders */
+  --color-border-default: #E5E7EB;
+  --color-border-subtle: #F0F1F3;
+  --color-border-strong: #D1D5DB;
+
+  /* Accent */
+  --color-accent: #3B82F6;
+  --color-accent-hover: #2563EB;
+  --color-accent-glow: rgba(59, 130, 246, 0.25);
+
+  /* Status */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* Device categories - Light */
+  --color-lights-bg: #FEF3C7;
+  --color-lights-text: #B45309;
+  --color-climate-heat-bg: #FFEDD5;
+  --color-climate-heat-text: #C2410C;
+  --color-climate-cool-bg: #DBEAFE;
+  --color-climate-cool-text: #1D4ED8;
+  --color-sensors-bg: #CFFAFE;
+  --color-sensors-text: #0E7490;
+  --color-audio-bg: #F3E8FF;
+  --color-audio-text: #7C3AED;
+  --color-robot-bg: #D1FAE5;
+  --color-robot-text: #047857;
+  --color-air-bg: #E0F2FE;
+  --color-air-text: #0369A1;
+
+  /* Shadows - Light */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-dialog: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.08);
+
+  /* Scrollbar */
+  --color-scrollbar-track: transparent;
+  --color-scrollbar-thumb: #D1D5DB;
+  --color-scrollbar-thumb-hover: #9CA3AF;
+
+  /* Slider track */
+  --color-slider-track: #E5E7EB;
+}
+
+/* Dark mode */
+.dark {
+  /* Backgrounds */
+  --color-bg-base: #0F1115;
+  --color-bg-elevated: #1A1D23;
+  --color-bg-recessed: #0A0C0F;
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text */
+  --color-text-primary: #F4F4F5;
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #71717A;
+  --color-text-inverse: #18181B;
+
+  /* Borders */
+  --color-border-default: #27272A;
+  --color-border-subtle: #1F1F23;
+  --color-border-strong: #3F3F46;
+
+  /* Device categories - Dark */
+  --color-lights-bg: rgba(251, 191, 36, 0.15);
+  --color-lights-text: #FBBF24;
+  --color-climate-heat-bg: rgba(249, 115, 22, 0.15);
+  --color-climate-heat-text: #FB923C;
+  --color-climate-cool-bg: rgba(59, 130, 246, 0.15);
+  --color-climate-cool-text: #60A5FA;
+  --color-sensors-bg: rgba(34, 211, 238, 0.15);
+  --color-sensors-text: #22D3EE;
+  --color-audio-bg: rgba(167, 139, 250, 0.15);
+  --color-audio-text: #A78BFA;
+  --color-robot-bg: rgba(52, 211, 153, 0.15);
+  --color-robot-text: #34D399;
+  --color-air-bg: rgba(56, 189, 248, 0.15);
+  --color-air-text: #38BDF8;
+
+  /* Shadows - Dark */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-dialog: 0 20px 40px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3);
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: #3F3F46;
+  --color-scrollbar-thumb-hover: #52525B;
+
+  /* Slider track */
+  --color-slider-track: #27272A;
+}
+
+/* System preference fallback (when no .dark class) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    /* Backgrounds */
+    --color-bg-base: #0F1115;
+    --color-bg-elevated: #1A1D23;
+    --color-bg-recessed: #0A0C0F;
+    --color-bg-overlay: rgba(0, 0, 0, 0.7);
+
+    /* Text */
+    --color-text-primary: #F4F4F5;
+    --color-text-secondary: #A1A1AA;
+    --color-text-tertiary: #71717A;
+    --color-text-inverse: #18181B;
+
+    /* Borders */
+    --color-border-default: #27272A;
+    --color-border-subtle: #1F1F23;
+    --color-border-strong: #3F3F46;
+
+    /* Device categories - Dark */
+    --color-lights-bg: rgba(251, 191, 36, 0.15);
+    --color-lights-text: #FBBF24;
+    --color-climate-heat-bg: rgba(249, 115, 22, 0.15);
+    --color-climate-heat-text: #FB923C;
+    --color-climate-cool-bg: rgba(59, 130, 246, 0.15);
+    --color-climate-cool-text: #60A5FA;
+    --color-sensors-bg: rgba(34, 211, 238, 0.15);
+    --color-sensors-text: #22D3EE;
+    --color-audio-bg: rgba(167, 139, 250, 0.15);
+    --color-audio-text: #A78BFA;
+    --color-robot-bg: rgba(52, 211, 153, 0.15);
+    --color-robot-text: #34D399;
+    --color-air-bg: rgba(56, 189, 248, 0.15);
+    --color-air-text: #38BDF8;
+
+    /* Shadows - Dark */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-dialog: 0 20px 40px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3);
+
+    /* Scrollbar */
+    --color-scrollbar-thumb: #3F3F46;
+    --color-scrollbar-thumb-hover: #52525B;
+
+    /* Slider track */
+    --color-slider-track: #27272A;
+  }
+}
+
+/* ===== TAILWIND THEME ===== */
+
+@theme {
+  /* Surface colors */
+  --color-surface-base: var(--color-bg-base);
+  --color-surface-elevated: var(--color-bg-elevated);
+  --color-surface-recessed: var(--color-bg-recessed);
+  --color-surface-overlay: var(--color-bg-overlay);
+
+  /* Content colors */
+  --color-content-primary: var(--color-text-primary);
+  --color-content-secondary: var(--color-text-secondary);
+  --color-content-tertiary: var(--color-text-tertiary);
+  --color-content-inverse: var(--color-text-inverse);
+
+  /* Stroke colors */
+  --color-stroke-default: var(--color-border-default);
+  --color-stroke-subtle: var(--color-border-subtle);
+  --color-stroke-strong: var(--color-border-strong);
+
+  /* Accent */
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+
+  /* Status */
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --color-info: var(--color-info);
+
+  /* Device categories */
+  --color-device-lights-bg: var(--color-lights-bg);
+  --color-device-lights-text: var(--color-lights-text);
+  --color-device-climate-heat-bg: var(--color-climate-heat-bg);
+  --color-device-climate-heat-text: var(--color-climate-heat-text);
+  --color-device-climate-cool-bg: var(--color-climate-cool-bg);
+  --color-device-climate-cool-text: var(--color-climate-cool-text);
+  --color-device-sensors-bg: var(--color-sensors-bg);
+  --color-device-sensors-text: var(--color-sensors-text);
+  --color-device-audio-bg: var(--color-audio-bg);
+  --color-device-audio-text: var(--color-audio-text);
+  --color-device-robot-bg: var(--color-robot-bg);
+  --color-device-robot-text: var(--color-robot-text);
+  --color-device-air-bg: var(--color-air-bg);
+  --color-device-air-text: var(--color-air-text);
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-dialog: var(--shadow-dialog);
 }
+
+/* ===== BASE STYLES ===== */
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
   font-family: system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Glass card */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
+/* ===== COMPONENT CLASSES ===== */
+
+/* Card */
+.card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.04);
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-border-strong);
+}
+
+/* Dialog overlay */
+.dialog-overlay {
+  background: var(--color-bg-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Dialog content */
+.dialog-content {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: 24px;
+  box-shadow: var(--shadow-dialog);
+}
+
+/* Quick action bar */
+.quick-bar {
+  background: var(--color-bg-elevated);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-default);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.dark .quick-bar {
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* Transitions */
 .transition-card {
-  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-/* Animations */
+/* ===== ANIMATIONS ===== */
+
 @keyframes pulse-glow {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -70,15 +293,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Status indicators - color only, no animation */
-.status-dot {
-  /* Just uses the applied color class */
-}
-
-.status-active {
-  /* Just uses the applied color class */
-}
-
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
@@ -87,16 +301,9 @@ body {
   animation: spin 1s linear infinite;
 }
 
-/* Quick action bar */
-.quick-bar {
-  background: rgba(18, 18, 20, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
-}
+/* ===== FORM CONTROLS ===== */
 
-/* Range slider styling */
+/* Range slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -107,50 +314,88 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: #27272a;
+  background: var(--color-slider-track);
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: var(--accent);
-  margin-top: -5px;
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: var(--color-accent);
+  margin-top: -6px;
+  box-shadow: 0 0 8px var(--color-accent-glow);
 }
 
 input[type="range"]::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: #27272a;
+  background: var(--color-slider-track);
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--color-accent);
   border: none;
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 8px var(--color-accent-glow);
 }
 
-/* Scrollbar */
+/* ===== SCROLLBAR ===== */
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--color-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: var(--color-scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+/* ===== DEVICE CATEGORY BADGES ===== */
+
+.badge-lights {
+  background: var(--color-lights-bg);
+  color: var(--color-lights-text);
+}
+
+.badge-climate-heat {
+  background: var(--color-climate-heat-bg);
+  color: var(--color-climate-heat-text);
+}
+
+.badge-climate-cool {
+  background: var(--color-climate-cool-bg);
+  color: var(--color-climate-cool-text);
+}
+
+.badge-sensors {
+  background: var(--color-sensors-bg);
+  color: var(--color-sensors-text);
+}
+
+.badge-audio {
+  background: var(--color-audio-bg);
+  color: var(--color-audio-text);
+}
+
+.badge-robot {
+  background: var(--color-robot-bg);
+  color: var(--color-robot-text);
+}
+
+.badge-air {
+  background: var(--color-air-bg);
+  color: var(--color-air-text);
 }

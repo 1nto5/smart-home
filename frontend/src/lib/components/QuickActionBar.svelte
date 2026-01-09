@@ -68,10 +68,10 @@
           <button
             onclick={() => handlePreset(name)}
             class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all
-                   hover:bg-white/5 active:scale-95"
+                   hover:bg-surface-recessed active:scale-95"
           >
             <span class="text-xl {pendingActions.has(name) ? 'animate-pulse' : ''}">{getIcon(name)}</span>
-            <span class="text-xs text-[var(--muted)] capitalize">{preset.name || name}</span>
+            <span class="text-xs text-content-secondary capitalize">{preset.name || name}</span>
           </button>
         {/each}
       </div>
@@ -84,10 +84,10 @@
     <button
       onclick={allLightsOff}
       class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-             hover:bg-white/5 active:scale-95"
+             hover:bg-surface-recessed active:scale-95"
     >
       <span class="text-xl {pendingActions.has('off') ? 'animate-pulse' : ''}">⚡</span>
-      <span class="text-[10px] text-[var(--muted)]">All Off</span>
+      <span class="text-[10px] text-content-secondary">All Off</span>
     </button>
 
     <!-- Day preset -->
@@ -95,10 +95,10 @@
       <button
         onclick={() => handlePreset('day')}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95"
+               hover:bg-surface-recessed active:scale-95"
       >
         <span class="text-xl {pendingActions.has('day') ? 'animate-pulse' : ''}">☀️</span>
-        <span class="text-[10px] text-[var(--muted)]">Day</span>
+        <span class="text-[10px] text-content-secondary">Day</span>
       </button>
     {/if}
 
@@ -107,10 +107,10 @@
       <button
         onclick={() => handlePreset('evening')}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95"
+               hover:bg-surface-recessed active:scale-95"
       >
         <span class="text-xl {pendingActions.has('evening') ? 'animate-pulse' : ''}">🌆</span>
-        <span class="text-[10px] text-[var(--muted)]">Evening</span>
+        <span class="text-[10px] text-content-secondary">Evening</span>
       </button>
     {/if}
 
@@ -119,26 +119,26 @@
       <button
         onclick={() => handlePreset('night')}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95"
+               hover:bg-surface-recessed active:scale-95"
       >
         <span class="text-xl {pendingActions.has('night') ? 'animate-pulse' : ''}">🌙</span>
-        <span class="text-[10px] text-[var(--muted)]">Night</span>
+        <span class="text-[10px] text-content-secondary">Night</span>
       </button>
     {/if}
 
     <!-- Divider -->
     {#if Object.keys(presets).length > 3}
-      <div class="w-px h-8 bg-[var(--glass-border)] mx-1"></div>
+      <div class="w-px h-8 bg-stroke-default mx-1"></div>
 
       <!-- More button -->
       <button
         onclick={() => expanded = !expanded}
         class="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all
-               hover:bg-white/5 active:scale-95
-               {expanded ? 'bg-white/5' : ''}"
+               hover:bg-surface-recessed active:scale-95
+               {expanded ? 'bg-surface-recessed' : ''}"
       >
         <span class="text-xl">{expanded ? '✕' : '⋯'}</span>
-        <span class="text-[10px] text-[var(--muted)]">{expanded ? 'Close' : 'More'}</span>
+        <span class="text-[10px] text-content-secondary">{expanded ? 'Close' : 'More'}</span>
       </button>
     {/if}
   </div>
