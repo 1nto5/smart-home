@@ -10,8 +10,10 @@
   $effect(() => {
     if (browser) {
       theme.init();
+      store.initWebSocket();
       store.refreshAll();
-      const interval = setInterval(() => store.refreshAll(), 10000);
+      // Polling as fallback, WebSocket handles real-time updates
+      const interval = setInterval(() => store.refreshAll(), 30000);
       return () => clearInterval(interval);
     }
   });
