@@ -376,6 +376,44 @@ export function initDatabase(): Database {
   db.run(`CREATE INDEX IF NOT EXISTS idx_sms_log_time
           ON sms_log(sent_at DESC)`);
 
+  // Telegram notification config - singleton table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS telegram_config (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      enabled INTEGER DEFAULT 0,
+      bot_token TEXT,
+      chat_id TEXT,
+      flood_alerts INTEGER DEFAULT 1,
+      door_alerts INTEGER DEFAULT 1,
+      cooldown_minutes INTEGER DEFAULT 5,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default Telegram config if not exists
+  const telegramCount = db.query('SELECT COUNT(*) as count FROM telegram_config').get() as { count: number };
+  if (telegramCount.count === 0) {
+    db.run('INSERT INTO telegram_config (id, enabled, cooldown_minutes) VALUES (1, 0, 5)');
+  }
+
+  // Telegram notification log
+  db.run(`
+    CREATE TABLE IF NOT EXISTS telegram_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id TEXT,
+      device_name TEXT,
+      alert_type TEXT NOT NULL,
+      chat_id TEXT NOT NULL,
+      message TEXT NOT NULL,
+      status TEXT NOT NULL,
+      error_message TEXT,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_telegram_log_time
+          ON telegram_log(sent_at DESC)`);
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
