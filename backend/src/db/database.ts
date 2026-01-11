@@ -322,6 +322,60 @@ export function initDatabase(): Database {
   db.run(`CREATE INDEX IF NOT EXISTS idx_contact_history_time
           ON contact_history(recorded_at DESC)`);
 
+  // Alarm system - singleton table for armed/disarmed state
+  db.run(`
+    CREATE TABLE IF NOT EXISTS alarm_config (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      armed INTEGER DEFAULT 0,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default alarm config if not exists
+  const alarmCount = db.query('SELECT COUNT(*) as count FROM alarm_config').get() as { count: number };
+  if (alarmCount.count === 0) {
+    db.run('INSERT INTO alarm_config (id, armed) VALUES (1, 0)');
+  }
+
+  // SMS notification config - singleton table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sms_config (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      enabled INTEGER DEFAULT 0,
+      phone_number TEXT,
+      api_url TEXT,
+      api_token TEXT,
+      flood_alerts INTEGER DEFAULT 1,
+      door_alerts INTEGER DEFAULT 1,
+      cooldown_minutes INTEGER DEFAULT 5,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default SMS config if not exists
+  const smsCount = db.query('SELECT COUNT(*) as count FROM sms_config').get() as { count: number };
+  if (smsCount.count === 0) {
+    db.run('INSERT INTO sms_config (id, enabled, cooldown_minutes) VALUES (1, 0, 5)');
+  }
+
+  // SMS notification log
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sms_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id TEXT,
+      device_name TEXT,
+      alert_type TEXT NOT NULL,
+      phone_number TEXT NOT NULL,
+      message TEXT NOT NULL,
+      status TEXT NOT NULL,
+      error_message TEXT,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_sms_log_time
+          ON sms_log(sent_at DESC)`);
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
@@ -389,4 +443,146 @@ export function getLastContactState(deviceId: string): boolean | null {
     `SELECT is_open FROM contact_history WHERE device_id = ? ORDER BY recorded_at DESC LIMIT 1`
   ).get(deviceId) as { is_open: number } | null;
   return result ? result.is_open === 1 : null;
+}
+
+// === ALARM SYSTEM ===
+
+export interface AlarmConfig {
+  armed: boolean;
+  updated_at: string;
+}
+
+export function getAlarmConfig(): AlarmConfig {
+  const database = getDb();
+  const result = database.query('SELECT armed, updated_at FROM alarm_config WHERE id = 1').get() as { armed: number; updated_at: string };
+  return {
+    armed: result.armed === 1,
+    updated_at: result.updated_at,
+  };
+}
+
+export function setAlarmArmed(armed: boolean): AlarmConfig {
+  const database = getDb();
+  database.run('UPDATE alarm_config SET armed = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1', [armed ? 1 : 0]);
+  return getAlarmConfig();
+}
+
+// === SMS NOTIFICATIONS ===
+
+export interface SmsConfig {
+  enabled: boolean;
+  phone_number: string | null;
+  api_url: string | null;
+  api_token: string | null;
+  flood_alerts: boolean;
+  door_alerts: boolean;
+  cooldown_minutes: number;
+  updated_at: string;
+}
+
+export function getSmsConfig(): SmsConfig {
+  const database = getDb();
+  const result = database.query('SELECT * FROM sms_config WHERE id = 1').get() as any;
+  return {
+    enabled: result.enabled === 1,
+    phone_number: result.phone_number,
+    api_url: result.api_url,
+    api_token: result.api_token,
+    flood_alerts: result.flood_alerts === 1,
+    door_alerts: result.door_alerts === 1,
+    cooldown_minutes: result.cooldown_minutes,
+    updated_at: result.updated_at,
+  };
+}
+
+export function updateSmsConfig(config: Partial<Omit<SmsConfig, 'updated_at'>>): SmsConfig {
+  const database = getDb();
+  const updates: string[] = [];
+  const values: any[] = [];
+
+  if (config.enabled !== undefined) {
+    updates.push('enabled = ?');
+    values.push(config.enabled ? 1 : 0);
+  }
+  if (config.phone_number !== undefined) {
+    updates.push('phone_number = ?');
+    values.push(config.phone_number);
+  }
+  if (config.api_url !== undefined) {
+    updates.push('api_url = ?');
+    values.push(config.api_url);
+  }
+  if (config.api_token !== undefined) {
+    updates.push('api_token = ?');
+    values.push(config.api_token);
+  }
+  if (config.flood_alerts !== undefined) {
+    updates.push('flood_alerts = ?');
+    values.push(config.flood_alerts ? 1 : 0);
+  }
+  if (config.door_alerts !== undefined) {
+    updates.push('door_alerts = ?');
+    values.push(config.door_alerts ? 1 : 0);
+  }
+  if (config.cooldown_minutes !== undefined) {
+    updates.push('cooldown_minutes = ?');
+    values.push(config.cooldown_minutes);
+  }
+
+  if (updates.length > 0) {
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    database.run(`UPDATE sms_config SET ${updates.join(', ')} WHERE id = 1`, values);
+  }
+
+  return getSmsConfig();
+}
+
+export interface SmsLogEntry {
+  id: number;
+  device_id: string | null;
+  device_name: string | null;
+  alert_type: string;
+  phone_number: string;
+  message: string;
+  status: string;
+  error_message: string | null;
+  sent_at: string;
+}
+
+export function logSms(
+  alertType: string,
+  phoneNumber: string,
+  message: string,
+  status: 'sent' | 'failed',
+  deviceId?: string,
+  deviceName?: string,
+  errorMessage?: string
+): void {
+  const database = getDb();
+  database.run(
+    `INSERT INTO sms_log (device_id, device_name, alert_type, phone_number, message, status, error_message)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [deviceId || null, deviceName || null, alertType, phoneNumber, message, status, errorMessage || null]
+  );
+}
+
+export function getSmsLog(limit: number = 50): SmsLogEntry[] {
+  const database = getDb();
+  return database.query('SELECT * FROM sms_log ORDER BY sent_at DESC LIMIT ?').all(limit) as SmsLogEntry[];
+}
+
+export function getLastSmsTime(alertType: string, deviceId?: string): Date | null {
+  const database = getDb();
+  let query = 'SELECT sent_at FROM sms_log WHERE alert_type = ? AND status = \'sent\'';
+  const params: any[] = [alertType];
+
+  if (deviceId) {
+    query += ' AND device_id = ?';
+    params.push(deviceId);
+  }
+
+  query += ' ORDER BY sent_at DESC LIMIT 1';
+
+  const result = database.query(query).get(...params) as { sent_at: string } | null;
+  return result ? new Date(result.sent_at) : null;
 }
