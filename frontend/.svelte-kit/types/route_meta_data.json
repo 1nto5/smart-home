@@ -6,10 +6,7 @@
 	"/heater-schedule": [
 		"src/routes/+layout.ts"
 	],
-	"/presets": [
-		"src/routes/+layout.ts"
-	],
-	"/schedule": [
+	"/lighting": [
 		"src/routes/+layout.ts"
 	]
 }

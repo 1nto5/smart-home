@@ -65,6 +65,14 @@
       "_environment.js"
     ]
   },
+  "_play.js": {
+    "file": "chunks/play.js",
+    "name": "play",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
   "_power.js": {
     "file": "chunks/power.js",
     "name": "power",
@@ -87,10 +95,6 @@
       "_context.js"
     ]
   },
-  "_stores.svelte.js": {
-    "file": "chunks/stores.svelte.js",
-    "name": "stores.svelte"
-  },
   "_sun.js": {
     "file": "chunks/sun.js",
     "name": "sun",
@@ -102,6 +106,14 @@
   "_thermometer.js": {
     "file": "chunks/thermometer.js",
     "name": "thermometer",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_trash-2.js": {
+    "file": "chunks/trash-2.js",
+    "name": "trash-2",
     "imports": [
       "_index2.js",
       "_Icon.js"
@@ -191,7 +203,7 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_stores.svelte.js",
+      "_play.js",
       "_context.js",
       "_x.js",
       "_power.js",
@@ -210,34 +222,25 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_stores.svelte.js",
+      "_play.js",
       "_Icon.js",
       "_thermometer.js",
+      "_trash-2.js",
       "_x.js",
       "_context.js"
     ]
   },
-  "src/routes/presets/+page.svelte": {
-    "file": "entries/pages/presets/_page.svelte.js",
-    "name": "entries/pages/presets/_page.svelte",
-    "src": "src/routes/presets/+page.svelte",
+  "src/routes/lighting/+page.svelte": {
+    "file": "entries/pages/lighting/_page.svelte.js",
+    "name": "entries/pages/lighting/_page.svelte",
+    "src": "src/routes/lighting/+page.svelte",
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_context.js",
-      "_Icon.js",
+      "_play.js",
+      "_sun.js",
+      "_trash-2.js",
       "_power.js",
-      "_sun.js"
-    ]
-  },
-  "src/routes/schedule/+page.svelte": {
-    "file": "entries/pages/schedule/_page.svelte.js",
-    "name": "entries/pages/schedule/_page.svelte",
-    "src": "src/routes/schedule/+page.svelte",
-    "isEntry": true,
-    "imports": [
-      "_index2.js",
-      "_stores.svelte.js",
       "_context.js"
     ]
   }
