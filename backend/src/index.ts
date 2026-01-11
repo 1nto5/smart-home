@@ -65,6 +65,8 @@ import {
   clearAllPending,
   startScheduler,
   startPoller,
+  getCurrentTimeWindow,
+  getPresetForTimeWindow,
   // Heater scheduling
   getHeaterPresets,
   updateHeaterPreset,
@@ -579,6 +581,15 @@ app.get('/api/presets', (c) => {
 // Apply preset to all lamps now
 app.post('/api/presets/:name/apply', async (c) => {
   const presetName = c.req.param('name');
+
+  // Handle "auto" - apply preset based on current time window
+  if (presetName === 'auto') {
+    const timeWindow = getCurrentTimeWindow();
+    const autoPreset = getPresetForTimeWindow(timeWindow);
+    console.log(`Auto preset: ${autoPreset} (time window: ${timeWindow})`);
+    const result = await applyPresetToAllLamps(autoPreset);
+    return c.json({ ...result, timeWindow, autoPreset });
+  }
 
   if (!isValidPreset(presetName)) {
     return c.json({ error: `Invalid preset: ${presetName}` }, 400);
