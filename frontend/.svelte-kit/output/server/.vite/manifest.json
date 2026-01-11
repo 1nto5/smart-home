@@ -111,6 +111,14 @@
     "file": "chunks/utils.js",
     "name": "utils"
   },
+  "_x.js": {
+    "file": "chunks/x.js",
+    "name": "x",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
   "node_modules/@sveltejs/kit/src/runtime/app/server/remote/index.js": {
     "file": "remote-entry.js",
     "name": "remote-entry",
@@ -163,10 +171,11 @@
       "_state.svelte.js",
       "_house.js",
       "_sun.js",
-      "_Icon.js"
+      "_Icon.js",
+      "_thermometer.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.CsgWbXK1.css"
+      "_app/immutable/assets/_layout.B1xArozA.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -184,10 +193,11 @@
       "_index2.js",
       "_stores.svelte.js",
       "_context.js",
-      "_Icon.js",
+      "_x.js",
       "_power.js",
-      "_thermometer.js",
-      "_house.js"
+      "_Icon.js",
+      "_house.js",
+      "_thermometer.js"
     ],
     "css": [
       "_app/immutable/assets/_page.DSRsvZHy.css"
@@ -201,8 +211,9 @@
     "imports": [
       "_index2.js",
       "_stores.svelte.js",
-      "_thermometer.js",
       "_Icon.js",
+      "_thermometer.js",
+      "_x.js",
       "_context.js"
     ]
   },

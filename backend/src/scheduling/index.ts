@@ -38,6 +38,8 @@ export {
   getHeaterPreset,
   updateHeaterPreset,
   isValidHeaterPreset,
+  createHeaterPreset,
+  deleteHeaterPreset,
   type HeaterPreset,
 } from './heater-presets';
 
@@ -49,6 +51,7 @@ export {
   toggleHeaterSchedule,
   applyPresetToHeater,
   applyPresetToAllHeaters,
+  applyFixedTempToAllHeaters,
   type HeaterSchedule,
 } from './heater-schedule-service';
 
@@ -57,3 +60,10 @@ export {
   clearAllPendingHeater,
   type PendingHeaterAction,
 } from './heater-pending-service';
+
+export {
+  getHeaterOverride,
+  setHeaterOverride,
+  isOverrideActive,
+  type HeaterOverride,
+} from './heater-override';

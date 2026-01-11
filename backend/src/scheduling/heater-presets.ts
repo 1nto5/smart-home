@@ -34,3 +34,45 @@ export function updateHeaterPreset(id: string, target_temp: number): boolean {
 export function isValidHeaterPreset(id: string): boolean {
   return getHeaterPreset(id) !== null;
 }
+
+export function createHeaterPreset(id: string, name: string, target_temp: number): HeaterPreset {
+  const db = getDb();
+
+  // Validate id (alphanumeric, lowercase, dashes allowed)
+  if (!/^[a-z0-9-]+$/.test(id)) {
+    throw new Error('Invalid preset id: use lowercase letters, numbers, and dashes only');
+  }
+
+  // Check if already exists
+  if (getHeaterPreset(id)) {
+    throw new Error(`Preset with id "${id}" already exists`);
+  }
+
+  // Validate temperature range
+  if (target_temp < 5 || target_temp > 30) {
+    throw new Error('Temperature must be between 5 and 30');
+  }
+
+  db.run(
+    'INSERT INTO heater_presets (id, name, target_temp) VALUES (?, ?, ?)',
+    [id, name, target_temp]
+  );
+
+  return getHeaterPreset(id)!;
+}
+
+export function deleteHeaterPreset(id: string): boolean {
+  const db = getDb();
+
+  // Check if preset exists
+  if (!getHeaterPreset(id)) {
+    return false;
+  }
+
+  // Delete any schedules using this preset first
+  db.run('DELETE FROM heater_schedules WHERE preset_id = ?', [id]);
+
+  // Delete the preset
+  const result = db.run('DELETE FROM heater_presets WHERE id = ?', [id]);
+  return result.changes > 0;
+}

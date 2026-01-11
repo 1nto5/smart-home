@@ -43,6 +43,9 @@ async function getHeaterSchedules() {
 async function getPendingHeaterActions() {
   return fetcher("/pending-heater-actions");
 }
+async function getHeaterOverride() {
+  return fetcher("/heater-override");
+}
 let ws = null;
 let wsReconnectDelay = 1e3;
 function createStore() {
@@ -57,6 +60,7 @@ function createStore() {
   let heaterPresets = [];
   let heaterSchedules = [];
   let pendingHeaterActions = [];
+  let heaterOverride = null;
   let loading = false;
   let error = null;
   let wsConnected = false;
@@ -129,6 +133,9 @@ function createStore() {
     },
     get pendingHeaterActions() {
       return pendingHeaterActions;
+    },
+    get heaterOverride() {
+      return heaterOverride;
     },
     get loading() {
       return loading;
@@ -227,6 +234,13 @@ function createStore() {
         console.error("Failed to fetch pending heater actions:", e);
       }
     },
+    async refreshHeaterOverride() {
+      try {
+        heaterOverride = await getHeaterOverride();
+      } catch (e) {
+        console.error("Failed to fetch heater override:", e);
+      }
+    },
     async refreshAll() {
       loading = true;
       await Promise.all([
@@ -239,7 +253,8 @@ function createStore() {
         this.refreshAirPurifier(),
         this.refreshHeaterPresets(),
         this.refreshHeaterSchedules(),
-        this.refreshPendingHeater()
+        this.refreshPendingHeater(),
+        this.refreshHeaterOverride()
       ]);
       loading = false;
     }

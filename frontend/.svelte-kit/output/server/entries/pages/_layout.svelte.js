@@ -9,6 +9,7 @@ import "../../chunks/state.svelte.js";
 import { H as House } from "../../chunks/house.js";
 import { M as Moon, S as Sun } from "../../chunks/sun.js";
 import { I as Icon } from "../../chunks/Icon.js";
+import { T as Thermometer } from "../../chunks/thermometer.js";
 function createThemeStore() {
   let mode = "system";
   let resolvedTheme = "light";
@@ -327,7 +328,12 @@ function _layout($$renderer, $$props) {
     const navItems = [
       { href: "/", label: "Home", icon: House },
       { href: "/presets", label: "Presets", icon: Palette },
-      { href: "/schedule", label: "Schedule", icon: Calendar }
+      { href: "/schedule", label: "Schedule", icon: Calendar },
+      {
+        href: "/heater-schedule",
+        label: "Heating",
+        icon: Thermometer
+      }
     ];
     const themeIcons = { system: Monitor, light: Sun, dark: Moon };
     $$renderer2.push(`<div class="min-h-screen bg-surface-base transition-colors duration-200"><header class="sticky top-0 z-40 bg-surface-elevated border-b border-stroke-default"><nav class="flex items-center justify-between max-w-6xl mx-auto px-4 py-2.5"><h1 class="text-base font-semibold text-content-primary flex items-center gap-2">`);

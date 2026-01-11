@@ -1,5 +1,5 @@
-import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions } from './api';
-import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction } from './types';
+import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride } from './api';
+import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
 
 // WebSocket connection state
 let ws: WebSocket | null = null;
@@ -18,6 +18,7 @@ function createStore() {
   let heaterPresets = $state<HeaterPreset[]>([]);
   let heaterSchedules = $state<HeaterSchedule[]>([]);
   let pendingHeaterActions = $state<PendingHeaterAction[]>([]);
+  let heaterOverride = $state<HeaterOverride | null>(null);
   let loading = $state(false);
   let error = $state<string | null>(null);
   let wsConnected = $state(false);
@@ -79,6 +80,7 @@ function createStore() {
     get heaterPresets() { return heaterPresets; },
     get heaterSchedules() { return heaterSchedules; },
     get pendingHeaterActions() { return pendingHeaterActions; },
+    get heaterOverride() { return heaterOverride; },
     get loading() { return loading; },
     get error() { return error; },
     get wsConnected() { return wsConnected; },
@@ -183,6 +185,14 @@ function createStore() {
       }
     },
 
+    async refreshHeaterOverride() {
+      try {
+        heaterOverride = await getHeaterOverride();
+      } catch (e: any) {
+        console.error('Failed to fetch heater override:', e);
+      }
+    },
+
     async refreshAll() {
       loading = true;
       await Promise.all([
@@ -196,6 +206,7 @@ function createStore() {
         this.refreshHeaterPresets(),
         this.refreshHeaterSchedules(),
         this.refreshPendingHeater(),
+        this.refreshHeaterOverride(),
       ]);
       loading = false;
     },

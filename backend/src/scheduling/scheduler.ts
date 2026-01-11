@@ -5,6 +5,7 @@
 
 import { getSchedulesByTime, applyPresetToAllLamps } from './schedule-service';
 import { getHeaterSchedulesByTime, applyPresetToAllHeaters } from './heater-schedule-service';
+import { isOverrideActive } from './heater-override';
 
 let schedulerInterval: Timer | null = null;
 let lastTriggeredMinute: string = '';
@@ -40,14 +41,16 @@ export function startScheduler(): void {
       }
     }
 
-    // Check for heater schedules at this time
-    const heaterSchedules = getHeaterSchedulesByTime(currentTime);
-    if (heaterSchedules.length > 0) {
-      lastTriggeredMinute = currentTime;
+    // Check for heater schedules at this time (skip if override is active)
+    if (!isOverrideActive()) {
+      const heaterSchedules = getHeaterSchedulesByTime(currentTime);
+      if (heaterSchedules.length > 0) {
+        lastTriggeredMinute = currentTime;
 
-      for (const schedule of heaterSchedules) {
-        console.log(`Triggering heater schedule "${schedule.name}" (${schedule.preset_id}) at ${currentTime}`);
-        applyPresetToAllHeaters(schedule.preset_id, schedule.id);
+        for (const schedule of heaterSchedules) {
+          console.log(`Triggering heater schedule "${schedule.name}" (${schedule.preset_id}) at ${currentTime}`);
+          applyPresetToAllHeaters(schedule.preset_id, schedule.id);
+        }
       }
     }
   }, 60_000); // Check every minute

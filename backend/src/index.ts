@@ -71,13 +71,18 @@ import {
   getHeaterPresets,
   updateHeaterPreset,
   isValidHeaterPreset,
+  createHeaterPreset,
+  deleteHeaterPreset,
   getHeaterSchedules,
   createHeaterSchedule,
   deleteHeaterSchedule,
   toggleHeaterSchedule,
   applyPresetToAllHeaters,
+  applyFixedTempToAllHeaters,
   getPendingHeaterActions,
   clearAllPendingHeater,
+  getHeaterOverride,
+  setHeaterOverride,
 } from './scheduling';
 
 const app = new Hono();
@@ -662,6 +667,33 @@ app.get('/api/heater-presets', (c) => {
   return c.json(presets);
 });
 
+// Create heater preset
+app.post('/api/heater-presets', async (c) => {
+  const body = await c.req.json();
+  const { id, name, target_temp } = body;
+
+  if (!id || !name || target_temp === undefined) {
+    return c.json({ error: 'id, name, and target_temp are required' }, 400);
+  }
+
+  try {
+    const preset = createHeaterPreset(id, name, target_temp);
+    return c.json(preset);
+  } catch (e: any) {
+    return c.json({ error: e.message }, 400);
+  }
+});
+
+// Delete heater preset
+app.delete('/api/heater-presets/:id', (c) => {
+  const id = c.req.param('id');
+  const deleted = deleteHeaterPreset(id);
+  if (!deleted) {
+    return c.json({ error: 'Preset not found' }, 404);
+  }
+  return c.json({ success: true });
+});
+
 // Update heater preset temperature
 app.patch('/api/heater-presets/:id', async (c) => {
   const id = c.req.param('id');
@@ -750,6 +782,35 @@ app.get('/api/pending-heater-actions', (c) => {
 app.delete('/api/pending-heater-actions', (c) => {
   clearAllPendingHeater();
   return c.json({ success: true });
+});
+
+// Get heater override status
+app.get('/api/heater-override', (c) => {
+  const override = getHeaterOverride();
+  return c.json(override);
+});
+
+// Set heater override
+app.post('/api/heater-override', async (c) => {
+  const body = await c.req.json();
+  const { enabled, mode, fixed_temp } = body;
+
+  if (typeof enabled !== 'boolean') {
+    return c.json({ error: 'enabled must be boolean' }, 400);
+  }
+  if (mode && mode !== 'pause' && mode !== 'fixed') {
+    return c.json({ error: 'mode must be "pause" or "fixed"' }, 400);
+  }
+
+  const override = setHeaterOverride(enabled, mode || 'pause', fixed_temp || 18);
+
+  // If enabling fixed mode, apply fixed temp to all heaters immediately
+  if (enabled && mode === 'fixed' && fixed_temp) {
+    console.log(`Override enabled: applying fixed temp ${fixed_temp}°C to all heaters`);
+    applyFixedTempToAllHeaters(fixed_temp);
+  }
+
+  return c.json(override);
 });
 
 // === AIR PURIFIER ===
