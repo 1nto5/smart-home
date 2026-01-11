@@ -4,7 +4,7 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Palette, Calendar, House, Monitor, Sun, Moon } from 'lucide-svelte';
+  import { Home, Palette, Calendar, House, Monitor, Sun, Moon, Thermometer } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { children } = $props();
@@ -24,6 +24,7 @@
     { href: '/', label: 'Home', icon: Home },
     { href: '/presets', label: 'Presets', icon: Palette },
     { href: '/schedule', label: 'Schedule', icon: Calendar },
+    { href: '/heater-schedule', label: 'Heating', icon: Thermometer },
   ];
 
   const themeIcons: Record<string, ComponentType> = {

@@ -98,6 +98,30 @@ function getAllTrvIds(): string[] {
 }
 
 /**
+ * Apply a specific temperature to a single TRV
+ */
+async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<boolean> {
+  try {
+    const status = await getDeviceStatus(deviceId);
+    if (!status) {
+      return false; // TRV is offline
+    }
+
+    const tempValue = Math.round(targetTemp * TRV_DPS.TEMP_SCALE);
+    const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
+
+    if (success) {
+      console.log(`Set ${deviceId} to ${targetTemp}°C`);
+    }
+
+    return success;
+  } catch (error: any) {
+    console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, error.message);
+    return false;
+  }
+}
+
+/**
  * Apply preset to a single TRV
  */
 export async function applyPresetToHeater(deviceId: string, presetId: string): Promise<boolean> {
@@ -107,26 +131,32 @@ export async function applyPresetToHeater(deviceId: string, presetId: string): P
     return false;
   }
 
-  try {
-    // Check if TRV is reachable
-    const status = await getDeviceStatus(deviceId);
-    if (!status) {
-      return false; // TRV is offline
-    }
+  return applyTempToHeater(deviceId, preset.target_temp);
+}
 
-    // Set target temperature (multiply by 10 for DPS format)
-    const tempValue = Math.round(preset.target_temp * TRV_DPS.TEMP_SCALE);
-    const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
+/**
+ * Apply fixed temperature to all TRVs (for override mode)
+ */
+export async function applyFixedTempToAllHeaters(targetTemp: number): Promise<ApplyResult> {
+  const trvIds = getAllTrvIds();
+  const result: ApplyResult = {
+    success: [],
+    pending: [],
+    failed: [],
+  };
+
+  for (const trvId of trvIds) {
+    const success = await applyTempToHeater(trvId, targetTemp);
 
     if (success) {
-      console.log(`Set ${deviceId} to ${preset.target_temp}°C (${preset.name})`);
+      result.success.push(trvId);
+    } else {
+      result.pending.push(trvId);
     }
-
-    return success;
-  } catch (error: any) {
-    console.error(`Failed to apply ${presetId} to TRV ${deviceId}:`, error.message);
-    return false;
   }
+
+  console.log(`Applied fixed temp ${targetTemp}°C: ${result.success.length} ok, ${result.pending.length} offline`);
+  return result;
 }
 
 /**

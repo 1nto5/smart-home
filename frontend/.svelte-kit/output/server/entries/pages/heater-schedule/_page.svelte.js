@@ -1,8 +1,85 @@
-import { U as sanitize_props, V as spread_props, W as slot, a2 as head, X as ensure_array_like, Y as attr, Z as attr_class, _ as stringify } from "../../../chunks/index2.js";
+import { U as sanitize_props, V as spread_props, W as slot, a2 as head, Z as attr_class, Y as attr, X as ensure_array_like, _ as stringify } from "../../../chunks/index2.js";
 import { s as store } from "../../../chunks/stores.svelte.js";
-import { T as Thermometer, P as Play } from "../../../chunks/thermometer.js";
 import { I as Icon } from "../../../chunks/Icon.js";
+import { T as Thermometer } from "../../../chunks/thermometer.js";
+import { X, P as Play } from "../../../chunks/x.js";
 import { e as escape_html } from "../../../chunks/context.js";
+function Circle_pause($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["circle", { "cx": "12", "cy": "12", "r": "10" }],
+    ["line", { "x1": "10", "x2": "10", "y1": "15", "y2": "9" }],
+    ["line", { "x1": "14", "x2": "14", "y1": "15", "y2": "9" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "circle-pause" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name CirclePause
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgLz4KICA8bGluZSB4MT0iMTAiIHgyPSIxMCIgeTE9IjE1IiB5Mj0iOSIgLz4KICA8bGluZSB4MT0iMTQiIHgyPSIxNCIgeTE9IjE1IiB5Mj0iOSIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/circle-pause
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function Clock($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
@@ -236,6 +313,7 @@ function _page($$renderer, $$props) {
     let loading = false;
     let editingPreset = null;
     let editTemp = 21;
+    let selectedOverrideMode = "pause";
     function getPresetName(presetId) {
       const preset = store.heaterPresets.find((p) => p.id === presetId);
       return preset?.name ?? presetId;
@@ -245,13 +323,34 @@ function _page($$renderer, $$props) {
         $$renderer4.push(`<title>Smart Home - Heater Schedule</title>`);
       });
     });
-    $$renderer2.push(`<div class="space-y-8"><section><h2 class="text-lg font-medium text-content-primary mb-4 flex items-center gap-2">`);
+    $$renderer2.push(`<div class="space-y-8"><section${attr_class(`bg-surface-elevated border rounded-xl p-4 ${stringify(store.heaterOverride?.enabled ? "border-warning" : "border-stroke-default")}`)}><div class="flex items-center justify-between mb-4"><h2 class="text-lg font-medium text-content-primary flex items-center gap-2">`);
+    Circle_pause($$renderer2, { class: "w-5 h-5" });
+    $$renderer2.push(`<!----> Override Mode</h2> <button${attr("disabled", loading, true)}${attr_class(`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${stringify(store.heaterOverride?.enabled ? "bg-warning text-white hover:bg-warning/80" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}>${escape_html(store.heaterOverride?.enabled ? "Active" : "Off")}</button></div> `);
+    if (store.heaterOverride?.enabled) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-4"><p class="text-sm text-warning">Schedules are paused while override is active</p></div>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> <div class="flex flex-col sm:flex-row gap-4"><div class="flex items-center gap-3"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="overrideMode" value="pause"${attr("checked", selectedOverrideMode === "pause", true)} class="accent-accent"/> <span class="text-content-primary">Pause schedules</span></label> <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="overrideMode" value="fixed"${attr("checked", selectedOverrideMode === "fixed", true)} class="accent-accent"/> <span class="text-content-primary">Fixed temperature</span></label></div> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></div></section> <section><div class="flex items-center justify-between mb-4"><h2 class="text-lg font-medium text-content-primary flex items-center gap-2">`);
     Thermometer($$renderer2, { class: "w-5 h-5" });
-    $$renderer2.push(`<!----> Heater Presets</h2> <div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><!--[-->`);
+    $$renderer2.push(`<!----> Heater Presets</h2> <button class="text-sm px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors flex items-center gap-1">`);
+    Plus($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----> Add Preset</button></div> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> <div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><!--[-->`);
     const each_array = ensure_array_like(store.heaterPresets);
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
       let preset = each_array[$$index];
-      $$renderer2.push(`<div class="bg-surface-elevated border border-stroke-default rounded-xl p-4"><div class="flex items-center justify-between mb-2"><span class="font-medium text-content-primary">${escape_html(preset.name)}</span> <button${attr("disabled", loading, true)} class="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50" title="Apply to all heaters">`);
+      $$renderer2.push(`<div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 relative group"><button class="absolute top-2 right-2 p-1 rounded bg-error/20 text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Delete preset">`);
+      X($$renderer2, { class: "w-3 h-3" });
+      $$renderer2.push(`<!----></button> <div class="flex items-center justify-between mb-2"><span class="font-medium text-content-primary">${escape_html(preset.name)}</span> <button${attr("disabled", loading, true)} class="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50" title="Apply to all heaters">`);
       Play($$renderer2, { class: "w-4 h-4" });
       $$renderer2.push(`<!----></button></div> `);
       if (editingPreset === preset.id) {

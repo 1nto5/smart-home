@@ -229,6 +229,23 @@ export function initDatabase(): Database {
     ON pending_heater_actions(device_id)
   `);
 
+  // Heater override (vacation/pause mode) - singleton table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS heater_override (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      enabled INTEGER DEFAULT 0,
+      mode TEXT DEFAULT 'pause',
+      fixed_temp REAL DEFAULT 18,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default override row if not exists
+  const overrideCount = db.query('SELECT COUNT(*) as count FROM heater_override').get() as { count: number };
+  if (overrideCount.count === 0) {
+    db.run('INSERT INTO heater_override (id, enabled, mode, fixed_temp) VALUES (1, 0, \'pause\', 18)');
+  }
+
   // Sensor history (temperature, humidity, battery)
   db.run(`
     CREATE TABLE IF NOT EXISTS sensor_history (

@@ -1,4 +1,4 @@
-import type { Lamp, LampStatus, RoborockStatus, Preset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction } from './types';
+import type { Lamp, LampStatus, RoborockStatus, Preset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
@@ -205,6 +205,17 @@ export async function applyHeaterPreset(id: string): Promise<ApplyResult> {
   return fetcher(`/heater-presets/${id}/apply`, { method: 'POST' });
 }
 
+export async function createHeaterPreset(id: string, name: string, target_temp: number): Promise<HeaterPreset> {
+  return fetcher('/heater-presets', {
+    method: 'POST',
+    body: JSON.stringify({ id, name, target_temp }),
+  });
+}
+
+export async function deleteHeaterPreset(id: string): Promise<{ success: boolean }> {
+  return fetcher(`/heater-presets/${id}`, { method: 'DELETE' });
+}
+
 // Heater schedules
 export async function getHeaterSchedules(): Promise<HeaterSchedule[]> {
   return fetcher('/heater-schedules');
@@ -232,4 +243,20 @@ export async function getPendingHeaterActions(): Promise<PendingHeaterAction[]> 
 
 export async function clearPendingHeaterActions(): Promise<{ success: boolean }> {
   return fetcher('/pending-heater-actions', { method: 'DELETE' });
+}
+
+// Heater override (vacation/pause mode)
+export async function getHeaterOverride(): Promise<HeaterOverride> {
+  return fetcher('/heater-override');
+}
+
+export async function setHeaterOverride(
+  enabled: boolean,
+  mode: 'pause' | 'fixed',
+  fixed_temp?: number
+): Promise<HeaterOverride> {
+  return fetcher('/heater-override', {
+    method: 'POST',
+    body: JSON.stringify({ enabled, mode, fixed_temp }),
+  });
 }

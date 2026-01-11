@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset } from '$lib/api';
-  import { Thermometer, Clock, Trash2, Plus, Play } from 'lucide-svelte';
+  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset, setHeaterOverride, createHeaterPreset, deleteHeaterPreset } from '$lib/api';
+  import { Thermometer, Clock, Trash2, Plus, Play, PauseCircle, X } from 'lucide-svelte';
   import type { HeaterPreset } from '$lib/types';
 
   let newName = $state('');
@@ -10,6 +10,43 @@
   let loading = $state(false);
   let editingPreset = $state<string | null>(null);
   let editTemp = $state(21);
+
+  // Override mode state
+  let selectedOverrideMode = $state<'pause' | 'fixed'>('pause');
+  let overrideTemp = $state(18);
+
+  // Sync local state with store
+  $effect(() => {
+    if (store.heaterOverride) {
+      selectedOverrideMode = store.heaterOverride.mode;
+      overrideTemp = store.heaterOverride.fixed_temp;
+    }
+  });
+
+  async function handleOverrideToggle() {
+    loading = true;
+    const newEnabled = !store.heaterOverride?.enabled;
+    try {
+      await setHeaterOverride(newEnabled, selectedOverrideMode, overrideTemp);
+      await store.refreshHeaterOverride();
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
+
+  async function handleOverrideUpdate(mode?: 'pause' | 'fixed') {
+    if (!store.heaterOverride?.enabled) return;
+    loading = true;
+    const useMode = mode ?? selectedOverrideMode;
+    try {
+      await setHeaterOverride(true, useMode, overrideTemp);
+      await store.refreshHeaterOverride();
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
 
   async function handleCreate() {
     if (!newName.trim()) return;
@@ -54,6 +91,43 @@
     editingPreset = null;
   }
 
+  // New preset state
+  let showNewPresetForm = $state(false);
+  let createPresetId = $state('');
+  let createPresetName = $state('');
+  let createPresetTemp = $state(20);
+
+  async function handleCreatePreset() {
+    if (!createPresetId.trim() || !createPresetName.trim()) return;
+    loading = true;
+    try {
+      const id = createPresetId.trim().toLowerCase().replace(/\s+/g, '-');
+      await createHeaterPreset(id, createPresetName.trim(), createPresetTemp);
+      createPresetId = '';
+      createPresetName = '';
+      createPresetTemp = 20;
+      showNewPresetForm = false;
+      await store.refreshHeaterPresets();
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message || 'Failed to create preset');
+    }
+    loading = false;
+  }
+
+  async function handleDeletePreset(id: string) {
+    if (!confirm(`Delete preset "${id}"? This will also delete any schedules using this preset.`)) return;
+    loading = true;
+    try {
+      await deleteHeaterPreset(id);
+      await store.refreshHeaterPresets();
+      await store.refreshHeaterSchedules();
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
+
   async function handleApplyPreset(id: string) {
     loading = true;
     try {
@@ -77,15 +151,143 @@
 </svelte:head>
 
 <div class="space-y-8">
+  <!-- Override Mode -->
+  <section class="bg-surface-elevated border rounded-xl p-4 {store.heaterOverride?.enabled ? 'border-warning' : 'border-stroke-default'}">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-medium text-content-primary flex items-center gap-2">
+        <PauseCircle class="w-5 h-5" />
+        Override Mode
+      </h2>
+      <button
+        onclick={handleOverrideToggle}
+        disabled={loading}
+        class="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50
+               {store.heaterOverride?.enabled
+                 ? 'bg-warning text-white hover:bg-warning/80'
+                 : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+      >
+        {store.heaterOverride?.enabled ? 'Active' : 'Off'}
+      </button>
+    </div>
+
+    {#if store.heaterOverride?.enabled}
+      <div class="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-4">
+        <p class="text-sm text-warning">Schedules are paused while override is active</p>
+      </div>
+    {/if}
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="overrideMode"
+            value="pause"
+            checked={selectedOverrideMode === 'pause'}
+            onchange={() => { selectedOverrideMode = 'pause'; handleOverrideUpdate('pause'); }}
+            class="accent-accent"
+          />
+          <span class="text-content-primary">Pause schedules</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="overrideMode"
+            value="fixed"
+            checked={selectedOverrideMode === 'fixed'}
+            onchange={() => { selectedOverrideMode = 'fixed'; handleOverrideUpdate('fixed'); }}
+            class="accent-accent"
+          />
+          <span class="text-content-primary">Fixed temperature</span>
+        </label>
+      </div>
+
+      {#if selectedOverrideMode === 'fixed'}
+        <div class="flex items-center gap-2">
+          <input
+            type="range"
+            min="5"
+            max="25"
+            step="0.5"
+            bind:value={overrideTemp}
+            onchange={() => handleOverrideUpdate()}
+            class="w-32 accent-accent"
+          />
+          <span class="text-xl font-mono text-content-primary w-16">{overrideTemp}°C</span>
+        </div>
+      {/if}
+    </div>
+  </section>
+
   <!-- Presets -->
   <section>
-    <h2 class="text-lg font-medium text-content-primary mb-4 flex items-center gap-2">
-      <Thermometer class="w-5 h-5" />
-      Heater Presets
-    </h2>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-medium text-content-primary flex items-center gap-2">
+        <Thermometer class="w-5 h-5" />
+        Heater Presets
+      </h2>
+      <button
+        onclick={() => showNewPresetForm = !showNewPresetForm}
+        class="text-sm px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors flex items-center gap-1"
+      >
+        <Plus class="w-4 h-4" />
+        Add Preset
+      </button>
+    </div>
+
+    {#if showNewPresetForm}
+      <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 mb-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Preset ID (e.g. away)"
+            bind:value={createPresetId}
+            class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary flex-1"
+          />
+          <input
+            type="text"
+            placeholder="Display name (e.g. Away)"
+            bind:value={createPresetName}
+            class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary flex-1"
+          />
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              min="5"
+              max="30"
+              step="0.5"
+              bind:value={createPresetTemp}
+              class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 w-20 text-content-primary text-center"
+            />
+            <span class="text-content-secondary">°C</span>
+          </div>
+          <button
+            onclick={handleCreatePreset}
+            disabled={loading || !createPresetId.trim() || !createPresetName.trim()}
+            class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium"
+          >
+            Create
+          </button>
+          <button
+            onclick={() => showNewPresetForm = false}
+            class="px-3 py-2 rounded-lg bg-surface-recessed text-content-secondary hover:bg-stroke-default transition-colors"
+          >
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    {/if}
+
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {#each store.heaterPresets as preset (preset.id)}
-        <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4">
+        <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 relative group">
+          <button
+            onclick={() => handleDeletePreset(preset.id)}
+            class="absolute top-2 right-2 p-1 rounded bg-error/20 text-error opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Delete preset"
+          >
+            <X class="w-3 h-3" />
+          </button>
           <div class="flex items-center justify-between mb-2">
             <span class="font-medium text-content-primary">{preset.name}</span>
             <button

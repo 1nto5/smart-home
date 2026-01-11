@@ -143,3 +143,11 @@ export interface PendingHeaterAction {
   retry_count: number;
   created_at: string;
 }
+
+export interface HeaterOverride {
+  id: number;
+  enabled: boolean;
+  mode: 'pause' | 'fixed';
+  fixed_temp: number;
+  updated_at: string;
+}
