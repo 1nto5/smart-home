@@ -21,6 +21,7 @@ data/
 .env.*.local
 .env.production
 *.local
+DEPLOYMENT.md
 
 # IDE
 .idea/
