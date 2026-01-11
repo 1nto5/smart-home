@@ -1,13 +1,13 @@
-import { $ as sanitize_props, a0 as spread_props, a1 as slot, X as attr_class, W as attr, _ as stringify, U as ensure_array_like, Y as attr_style, a2 as head } from "../../chunks/index2.js";
-import { X, s as store, P as Play } from "../../chunks/x.js";
+import { U as sanitize_props, V as spread_props, W as slot, _ as attr_class, Z as attr, a0 as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
+import { s as store, P as Play } from "../../chunks/play.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
-import { P as Power, S as Sun, M as Moon } from "../../chunks/sun.js";
+import { X, F as Flame } from "../../chunks/x.js";
+import { P as Power, M as Moon } from "../../chunks/power.js";
 import { I as Icon } from "../../chunks/Icon.js";
+import { S as Sun, L as Lightbulb } from "../../chunks/sun.js";
 import { H as House, Z as Zap } from "../../chunks/zap.js";
-import { F as Flame } from "../../chunks/flame.js";
 import { T as Thermometer } from "../../chunks/thermometer.js";
-import { L as Lightbulb } from "../../chunks/lightbulb.js";
 function Battery_low($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**

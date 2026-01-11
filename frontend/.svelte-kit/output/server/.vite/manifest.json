@@ -33,14 +33,6 @@
     "file": "chunks/false.js",
     "name": "false"
   },
-  "_flame.js": {
-    "file": "chunks/flame.js",
-    "name": "flame",
-    "imports": [
-      "_index2.js",
-      "_Icon.js"
-    ]
-  },
   "_index.js": {
     "file": "chunks/index.js",
     "name": "index",
@@ -65,9 +57,17 @@
       "_environment.js"
     ]
   },
-  "_lightbulb.js": {
-    "file": "chunks/lightbulb.js",
-    "name": "lightbulb",
+  "_play.js": {
+    "file": "chunks/play.js",
+    "name": "play",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_power.js": {
+    "file": "chunks/power.js",
+    "name": "power",
     "imports": [
       "_index2.js",
       "_Icon.js"
@@ -182,11 +182,12 @@
       "_utils.js",
       "_state.svelte.js",
       "_zap.js",
-      "_lightbulb.js",
+      "_Icon.js",
+      "_sun.js",
       "_thermometer.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.C7GetxNx.css"
+      "_app/immutable/assets/_layout.CGNeByvs.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -202,14 +203,14 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_x.js",
+      "_play.js",
       "_context.js",
-      "_sun.js",
+      "_x.js",
+      "_power.js",
       "_Icon.js",
+      "_sun.js",
       "_zap.js",
-      "_flame.js",
-      "_thermometer.js",
-      "_lightbulb.js"
+      "_thermometer.js"
     ],
     "css": [
       "_app/immutable/assets/_page.D0c9KvZb.css"
@@ -222,11 +223,11 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_x.js",
+      "_play.js",
       "_Icon.js",
       "_thermometer.js",
       "_trash-2.js",
-      "_flame.js",
+      "_x.js",
       "_context.js"
     ],
     "css": [
@@ -240,10 +241,10 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_x.js",
-      "_lightbulb.js",
-      "_trash-2.js",
+      "_play.js",
       "_sun.js",
+      "_trash-2.js",
+      "_power.js",
       "_context.js"
     ],
     "css": [
