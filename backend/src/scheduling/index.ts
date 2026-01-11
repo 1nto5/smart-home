@@ -51,7 +51,12 @@ export {
   isValidHeaterPreset,
   createHeaterPreset,
   deleteHeaterPreset,
+  getPresetDeviceTemps,
+  setPresetDeviceTemp,
+  deletePresetDeviceTemp,
+  getEffectiveTemp,
   type HeaterPreset,
+  type HeaterPresetDevice,
 } from './heater-presets';
 
 export {

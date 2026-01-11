@@ -135,6 +135,12 @@ export interface HeaterPreset {
   updated_at?: string;
 }
 
+export interface HeaterPresetDevice {
+  preset_id: string;
+  device_id: string;
+  target_temp: number;
+}
+
 export interface HeaterSchedule {
   id: number;
   name: string;

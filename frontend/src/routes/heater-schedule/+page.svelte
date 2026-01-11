@@ -1,8 +1,9 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset, setHeaterOverride, createHeaterPreset, deleteHeaterPreset } from '$lib/api';
-  import { Thermometer, Clock, Trash2, Plus, Play, PauseCircle, X } from 'lucide-svelte';
-  import type { HeaterPreset } from '$lib/types';
+  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset, setHeaterOverride, createHeaterPreset, deleteHeaterPreset, getTuyaDevices, getPresetDeviceTemps, setPresetDeviceTemp, deletePresetDeviceTemp } from '$lib/api';
+  import { Thermometer, Clock, Trash2, Plus, Play, PauseCircle, X, ChevronDown, ChevronUp, RotateCcw } from 'lucide-svelte';
+  import type { HeaterPreset, HeaterPresetDevice, TuyaDevice } from '$lib/types';
+  import { browser } from '$app/environment';
 
   let newName = $state('');
   let newPresetId = $state('night');
@@ -15,6 +16,13 @@
   let selectedOverrideMode = $state<'pause' | 'fixed'>('pause');
   let overrideTemp = $state(18);
 
+  // Per-device temps state
+  let expandedPreset = $state<string | null>(null);
+  let trvDevices = $state<TuyaDevice[]>([]);
+  let presetDeviceTemps = $state<HeaterPresetDevice[]>([]);
+  let editingDeviceTemp = $state<string | null>(null);
+  let deviceTempValue = $state(21);
+
   // Sync local state with store
   $effect(() => {
     if (store.heaterOverride) {
@@ -22,6 +30,61 @@
       overrideTemp = store.heaterOverride.fixed_temp;
     }
   });
+
+  // Load TRV devices on mount
+  $effect(() => {
+    if (browser) {
+      getTuyaDevices().then(devices => {
+        trvDevices = devices.filter(d => d.category === 'wkf');
+      });
+    }
+  });
+
+  async function toggleExpandPreset(presetId: string) {
+    if (expandedPreset === presetId) {
+      expandedPreset = null;
+      presetDeviceTemps = [];
+    } else {
+      expandedPreset = presetId;
+      presetDeviceTemps = await getPresetDeviceTemps(presetId);
+    }
+    editingDeviceTemp = null;
+  }
+
+  function getDeviceTemp(deviceId: string, defaultTemp: number): { temp: number; isCustom: boolean } {
+    const custom = presetDeviceTemps.find(d => d.device_id === deviceId);
+    return custom
+      ? { temp: custom.target_temp, isCustom: true }
+      : { temp: defaultTemp, isCustom: false };
+  }
+
+  function startEditDeviceTemp(deviceId: string, currentTemp: number) {
+    editingDeviceTemp = deviceId;
+    deviceTempValue = currentTemp;
+  }
+
+  async function saveDeviceTemp(presetId: string, deviceId: string) {
+    loading = true;
+    try {
+      await setPresetDeviceTemp(presetId, deviceId, deviceTempValue);
+      presetDeviceTemps = await getPresetDeviceTemps(presetId);
+      editingDeviceTemp = null;
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
+
+  async function resetDeviceTemp(presetId: string, deviceId: string) {
+    loading = true;
+    try {
+      await deletePresetDeviceTemp(presetId, deviceId);
+      presetDeviceTemps = await getPresetDeviceTemps(presetId);
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
 
   async function handleOverrideToggle() {
     loading = true;
@@ -93,17 +156,17 @@
 
   // New preset state
   let showNewPresetForm = $state(false);
-  let createPresetId = $state('');
+  let createPresetIdVal = $state('');
   let createPresetName = $state('');
   let createPresetTemp = $state(20);
 
   async function handleCreatePreset() {
-    if (!createPresetId.trim() || !createPresetName.trim()) return;
+    if (!createPresetIdVal.trim() || !createPresetName.trim()) return;
     loading = true;
     try {
-      const id = createPresetId.trim().toLowerCase().replace(/\s+/g, '-');
+      const id = createPresetIdVal.trim().toLowerCase().replace(/\s+/g, '-');
       await createHeaterPreset(id, createPresetName.trim(), createPresetTemp);
-      createPresetId = '';
+      createPresetIdVal = '';
       createPresetName = '';
       createPresetTemp = 20;
       showNewPresetForm = false;
@@ -143,6 +206,11 @@
   function getPresetName(presetId: string): string {
     const preset = store.heaterPresets.find(p => p.id === presetId);
     return preset?.name ?? presetId;
+  }
+
+  function getDeviceName(deviceId: string): string {
+    const device = trvDevices.find(d => d.id === deviceId);
+    return device?.name ?? deviceId;
   }
 </script>
 
@@ -241,7 +309,7 @@
           <input
             type="text"
             placeholder="Preset ID (e.g. away)"
-            bind:value={createPresetId}
+            bind:value={createPresetIdVal}
             class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary flex-1"
           />
           <input
@@ -263,7 +331,7 @@
           </div>
           <button
             onclick={handleCreatePreset}
-            disabled={loading || !createPresetId.trim() || !createPresetName.trim()}
+            disabled={loading || !createPresetIdVal.trim() || !createPresetName.trim()}
             class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium"
           >
             Create
@@ -278,58 +346,135 @@
       </div>
     {/if}
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="space-y-3">
       {#each store.heaterPresets as preset (preset.id)}
-        <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 relative group">
-          <button
-            onclick={() => handleDeletePreset(preset.id)}
-            class="absolute top-2 right-2 p-1 rounded bg-error/20 text-error opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Delete preset"
-          >
-            <X class="w-3 h-3" />
-          </button>
-          <div class="flex items-center justify-between mb-2">
-            <span class="font-medium text-content-primary">{preset.name}</span>
+        <div class="bg-surface-elevated border border-stroke-default rounded-xl overflow-hidden">
+          <div class="p-4 relative group">
             <button
-              onclick={() => handleApplyPreset(preset.id)}
-              disabled={loading}
-              class="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50"
-              title="Apply to all heaters"
+              onclick={() => handleDeletePreset(preset.id)}
+              class="absolute top-2 right-2 p-1 rounded bg-error/20 text-error opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Delete preset"
             >
-              <Play class="w-4 h-4" />
+              <X class="w-3 h-3" />
             </button>
-          </div>
-          {#if editingPreset === preset.id}
-            <div class="flex items-center gap-2">
-              <input
-                type="number"
-                min="5"
-                max="30"
-                step="0.5"
-                bind:value={editTemp}
-                class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center"
-              />
-              <span class="text-content-secondary">°C</span>
-              <button
-                onclick={() => savePreset(preset.id)}
-                class="text-xs px-2 py-1 bg-success/20 text-success rounded"
-              >
-                Save
-              </button>
-              <button
-                onclick={cancelEdit}
-                class="text-xs px-2 py-1 bg-surface-recessed text-content-secondary rounded"
-              >
-                Cancel
-              </button>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <span class="font-medium text-content-primary">{preset.name}</span>
+                {#if editingPreset === preset.id}
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="5"
+                      max="30"
+                      step="0.5"
+                      bind:value={editTemp}
+                      class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center"
+                    />
+                    <span class="text-content-secondary">°C</span>
+                    <button
+                      onclick={() => savePreset(preset.id)}
+                      class="text-xs px-2 py-1 bg-success/20 text-success rounded"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onclick={cancelEdit}
+                      class="text-xs px-2 py-1 bg-surface-recessed text-content-secondary rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                {:else}
+                  <button
+                    onclick={() => startEditPreset(preset)}
+                    class="text-2xl font-mono text-content-primary hover:text-accent transition-colors"
+                  >
+                    {preset.target_temp}°C
+                  </button>
+                {/if}
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  onclick={() => handleApplyPreset(preset.id)}
+                  disabled={loading}
+                  class="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50"
+                  title="Apply to all heaters"
+                >
+                  <Play class="w-4 h-4" />
+                </button>
+                <button
+                  onclick={() => toggleExpandPreset(preset.id)}
+                  class="p-1.5 rounded-lg bg-surface-recessed text-content-secondary hover:bg-stroke-default transition-colors"
+                  title="Per-device settings"
+                >
+                  {#if expandedPreset === preset.id}
+                    <ChevronUp class="w-4 h-4" />
+                  {:else}
+                    <ChevronDown class="w-4 h-4" />
+                  {/if}
+                </button>
+              </div>
             </div>
-          {:else}
-            <button
-              onclick={() => startEditPreset(preset)}
-              class="text-2xl font-mono text-content-primary hover:text-accent transition-colors"
-            >
-              {preset.target_temp}°C
-            </button>
+          </div>
+
+          {#if expandedPreset === preset.id}
+            <div class="border-t border-stroke-default bg-surface-recessed/50 p-4">
+              <p class="text-sm text-content-secondary mb-3">Per-device temperatures (override default {preset.target_temp}°C)</p>
+              {#if trvDevices.length === 0}
+                <p class="text-sm text-content-tertiary">No TRV devices found</p>
+              {:else}
+                <div class="space-y-2">
+                  {#each trvDevices as device (device.id)}
+                    {@const tempInfo = getDeviceTemp(device.id, preset.target_temp)}
+                    <div class="flex items-center justify-between bg-surface-elevated rounded-lg p-2">
+                      <span class="text-sm text-content-primary">{device.name || device.id}</span>
+                      <div class="flex items-center gap-2">
+                        {#if editingDeviceTemp === device.id}
+                          <input
+                            type="number"
+                            min="5"
+                            max="30"
+                            step="0.5"
+                            bind:value={deviceTempValue}
+                            class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center text-sm"
+                          />
+                          <button
+                            onclick={() => saveDeviceTemp(preset.id, device.id)}
+                            disabled={loading}
+                            class="text-xs px-2 py-1 bg-success/20 text-success rounded disabled:opacity-50"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onclick={() => editingDeviceTemp = null}
+                            class="text-xs px-2 py-1 bg-surface-recessed text-content-secondary rounded"
+                          >
+                            Cancel
+                          </button>
+                        {:else}
+                          <button
+                            onclick={() => startEditDeviceTemp(device.id, tempInfo.temp)}
+                            class="font-mono text-sm {tempInfo.isCustom ? 'text-accent' : 'text-content-secondary'} hover:text-accent transition-colors"
+                          >
+                            {tempInfo.temp}°C {tempInfo.isCustom ? '' : '(default)'}
+                          </button>
+                          {#if tempInfo.isCustom}
+                            <button
+                              onclick={() => resetDeviceTemp(preset.id, device.id)}
+                              disabled={loading}
+                              class="p-1 rounded bg-surface-recessed text-content-tertiary hover:text-content-secondary transition-colors disabled:opacity-50"
+                              title="Reset to default"
+                            >
+                              <RotateCcw class="w-3 h-3" />
+                            </button>
+                          {/if}
+                        {/if}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
           {/if}
         </div>
       {/each}
@@ -437,7 +582,7 @@
         {#each store.pendingHeaterActions as action (action.id)}
           <div class="bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between">
             <div>
-              <span class="font-mono text-sm text-content-primary">{action.device_id}</span>
+              <span class="font-mono text-sm text-content-primary">{getDeviceName(action.device_id)}</span>
               <span class="text-sm text-content-secondary ml-2">→ {getPresetName(action.preset_id)}</span>
             </div>
             <span class="text-xs text-content-tertiary">
