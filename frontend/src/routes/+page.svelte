@@ -6,6 +6,7 @@
   import YamahaCard from '$lib/components/YamahaCard.svelte';
   import AirPurifierCard from '$lib/components/AirPurifierCard.svelte';
   import { store } from '$lib/stores.svelte';
+  import { Lightbulb, Thermometer, Radio, Volume2, Bot } from 'lucide-svelte';
 
   // Filter devices by type
   let lamps = $derived(store.lamps.filter(l => l.category === 'lamp'));
@@ -24,23 +25,31 @@
   <title>Smart Home</title>
 </svelte:head>
 
-<div class="pb-24 space-y-6">
-  <!-- Skeleton loading -->
+<div class="pb-24 space-y-8">
+  <!-- Skeleton loading with scan effect -->
   {#if store.loading && !hasLoaded}
-    <div class="space-y-6">
-      {#each Array(3) as _}
-        <section>
-          <div class="w-20 h-5 rounded bg-surface-recessed animate-pulse mb-3"></div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-            {#each Array(4) as _}
-              <div class="card rounded-xl p-2.5">
-                <div class="flex items-center gap-2.5">
-                  <div class="w-9 h-9 rounded-lg bg-surface-recessed animate-pulse"></div>
-                  <div class="flex-1 space-y-1.5">
-                    <div class="w-20 h-3.5 rounded bg-surface-recessed animate-pulse"></div>
-                    <div class="w-14 h-3 rounded bg-surface-recessed animate-pulse"></div>
+    <div class="space-y-8">
+      {#each Array(4) as _, i}
+        <section class="relative" style="animation-delay: {i * 100}ms">
+          <!-- Section header skeleton -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-surface-elevated skeleton-glow"></div>
+            <div class="w-24 h-5 rounded bg-surface-elevated skeleton-glow"></div>
+            <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent"></div>
+          </div>
+          <!-- Card grid skeleton -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {#each Array(4) as _, j}
+              <div class="card p-3 relative overflow-hidden" style="animation-delay: {(i * 4 + j) * 50}ms">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-surface-recessed skeleton-glow"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="w-20 h-3.5 rounded bg-surface-recessed skeleton-glow"></div>
+                    <div class="w-14 h-3 rounded bg-surface-recessed skeleton-glow"></div>
                   </div>
                 </div>
+                <!-- Scan line effect -->
+                <div class="absolute inset-0 scan-line-overlay"></div>
               </div>
             {/each}
           </div>
@@ -51,11 +60,15 @@
     <!-- Lights -->
     {#if lamps.length > 0}
       <section>
-        <h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2">
-          <span class="text-device-lights-text">💡</span> Lights
-          <span class="text-xs text-content-tertiary">({lamps.length})</span>
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        <div class="section-header section-header-lights">
+          <div class="section-icon glow-lights">
+            <Lightbulb class="w-4 h-4" />
+          </div>
+          <h2 class="section-title">Lights</h2>
+          <span class="section-count">{lamps.length}</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each lamps as lamp (lamp.id)}
             <LampCard {lamp} compact />
           {/each}
@@ -66,11 +79,15 @@
     <!-- Climate -->
     {#if thermostats.length > 0 || store.airPurifier}
       <section>
-        <h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2">
-          <span class="text-device-climate-heat-text">🌡️</span> Climate
-          <span class="text-xs text-content-tertiary">({thermostats.length + (store.airPurifier ? 1 : 0)})</span>
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        <div class="section-header section-header-climate">
+          <div class="section-icon glow-climate-heat">
+            <Thermometer class="w-4 h-4" />
+          </div>
+          <h2 class="section-title">Climate</h2>
+          <span class="section-count">{thermostats.length + (store.airPurifier ? 1 : 0)}</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each thermostats as device (device.id)}
             <TRVCard {device} compact />
           {/each}
@@ -84,11 +101,15 @@
     <!-- Sensors -->
     {#if sensors.length > 0}
       <section>
-        <h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2">
-          <span class="text-device-sensors-text">📡</span> Sensors
-          <span class="text-xs text-content-tertiary">({sensors.length})</span>
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        <div class="section-header section-header-sensors">
+          <div class="section-icon glow-sensors">
+            <Radio class="w-4 h-4" />
+          </div>
+          <h2 class="section-title">Sensors</h2>
+          <span class="section-count">{sensors.length}</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each sensors as device (device.id)}
             <TuyaSensorCard {device} compact />
           {/each}
@@ -99,11 +120,15 @@
     <!-- Audio -->
     {#if store.yamahaDevices.length > 0}
       <section>
-        <h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2">
-          <span class="text-device-audio-text">🔊</span> Audio
-          <span class="text-xs text-content-tertiary">({store.yamahaDevices.length})</span>
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        <div class="section-header section-header-audio">
+          <div class="section-icon glow-audio">
+            <Volume2 class="w-4 h-4" />
+          </div>
+          <h2 class="section-title">Audio</h2>
+          <span class="section-count">{store.yamahaDevices.length}</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each store.yamahaDevices as device (device.id)}
             <YamahaCard {device} compact />
           {/each}
@@ -113,13 +138,139 @@
 
     <!-- Robot -->
     <section>
-      <h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2">
-        <span class="text-device-robot-text">🤖</span> Robot
-        <span class="text-xs text-content-tertiary">(1)</span>
-      </h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+      <div class="section-header section-header-robot">
+        <div class="section-icon glow-robot">
+          <Bot class="w-4 h-4" />
+        </div>
+        <h2 class="section-title">Robot</h2>
+        <span class="section-count">1</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         <RoborockCard status={store.roborock} compact />
       </div>
     </section>
   {/if}
 </div>
+
+<style>
+  /* Section header base */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-content-secondary);
+  }
+
+  .section-count {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: var(--color-surface-elevated);
+    color: var(--color-content-tertiary);
+    border: 1px solid var(--color-stroke-subtle);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-stroke-subtle) 0%, transparent 100%);
+  }
+
+  /* Category-specific accents */
+  .section-header-lights .section-icon {
+    background: color-mix(in srgb, var(--color-lights-text) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-lights-text) 30%, transparent);
+    color: var(--color-lights-text);
+  }
+  .section-header-lights .section-title { color: var(--color-lights-text); }
+  .section-header-lights .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-lights-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  .section-header-climate .section-icon {
+    background: color-mix(in srgb, var(--color-climate-heat-text) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-climate-heat-text) 30%, transparent);
+    color: var(--color-climate-heat-text);
+  }
+  .section-header-climate .section-title { color: var(--color-climate-heat-text); }
+  .section-header-climate .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-climate-heat-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  .section-header-sensors .section-icon {
+    background: color-mix(in srgb, var(--color-sensors-text) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-sensors-text) 30%, transparent);
+    color: var(--color-sensors-text);
+  }
+  .section-header-sensors .section-title { color: var(--color-sensors-text); }
+  .section-header-sensors .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-sensors-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  .section-header-audio .section-icon {
+    background: color-mix(in srgb, var(--color-audio-text) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-audio-text) 30%, transparent);
+    color: var(--color-audio-text);
+  }
+  .section-header-audio .section-title { color: var(--color-audio-text); }
+  .section-header-audio .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-audio-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  .section-header-robot .section-icon {
+    background: color-mix(in srgb, var(--color-robot-text) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-robot-text) 30%, transparent);
+    color: var(--color-robot-text);
+  }
+  .section-header-robot .section-title { color: var(--color-robot-text); }
+  .section-header-robot .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-robot-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  /* Skeleton loading effects */
+  .skeleton-glow {
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+
+  .scan-line-overlay {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-accent) 10%, transparent) 50%,
+      transparent 100%
+    );
+    animation: scan-down 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes scan-down {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+</style>

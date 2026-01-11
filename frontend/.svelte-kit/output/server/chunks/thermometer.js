@@ -1,4 +1,4 @@
-import { U as sanitize_props, V as spread_props, W as slot } from "./index2.js";
+import { $ as sanitize_props, a0 as spread_props, a1 as slot } from "./index2.js";
 import { I as Icon } from "./Icon.js";
 function Thermometer($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);

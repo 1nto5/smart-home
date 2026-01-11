@@ -4,7 +4,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Flame, Radio } from 'lucide-svelte';
+  import { Flame, Snowflake, ThermometerSun } from 'lucide-svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -49,7 +49,6 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dps: 4, value: Math.round(temp * 10) }),
       });
-      // Background refresh
       refreshStatus();
     } catch (e) {
       console.error(e);
@@ -113,19 +112,18 @@
   onkeydown={(e) => e.key === 'Enter' && (dialogOpen = true)}
   role="button"
   tabindex="0"
-  class="card transition-card hover:scale-[1.02] {compact ? 'p-2.5' : 'p-3'} w-full text-left cursor-pointer"
+  class="card {compact ? 'p-3' : 'p-4'} w-full text-left cursor-pointer
+         {valve === 'opened' ? 'card-active glow-climate-heat' : ''}"
 >
-  <div class="flex items-center gap-2.5">
+  <div class="flex items-center gap-3">
     <!-- Valve status indicator -->
     <div
-      class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-             {valve === 'opened' ? 'badge-climate-heat' : 'badge-climate-cool'}"
-      class:status-active={valve === 'opened'}
+      class="power-btn {valve === 'opened' ? 'power-btn-on glow-climate-heat' : 'glow-climate-cool'}"
     >
       {#if valve === 'opened'}
         <Flame class="w-4 h-4" />
       {:else}
-        <Radio class="w-4 h-4" />
+        <Snowflake class="w-4 h-4" />
       {/if}
     </div>
 
@@ -134,10 +132,12 @@
       <h4 class="font-medium text-sm text-content-primary truncate">{displayName}</h4>
       {#if currentTemp !== null}
         <p class="text-xs text-content-secondary">
-          {currentTemp}°C {valve === 'opened' ? '→' : '·'} {targetTemp}°C
+          <span class="{valve === 'opened' ? 'text-device-climate-heat-text' : ''}">{currentTemp}°C</span>
+          <span class="mx-1 text-content-tertiary">/</span>
+          <span class="text-device-climate-heat-text">{targetTemp}°C</span>
         </p>
       {:else}
-        <p class="text-xs text-content-secondary">No data</p>
+        <p class="text-xs text-content-tertiary">No data</p>
       {/if}
     </div>
   </div>
@@ -145,11 +145,11 @@
 
 <!-- Detail Dialog -->
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
-  <div class="space-y-4">
+  <div class="space-y-5">
     <!-- Valve Status -->
-    <div class="flex items-center justify-between">
-      <span class="text-content-secondary">Valve</span>
-      <span class="font-medium {valve === 'opened' ? 'text-device-climate-heat-text' : 'text-device-climate-cool-text'}">
+    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+      <span class="text-sm text-content-secondary uppercase tracking-wider">Valve</span>
+      <span class="font-medium text-sm {valve === 'opened' ? 'text-device-climate-heat-text neon-text-subtle' : 'text-device-climate-cool-text neon-text-subtle'}">
         {valve === 'opened' ? 'Heating' : 'Idle'}
       </span>
     </div>
@@ -157,25 +157,25 @@
     {#if currentTemp !== null && targetTemp !== null}
       <!-- Temperature Display -->
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-surface-recessed rounded-xl p-4 text-center">
-          <span class="text-xs text-content-secondary uppercase tracking-wide">Current</span>
-          <p class="text-2xl sm:text-3xl font-bold mt-1 text-content-primary">{currentTemp}°C</p>
+        <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle">
+          <span class="text-xs text-content-tertiary uppercase tracking-wider">Current</span>
+          <p class="font-display text-3xl mt-2 text-content-primary">{currentTemp}°</p>
         </div>
-        <div class="bg-surface-recessed rounded-xl p-4 text-center">
-          <span class="text-xs text-content-secondary uppercase tracking-wide">Target</span>
-          <p class="text-2xl sm:text-3xl font-bold mt-1 text-device-climate-heat-text">{targetTemp}°C</p>
+        <div class="rounded-xl p-4 text-center glow-climate-heat power-btn-on">
+          <span class="text-xs uppercase tracking-wider opacity-80">Target</span>
+          <p class="font-display text-3xl mt-2">{targetTemp}°</p>
         </div>
       </div>
 
       <!-- Temperature Control -->
       <div>
-        <p class="text-sm text-content-secondary mb-3">Set Temperature</p>
+        <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Set Temperature</p>
         <div class="flex items-center justify-center gap-4">
           <button
             onclick={() => adjustTemp(-0.5)}
             disabled={targetTemp !== null && targetTemp <= 5}
-            class="w-14 h-14 rounded-full badge-climate-cool text-2xl font-medium
-                   hover:opacity-80 disabled:opacity-50 transition-all"
+            class="w-14 h-14 rounded-full glow-climate-cool power-btn-on text-2xl font-medium
+                   hover:scale-105 disabled:opacity-40 transition-all"
           >−</button>
           <div class="relative">
             {#if isEditing}
@@ -186,7 +186,7 @@
                 min="5"
                 max="30"
                 step="0.5"
-                class="text-3xl font-bold w-24 text-center bg-transparent border-b-2 border-device-climate-heat-text outline-none text-content-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                class="font-display text-3xl w-28 text-center bg-transparent border-b-2 border-device-climate-heat-text outline-none text-content-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 onblur={commitEdit}
                 onkeydown={(e) => {
                   if (e.key === 'Enter') commitEdit();
@@ -196,37 +196,37 @@
             {:else}
               <button
                 onclick={startEditing}
-                class="text-3xl font-bold w-24 text-center text-content-primary hover:text-device-climate-heat-text transition-colors cursor-text"
+                class="font-display text-3xl w-28 text-center text-content-primary hover:text-device-climate-heat-text transition-colors cursor-text"
                 title="Click to edit"
               >
                 {targetTemp}°C
               </button>
             {/if}
             {#if isPending}
-              <span class="absolute -top-1 -right-1 w-2 h-2 bg-device-climate-heat-text rounded-full animate-pulse"></span>
+              <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-device-climate-heat-text animate-glow"></span>
             {/if}
             {#if hasError}
-              <span class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full"></span>
+              <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-error"></span>
             {/if}
           </div>
           <button
             onclick={() => adjustTemp(0.5)}
             disabled={targetTemp !== null && targetTemp >= 30}
-            class="w-14 h-14 rounded-full badge-climate-heat text-2xl font-medium
-                   hover:opacity-80 disabled:opacity-50 transition-all"
+            class="w-14 h-14 rounded-full glow-climate-heat power-btn-on text-2xl font-medium
+                   hover:scale-105 disabled:opacity-40 transition-all"
           >+</button>
         </div>
       </div>
 
       <!-- Quick Presets -->
       <div>
-        <p class="text-sm text-content-secondary mb-2">Quick Set</p>
+        <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Quick Set</p>
         <div class="grid grid-cols-4 gap-2">
           {#each [15, 18, 21, 24] as temp}
             <button
               onclick={() => setTempDirect(temp)}
-              class="py-2 text-sm rounded-lg transition-colors
-                     {targetTemp === temp ? 'badge-climate-heat' : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+              class="py-3 rounded-lg transition-all font-medium
+                     {targetTemp === temp ? 'glow-climate-heat power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
             >
               {temp}°
             </button>
@@ -234,20 +234,21 @@
         </div>
       </div>
     {:else}
-      <div class="text-center py-8 text-content-secondary">
-        No data available
+      <div class="text-center py-8 text-content-tertiary">
+        <ThermometerSun class="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <p>No data available</p>
       </div>
     {/if}
 
     <!-- Device Info -->
-    <div class="pt-4 border-t border-stroke-default space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-content-secondary">Device ID</span>
-        <span class="font-mono text-xs text-content-tertiary">{device.id.slice(0, 12)}...</span>
+    <div class="pt-4 border-t border-stroke-subtle space-y-2">
+      <div class="flex justify-between items-center">
+        <span class="text-xs text-content-tertiary uppercase tracking-wider">Device ID</span>
+        <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">{device.id.slice(0, 12)}...</span>
       </div>
-      <div class="flex justify-between">
-        <span class="text-content-secondary">Online</span>
-        <span class="{device.online ? 'text-success' : 'text-error'}">{device.online ? 'Yes' : 'No'}</span>
+      <div class="flex justify-between items-center">
+        <span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span>
+        <span class="text-xs {device.online ? 'text-success' : 'text-error'}">{device.online ? 'Connected' : 'Offline'}</span>
       </div>
     </div>
   </div>
