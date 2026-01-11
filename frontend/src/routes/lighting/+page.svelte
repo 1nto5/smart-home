@@ -232,14 +232,7 @@
     <!-- Preset Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {#each Object.entries(presets) as [name, preset] (name)}
-        <div class="card relative group hover:border-device-lights-text/30 transition-colors">
-          <button
-            onclick={() => handleDeletePreset(name)}
-            class="absolute top-2 right-2 p-1.5 rounded-lg bg-error/10 text-error border border-error/30 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error/20"
-            title="Delete preset"
-          >
-            <X class="w-3 h-3" />
-          </button>
+        <div class="card group hover:border-device-lights-text/30 transition-colors">
           <div class="p-4">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
@@ -248,15 +241,24 @@
                 </div>
                 <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
               </div>
-              <button
-                onclick={() => handleApplyPreset(name)}
-                disabled={applyingPreset !== null}
-                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-lights-text hover:glow-lights hover:power-btn-on transition-all disabled:opacity-50"
-                class:pulse-ring={applyingPreset === name}
-                title="Apply to all lamps"
-              >
-                <Play class="w-4 h-4" />
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button
+                  onclick={() => handleApplyPreset(name)}
+                  disabled={applyingPreset !== null}
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-lights-text hover:glow-lights hover:power-btn-on transition-all disabled:opacity-50"
+                  class:pulse-ring={applyingPreset === name}
+                  title="Apply to all lamps"
+                >
+                  <Play class="w-4 h-4" />
+                </button>
+                <button
+                  onclick={() => handleDeletePreset(name)}
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary opacity-0 group-hover:opacity-100 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                  title="Delete preset"
+                >
+                  <Trash2 class="w-4 h-4" />
+                </button>
+              </div>
             </div>
             {#if editingPreset === name}
               <div class="space-y-3 pt-2 border-t border-stroke-subtle">

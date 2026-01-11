@@ -1,8 +1,8 @@
-import { a2 as head, U as ensure_array_like, W as attr, X as attr_class, _ as stringify } from "../../../chunks/index2.js";
-import { X, P as Play, s as store } from "../../../chunks/x.js";
-import { L as Lightbulb } from "../../../chunks/lightbulb.js";
-import { P as Plus, C as Clock, T as Trash_2, a as Circle_alert } from "../../../chunks/trash-2.js";
-import { P as Power, M as Moon, S as Sun } from "../../../chunks/sun.js";
+import { a2 as head, X as ensure_array_like, Z as attr, _ as attr_class, a0 as stringify } from "../../../chunks/index2.js";
+import { P as Play, s as store } from "../../../chunks/play.js";
+import { L as Lightbulb, S as Sun } from "../../../chunks/sun.js";
+import { P as Plus, T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
+import { P as Power, M as Moon } from "../../../chunks/power.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
@@ -49,13 +49,13 @@ function _page($$renderer, $$props) {
     const each_array = ensure_array_like(Object.entries(presets));
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
       let [name, preset] = each_array[$$index];
-      $$renderer2.push(`<div class="card relative group hover:border-device-lights-text/30 transition-colors"><button class="absolute top-2 right-2 p-1.5 rounded-lg bg-error/10 text-error border border-error/30 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error/20" title="Delete preset">`);
-      X($$renderer2, { class: "w-3 h-3" });
-      $$renderer2.push(`<!----></button> <div class="p-4"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg glow-lights power-btn-on flex items-center justify-center"><!---->`);
+      $$renderer2.push(`<div class="card group hover:border-device-lights-text/30 transition-colors"><div class="p-4"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg glow-lights power-btn-on flex items-center justify-center"><!---->`);
       getIcon(name)?.($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <span class="font-display text-sm uppercase tracking-wider text-content-primary">${escape_html(preset.name)}</span></div> <button${attr("disabled", applyingPreset !== null, true)}${attr_class("p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-lights-text hover:glow-lights hover:power-btn-on transition-all disabled:opacity-50", void 0, { "pulse-ring": applyingPreset === name })} title="Apply to all lamps">`);
+      $$renderer2.push(`<!----></div> <span class="font-display text-sm uppercase tracking-wider text-content-primary">${escape_html(preset.name)}</span></div> <div class="flex items-center gap-1.5"><button${attr("disabled", applyingPreset !== null, true)}${attr_class("p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-lights-text hover:glow-lights hover:power-btn-on transition-all disabled:opacity-50", void 0, { "pulse-ring": applyingPreset === name })} title="Apply to all lamps">`);
       Play($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></button></div> `);
+      $$renderer2.push(`<!----></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary opacity-0 group-hover:opacity-100 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all" title="Delete preset">`);
+      Trash_2($$renderer2, { class: "w-4 h-4" });
+      $$renderer2.push(`<!----></button></div></div> `);
       if (editingPreset === name) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<div class="space-y-3 pt-2 border-t border-stroke-subtle"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox"${attr("checked", editPower, true)} class="sr-only peer"/> <div class="w-9 h-5 rounded-full bg-surface-recessed border border-stroke-default peer-checked:glow-lights peer-checked:power-btn-on transition-all relative"><div class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-content-tertiary peer-checked:translate-x-4 peer-checked:bg-white transition-all"></div></div> <span class="text-sm text-content-primary">Power</span></label> <div class="space-y-1"><div class="flex items-center justify-between"><span class="text-xs text-content-tertiary">Brightness</span> <span class="font-display text-sm text-device-lights-text">${escape_html(editBrightness)}%</span></div> <input type="range" min="1" max="100"${attr("value", editBrightness)} class="w-full" style="--color-accent: var(--color-lights-text);"/></div> <div class="space-y-1"><div class="flex items-center justify-between"><span class="text-xs text-content-tertiary">Color Temp</span> <span class="font-display text-sm text-device-lights-text">${escape_html(editColorTemp)}K</span></div> <input type="range" min="2700" max="6500" step="100"${attr("value", editColorTemp)} class="w-full" style="--color-accent: var(--color-lights-text);"/></div> <div class="flex gap-2 pt-1"><button${attr("disabled", loading, true)} class="flex-1 py-2 rounded-lg bg-success/20 text-success border border-success/30 font-medium text-sm disabled:opacity-50 hover:bg-success/30 transition-colors">Save</button> <button class="px-3 py-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary text-sm hover:border-stroke-strong transition-colors">Cancel</button></div></div>`);
