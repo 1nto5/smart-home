@@ -2,7 +2,18 @@
  * Scheduling module exports
  */
 
-export { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
+export {
+  LAMP_PRESETS,
+  isValidPreset,
+  getLampPresets,
+  getLampPreset,
+  updateLampPreset,
+  createLampPreset,
+  deleteLampPreset,
+  refreshLampPresetsCache,
+  type LampPreset,
+  type PresetName,
+} from './presets';
 
 export {
   getSchedules,

@@ -111,6 +111,34 @@ export function initDatabase(): Database {
     });
   }
 
+  // Lamp presets (configurable via UI)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS lamp_presets (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      brightness INTEGER NOT NULL,
+      color_temp INTEGER NOT NULL,
+      power INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default lamp presets if empty
+  const lampPresetCount = db.query('SELECT COUNT(*) as count FROM lamp_presets').get() as { count: number };
+  if (lampPresetCount.count === 0) {
+    const defaultPresets = [
+      { id: 'day', name: 'Day Mode', brightness: 100, color_temp: 5000, power: 1 },
+      { id: 'night', name: 'Night Mode', brightness: 30, color_temp: 2700, power: 1 },
+      { id: 'moonlight', name: 'Moonlight', brightness: 10, color_temp: 2700, power: 1 },
+      { id: 'off', name: 'All Off', brightness: 0, color_temp: 4000, power: 0 },
+    ];
+    const insertPreset = db.prepare('INSERT INTO lamp_presets (id, name, brightness, color_temp, power) VALUES (?, ?, ?, ?, ?)');
+    for (const p of defaultPresets) {
+      insertPreset.run(p.id, p.name, p.brightness, p.color_temp, p.power);
+    }
+  }
+
   // Lamp schedules (time-of-day based)
   db.run(`
     CREATE TABLE IF NOT EXISTS lamp_schedules (

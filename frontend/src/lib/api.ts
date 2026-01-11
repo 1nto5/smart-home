@@ -1,4 +1,4 @@
-import type { Lamp, LampStatus, RoborockStatus, Preset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
+import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
@@ -107,6 +107,35 @@ export async function getPresets(): Promise<Record<string, Preset>> {
 
 export async function applyPreset(name: string): Promise<ApplyResult> {
   return fetcher(`/presets/${name}/apply`, { method: 'POST' });
+}
+
+export async function updateLampPreset(
+  id: string,
+  brightness: number,
+  color_temp: number,
+  power: boolean
+): Promise<LampPreset> {
+  return fetcher(`/presets/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ brightness, color_temp, power }),
+  });
+}
+
+export async function createLampPreset(
+  id: string,
+  name: string,
+  brightness: number,
+  color_temp: number,
+  power: boolean
+): Promise<LampPreset> {
+  return fetcher('/presets', {
+    method: 'POST',
+    body: JSON.stringify({ id, name, brightness, color_temp, power }),
+  });
+}
+
+export async function deleteLampPreset(id: string): Promise<{ success: boolean }> {
+  return fetcher(`/presets/${id}`, { method: 'DELETE' });
 }
 
 // Schedules

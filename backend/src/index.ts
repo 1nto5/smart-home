@@ -56,6 +56,11 @@ import {
 import {
   LAMP_PRESETS,
   isValidPreset,
+  getLampPresets,
+  updateLampPreset,
+  createLampPreset,
+  deleteLampPreset,
+  refreshLampPresetsCache,
   getSchedules,
   createSchedule,
   deleteSchedule,
@@ -93,6 +98,9 @@ app.use('*', cors());
 
 // Initialize database
 initDatabase();
+
+// Initialize lamp presets cache from DB
+refreshLampPresetsCache();
 
 // Start scheduler and poller
 startScheduler();
@@ -578,9 +586,69 @@ app.post('/api/roborock/reset-consumable', async (c) => {
 
 // === SCHEDULING ===
 
-// Get available presets
+// Get available presets (DB-backed)
 app.get('/api/presets', (c) => {
-  return c.json(LAMP_PRESETS);
+  const presets = getLampPresets();
+  // Transform to legacy format for compatibility
+  const result: Record<string, { name: string; brightness: number; colorTemp: number; power: boolean }> = {};
+  for (const p of presets) {
+    result[p.id] = {
+      name: p.name,
+      brightness: p.brightness,
+      colorTemp: p.color_temp,
+      power: p.power,
+    };
+  }
+  return c.json(result);
+});
+
+// Create lamp preset
+app.post('/api/presets', async (c) => {
+  const body = await c.req.json();
+  const { id, name, brightness, color_temp, power } = body;
+
+  if (!id || !name || brightness === undefined || color_temp === undefined) {
+    return c.json({ error: 'id, name, brightness, and color_temp are required' }, 400);
+  }
+
+  try {
+    const preset = createLampPreset(id, name, brightness, color_temp, power ?? true);
+    refreshLampPresetsCache();
+    return c.json(preset);
+  } catch (e: any) {
+    return c.json({ error: e.message }, 400);
+  }
+});
+
+// Update lamp preset
+app.patch('/api/presets/:id', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+
+  if (body.brightness === undefined || body.color_temp === undefined) {
+    return c.json({ error: 'brightness and color_temp required' }, 400);
+  }
+
+  const updated = updateLampPreset(id, body.brightness, body.color_temp, body.power ?? true);
+  if (!updated) {
+    return c.json({ error: 'Preset not found' }, 404);
+  }
+
+  refreshLampPresetsCache();
+  const presets = getLampPresets();
+  const preset = presets.find(p => p.id === id);
+  return c.json(preset);
+});
+
+// Delete lamp preset
+app.delete('/api/presets/:id', (c) => {
+  const id = c.req.param('id');
+  const deleted = deleteLampPreset(id);
+  if (!deleted) {
+    return c.json({ error: 'Preset not found' }, 404);
+  }
+  refreshLampPresetsCache();
+  return c.json({ success: true });
 });
 
 // Apply preset to all lamps now
