@@ -8,6 +8,6 @@ export const config = {
     port: parseInt(Bun.env.SERVER_PORT || '3001'),
   },
   db: {
-    path: Bun.env.DB_PATH || '/app/data/smart-home.db',
+    path: Bun.env.DB_PATH || '../data/smart-home.db',
   },
 };
