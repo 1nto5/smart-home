@@ -376,13 +376,15 @@ export function initDatabase(): Database {
   db.run(`CREATE INDEX IF NOT EXISTS idx_sms_log_time
           ON sms_log(sent_at DESC)`);
 
-  // Telegram notification config - singleton table
+  // Voice call notification config (Twilio) - singleton table
   db.run(`
-    CREATE TABLE IF NOT EXISTS telegram_config (
+    CREATE TABLE IF NOT EXISTS voice_config (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       enabled INTEGER DEFAULT 0,
-      bot_token TEXT,
-      chat_id TEXT,
+      twilio_account_sid TEXT,
+      twilio_auth_token TEXT,
+      twilio_from_number TEXT,
+      to_number TEXT,
       flood_alerts INTEGER DEFAULT 1,
       door_alerts INTEGER DEFAULT 1,
       cooldown_minutes INTEGER DEFAULT 5,
@@ -390,29 +392,30 @@ export function initDatabase(): Database {
     )
   `);
 
-  // Insert default Telegram config if not exists
-  const telegramCount = db.query('SELECT COUNT(*) as count FROM telegram_config').get() as { count: number };
-  if (telegramCount.count === 0) {
-    db.run('INSERT INTO telegram_config (id, enabled, cooldown_minutes) VALUES (1, 0, 5)');
+  // Insert default voice config if not exists
+  const voiceCount = db.query('SELECT COUNT(*) as count FROM voice_config').get() as { count: number };
+  if (voiceCount.count === 0) {
+    db.run('INSERT INTO voice_config (id, enabled, cooldown_minutes) VALUES (1, 0, 5)');
   }
 
-  // Telegram notification log
+  // Voice call log
   db.run(`
-    CREATE TABLE IF NOT EXISTS telegram_log (
+    CREATE TABLE IF NOT EXISTS voice_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       device_id TEXT,
       device_name TEXT,
       alert_type TEXT NOT NULL,
-      chat_id TEXT NOT NULL,
+      to_number TEXT NOT NULL,
       message TEXT NOT NULL,
       status TEXT NOT NULL,
+      call_sid TEXT,
       error_message TEXT,
-      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      called_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  db.run(`CREATE INDEX IF NOT EXISTS idx_telegram_log_time
-          ON telegram_log(sent_at DESC)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_voice_log_time
+          ON voice_log(called_at DESC)`);
 
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
@@ -623,4 +626,132 @@ export function getLastSmsTime(alertType: string, deviceId?: string): Date | nul
 
   const result = database.query(query).get(...params) as { sent_at: string } | null;
   return result ? new Date(result.sent_at) : null;
+}
+
+// === VOICE CALL NOTIFICATIONS (Twilio) ===
+
+export interface VoiceConfig {
+  enabled: boolean;
+  twilio_account_sid: string | null;
+  twilio_auth_token: string | null;
+  twilio_from_number: string | null;
+  to_number: string | null;
+  flood_alerts: boolean;
+  door_alerts: boolean;
+  cooldown_minutes: number;
+  updated_at: string;
+}
+
+export function getVoiceConfig(): VoiceConfig {
+  const database = getDb();
+  const result = database.query('SELECT * FROM voice_config WHERE id = 1').get() as any;
+  return {
+    enabled: result.enabled === 1,
+    twilio_account_sid: result.twilio_account_sid,
+    twilio_auth_token: result.twilio_auth_token,
+    twilio_from_number: result.twilio_from_number,
+    to_number: result.to_number,
+    flood_alerts: result.flood_alerts === 1,
+    door_alerts: result.door_alerts === 1,
+    cooldown_minutes: result.cooldown_minutes,
+    updated_at: result.updated_at,
+  };
+}
+
+export function updateVoiceConfig(config: Partial<Omit<VoiceConfig, 'updated_at'>>): VoiceConfig {
+  const database = getDb();
+  const updates: string[] = [];
+  const values: any[] = [];
+
+  if (config.enabled !== undefined) {
+    updates.push('enabled = ?');
+    values.push(config.enabled ? 1 : 0);
+  }
+  if (config.twilio_account_sid !== undefined) {
+    updates.push('twilio_account_sid = ?');
+    values.push(config.twilio_account_sid);
+  }
+  if (config.twilio_auth_token !== undefined) {
+    updates.push('twilio_auth_token = ?');
+    values.push(config.twilio_auth_token);
+  }
+  if (config.twilio_from_number !== undefined) {
+    updates.push('twilio_from_number = ?');
+    values.push(config.twilio_from_number);
+  }
+  if (config.to_number !== undefined) {
+    updates.push('to_number = ?');
+    values.push(config.to_number);
+  }
+  if (config.flood_alerts !== undefined) {
+    updates.push('flood_alerts = ?');
+    values.push(config.flood_alerts ? 1 : 0);
+  }
+  if (config.door_alerts !== undefined) {
+    updates.push('door_alerts = ?');
+    values.push(config.door_alerts ? 1 : 0);
+  }
+  if (config.cooldown_minutes !== undefined) {
+    updates.push('cooldown_minutes = ?');
+    values.push(config.cooldown_minutes);
+  }
+
+  if (updates.length > 0) {
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    database.run(`UPDATE voice_config SET ${updates.join(', ')} WHERE id = 1`, values);
+  }
+
+  return getVoiceConfig();
+}
+
+export interface VoiceLogEntry {
+  id: number;
+  device_id: string | null;
+  device_name: string | null;
+  alert_type: string;
+  to_number: string;
+  message: string;
+  status: string;
+  call_sid: string | null;
+  error_message: string | null;
+  called_at: string;
+}
+
+export function logVoiceCall(
+  alertType: string,
+  toNumber: string,
+  message: string,
+  status: 'initiated' | 'failed',
+  deviceId?: string,
+  deviceName?: string,
+  callSid?: string,
+  errorMessage?: string
+): void {
+  const database = getDb();
+  database.run(
+    `INSERT INTO voice_log (device_id, device_name, alert_type, to_number, message, status, call_sid, error_message)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [deviceId || null, deviceName || null, alertType, toNumber, message, status, callSid || null, errorMessage || null]
+  );
+}
+
+export function getVoiceLog(limit: number = 50): VoiceLogEntry[] {
+  const database = getDb();
+  return database.query('SELECT * FROM voice_log ORDER BY called_at DESC LIMIT ?').all(limit) as VoiceLogEntry[];
+}
+
+export function getLastVoiceCallTime(alertType: string, deviceId?: string): Date | null {
+  const database = getDb();
+  let query = 'SELECT called_at FROM voice_log WHERE alert_type = ? AND status = \'initiated\'';
+  const params: any[] = [alertType];
+
+  if (deviceId) {
+    query += ' AND device_id = ?';
+    params.push(deviceId);
+  }
+
+  query += ' ORDER BY called_at DESC LIMIT 1';
+
+  const result = database.query(query).get(...params) as { called_at: string } | null;
+  return result ? new Date(result.called_at) : null;
 }
