@@ -1,6 +1,6 @@
 import TuyAPI from 'tuyapi';
 import { getDb, recordContactChange, getLastContactState, recordSensorReading } from '../db/database';
-import { sendFloodAlert, sendDoorOpenAlert } from '../notifications/sms-service';
+import { telegramFloodAlert, telegramDoorOpenAlert } from '../notifications/telegram-service';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -72,9 +72,9 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
       recordContactChange(device.id, device.name, isOpen);
       console.log(`📍 ${device.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
 
-      // Send SMS alert when door opens (only if alarm is armed)
+      // Send Telegram alert when door opens (only if alarm is armed)
       if (isOpen) {
-        sendDoorOpenAlert(device.id, device.name).catch((err) => {
+        telegramDoorOpenAlert(device.id, device.name).catch((err) => {
           console.error('Failed to send door alert:', err);
         });
       }
@@ -92,8 +92,8 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
       if (isLeaking) {
         console.log(`🚨 WATER LEAK DETECTED: ${device.name}`);
 
-        // Send SMS alert for flood detection (always, regardless of alarm state)
-        sendFloodAlert(device.id, device.name).catch((err) => {
+        // Send Telegram alert for flood detection (always, regardless of alarm state)
+        telegramFloodAlert(device.id, device.name).catch((err) => {
           console.error('Failed to send flood alert:', err);
         });
       } else {

@@ -20,8 +20,12 @@ import {
   getSmsConfig,
   updateSmsConfig,
   getSmsLog,
+  getTelegramConfig,
+  updateTelegramConfig,
+  getTelegramLog,
 } from './db/database';
 import { sendTestSms } from './notifications/sms-service';
+import { sendTestTelegram } from './notifications/telegram-service';
 import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from './tuya/tuya-api';
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus, connectDevice, disconnectAll } from './tuya/tuya-local';
 import {
@@ -1151,6 +1155,45 @@ app.post('/api/sms/test', async (c) => {
   const result = await sendTestSms();
   if (result.success) {
     return c.json({ success: true, message: 'Test SMS sent' });
+  } else {
+    return c.json({ success: false, error: result.error }, 500);
+  }
+});
+
+// === TELEGRAM NOTIFICATIONS ===
+
+// Get Telegram config
+app.get('/api/telegram/config', (c) => {
+  const config = getTelegramConfig();
+  // Hide bot token in response
+  return c.json({
+    ...config,
+    bot_token: config.bot_token ? '********' : null,
+  });
+});
+
+// Update Telegram config
+app.patch('/api/telegram/config', async (c) => {
+  const body = await c.req.json();
+  const config = updateTelegramConfig(body);
+  return c.json({
+    ...config,
+    bot_token: config.bot_token ? '********' : null,
+  });
+});
+
+// Get Telegram log
+app.get('/api/telegram/log', (c) => {
+  const limit = parseInt(c.req.query('limit') || '50');
+  const log = getTelegramLog(limit);
+  return c.json(log);
+});
+
+// Send test Telegram
+app.post('/api/telegram/test', async (c) => {
+  const result = await sendTestTelegram();
+  if (result.success) {
+    return c.json({ success: true, message: 'Test message sent to Telegram' });
   } else {
     return c.json({ success: false, error: result.error }, 500);
   }

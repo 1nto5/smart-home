@@ -417,6 +417,44 @@ export function initDatabase(): Database {
   db.run(`CREATE INDEX IF NOT EXISTS idx_voice_log_time
           ON voice_log(called_at DESC)`);
 
+  // Telegram notification config - singleton table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS telegram_config (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      enabled INTEGER DEFAULT 0,
+      bot_token TEXT,
+      chat_id TEXT,
+      flood_alerts INTEGER DEFAULT 1,
+      door_alerts INTEGER DEFAULT 1,
+      cooldown_minutes INTEGER DEFAULT 5,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default Telegram config if not exists
+  const telegramCount = db.query('SELECT COUNT(*) as count FROM telegram_config').get() as { count: number };
+  if (telegramCount.count === 0) {
+    db.run('INSERT INTO telegram_config (id, enabled, cooldown_minutes) VALUES (1, 0, 5)');
+  }
+
+  // Telegram notification log
+  db.run(`
+    CREATE TABLE IF NOT EXISTS telegram_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id TEXT,
+      device_name TEXT,
+      alert_type TEXT NOT NULL,
+      chat_id TEXT NOT NULL,
+      message TEXT NOT NULL,
+      status TEXT NOT NULL,
+      error_message TEXT,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_telegram_log_time
+          ON telegram_log(sent_at DESC)`);
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
@@ -754,4 +792,118 @@ export function getLastVoiceCallTime(alertType: string, deviceId?: string): Date
 
   const result = database.query(query).get(...params) as { called_at: string } | null;
   return result ? new Date(result.called_at) : null;
+}
+
+// === TELEGRAM NOTIFICATIONS ===
+
+export interface TelegramConfig {
+  enabled: boolean;
+  bot_token: string | null;
+  chat_id: string | null;
+  flood_alerts: boolean;
+  door_alerts: boolean;
+  cooldown_minutes: number;
+  updated_at: string;
+}
+
+export function getTelegramConfig(): TelegramConfig {
+  const database = getDb();
+  const result = database.query('SELECT * FROM telegram_config WHERE id = 1').get() as any;
+  return {
+    enabled: result.enabled === 1,
+    bot_token: result.bot_token,
+    chat_id: result.chat_id,
+    flood_alerts: result.flood_alerts === 1,
+    door_alerts: result.door_alerts === 1,
+    cooldown_minutes: result.cooldown_minutes,
+    updated_at: result.updated_at,
+  };
+}
+
+export function updateTelegramConfig(config: Partial<Omit<TelegramConfig, 'updated_at'>>): TelegramConfig {
+  const database = getDb();
+  const updates: string[] = [];
+  const values: any[] = [];
+
+  if (config.enabled !== undefined) {
+    updates.push('enabled = ?');
+    values.push(config.enabled ? 1 : 0);
+  }
+  if (config.bot_token !== undefined) {
+    updates.push('bot_token = ?');
+    values.push(config.bot_token);
+  }
+  if (config.chat_id !== undefined) {
+    updates.push('chat_id = ?');
+    values.push(config.chat_id);
+  }
+  if (config.flood_alerts !== undefined) {
+    updates.push('flood_alerts = ?');
+    values.push(config.flood_alerts ? 1 : 0);
+  }
+  if (config.door_alerts !== undefined) {
+    updates.push('door_alerts = ?');
+    values.push(config.door_alerts ? 1 : 0);
+  }
+  if (config.cooldown_minutes !== undefined) {
+    updates.push('cooldown_minutes = ?');
+    values.push(config.cooldown_minutes);
+  }
+
+  if (updates.length > 0) {
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    database.run(`UPDATE telegram_config SET ${updates.join(', ')} WHERE id = 1`, values);
+  }
+
+  return getTelegramConfig();
+}
+
+export interface TelegramLogEntry {
+  id: number;
+  device_id: string | null;
+  device_name: string | null;
+  alert_type: string;
+  chat_id: string;
+  message: string;
+  status: string;
+  error_message: string | null;
+  sent_at: string;
+}
+
+export function logTelegram(
+  alertType: string,
+  chatId: string,
+  message: string,
+  status: 'sent' | 'failed',
+  deviceId?: string,
+  deviceName?: string,
+  errorMessage?: string
+): void {
+  const database = getDb();
+  database.run(
+    `INSERT INTO telegram_log (device_id, device_name, alert_type, chat_id, message, status, error_message)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [deviceId || null, deviceName || null, alertType, chatId, message, status, errorMessage || null]
+  );
+}
+
+export function getTelegramLog(limit: number = 50): TelegramLogEntry[] {
+  const database = getDb();
+  return database.query('SELECT * FROM telegram_log ORDER BY sent_at DESC LIMIT ?').all(limit) as TelegramLogEntry[];
+}
+
+export function getLastTelegramTime(alertType: string, deviceId?: string): Date | null {
+  const database = getDb();
+  let query = 'SELECT sent_at FROM telegram_log WHERE alert_type = ? AND status = \'sent\'';
+  const params: any[] = [alertType];
+
+  if (deviceId) {
+    query += ' AND device_id = ?';
+    params.push(deviceId);
+  }
+
+  query += ' ORDER BY sent_at DESC LIMIT 1';
+
+  const result = database.query(query).get(...params) as { sent_at: string } | null;
+  return result ? new Date(result.sent_at) : null;
 }
