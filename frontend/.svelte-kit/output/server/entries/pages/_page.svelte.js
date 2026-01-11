@@ -1,11 +1,13 @@
-import { U as sanitize_props, V as spread_props, W as slot, Z as attr_class, Y as attr, _ as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
+import { $ as sanitize_props, a0 as spread_props, a1 as slot, X as attr_class, W as attr, _ as stringify, U as ensure_array_like, Y as attr_style, a2 as head } from "../../chunks/index2.js";
 import { X, s as store, P as Play } from "../../chunks/x.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
-import { P as Power } from "../../chunks/power.js";
+import { P as Power, S as Sun, M as Moon } from "../../chunks/sun.js";
 import { I as Icon } from "../../chunks/Icon.js";
-import { H as House } from "../../chunks/house.js";
+import { H as House, Z as Zap } from "../../chunks/zap.js";
+import { F as Flame } from "../../chunks/flame.js";
 import { T as Thermometer } from "../../chunks/thermometer.js";
+import { L as Lightbulb } from "../../chunks/lightbulb.js";
 function Battery_low($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
@@ -147,6 +149,88 @@ function Battery($$renderer, $$props) {
        * @description Lucide SVG icon component, renders SVG Element with children.
        *
        * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNIDIyIDE0IEwgMjIgMTAiIC8+CiAgPHJlY3QgeD0iMiIgeT0iNiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiByeD0iMiIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/battery
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Bot($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M12 8V4H8" }],
+    [
+      "rect",
+      { "width": "16", "height": "12", "x": "4", "y": "8", "rx": "2" }
+    ],
+    ["path", { "d": "M2 14h2" }],
+    ["path", { "d": "M20 14h2" }],
+    ["path", { "d": "M15 13v2" }],
+    ["path", { "d": "M9 13v2" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "bot" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Bot
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIgOFY0SDgiIC8+CiAgPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiB4PSI0IiB5PSI4IiByeD0iMiIgLz4KICA8cGF0aCBkPSJNMiAxNGgyIiAvPgogIDxwYXRoIGQ9Ik0yMCAxNGgyIiAvPgogIDxwYXRoIGQ9Ik0xNSAxM3YyIiAvPgogIDxwYXRoIGQ9Ik05IDEzdjIiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/bot
        * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
        *
        * @param {Object} props - Lucide icons props and any valid SVG attribute
@@ -325,7 +409,7 @@ function Droplet($$renderer, $$props) {
     }
   ]));
 }
-function Flame($$renderer, $$props) {
+function Droplets($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
    * @license lucide-svelte v0.562.0 - ISC
@@ -375,19 +459,25 @@ function Flame($$renderer, $$props) {
     [
       "path",
       {
-        "d": "M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"
+        "d": "M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"
       }
     ]
   ];
   Icon($$renderer, spread_props([
-    { name: "flame" },
+    { name: "droplets" },
     $$sanitized_props,
     {
       /**
-       * @component @name Flame
+       * @component @name Droplets
        * @description Lucide SVG icon component, renders SVG Element with children.
        *
-       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIgM3ExIDQgNCA2LjV0MyA1LjVhMSAxIDAgMCAxLTE0IDAgNSA1IDAgMCAxIDEtMyAxIDEgMCAwIDAgNSAwYzAtMi0xLjUtMy0xLjUtNXEwLTIgMi41LTQiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/flame
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNNyAxNi4zYzIuMiAwIDQtMS44MyA0LTQuMDUgMC0xLjE2LS41Ny0yLjI2LTEuNzEtMy4xOVM3LjI5IDYuNzUgNyA1LjNjLS4yOSAxLjQ1LTEuMTQgMi44NC0yLjI5IDMuNzZTMyAxMS4xIDMgMTIuMjVjMCAyLjIyIDEuOCA0LjA1IDQgNC4wNXoiIC8+CiAgPHBhdGggZD0iTTEyLjU2IDYuNkExMC45NyAxMC45NyAwIDAgMCAxNCAzLjAyYy41IDIuNSAyIDQuOSA0IDYuNXMzIDMuNSAzIDUuNWE2Ljk4IDYuOTggMCAwIDEtMTEuOTEgNC45NyIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/droplets
        * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
        *
        * @param {Object} props - Lucide icons props and any valid SVG attribute
@@ -404,7 +494,7 @@ function Flame($$renderer, $$props) {
     }
   ]));
 }
-function Globe($$renderer, $$props) {
+function Funnel($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
    * @license lucide-svelte v0.562.0 - ISC
@@ -451,22 +541,97 @@ function Globe($$renderer, $$props) {
    *
    */
   const iconNode = [
-    ["circle", { "cx": "12", "cy": "12", "r": "10" }],
     [
       "path",
-      { "d": "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" }
-    ],
-    ["path", { "d": "M2 12h20" }]
+      {
+        "d": "M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"
+      }
+    ]
   ];
   Icon($$renderer, spread_props([
-    { name: "globe" },
+    { name: "funnel" },
     $$sanitized_props,
     {
       /**
-       * @component @name Globe
+       * @component @name Funnel
        * @description Lucide SVG icon component, renders SVG Element with children.
        *
-       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgLz4KICA8cGF0aCBkPSJNMTIgMmExNC41IDE0LjUgMCAwIDAgMCAyMCAxNC41IDE0LjUgMCAwIDAgMC0yMCIgLz4KICA8cGF0aCBkPSJNMiAxMmgyMCIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/globe
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTAgMjBhMSAxIDAgMCAwIC41NTMuODk1bDIgMUExIDEgMCAwIDAgMTQgMjF2LTdhMiAyIDAgMCAxIC41MTctMS4zNDFMMjEuNzQgNC42N0ExIDEgMCAwIDAgMjEgM0gzYTEgMSAwIDAgMC0uNzQyIDEuNjdsNy4yMjUgNy45ODlBMiAyIDAgMCAxIDEwIDE0eiIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/funnel
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Gauge($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "m12 14 4-4" }],
+    ["path", { "d": "M3.34 19a10 10 0 1 1 17.32 0" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "gauge" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Gauge
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJtMTIgMTQgNC00IiAvPgogIDxwYXRoIGQ9Ik0zLjM0IDE5YTEwIDEwIDAgMSAxIDE3LjMyIDAiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/gauge
        * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
        *
        * @param {Object} props - Lucide icons props and any valid SVG attribute
@@ -789,6 +954,333 @@ function Smartphone($$renderer, $$props) {
        * @description Lucide SVG icon component, renders SVG Element with children.
        *
        * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cmVjdCB3aWR0aD0iMTQiIGhlaWdodD0iMjAiIHg9IjUiIHk9IjIiIHJ4PSIyIiByeT0iMiIgLz4KICA8cGF0aCBkPSJNMTIgMThoLjAxIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/smartphone
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Snowflake($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "m10 20-1.25-2.5L6 18" }],
+    ["path", { "d": "M10 4 8.75 6.5 6 6" }],
+    ["path", { "d": "m14 20 1.25-2.5L18 18" }],
+    ["path", { "d": "m14 4 1.25 2.5L18 6" }],
+    ["path", { "d": "m17 21-3-6h-4" }],
+    ["path", { "d": "m17 3-3 6 1.5 3" }],
+    ["path", { "d": "M2 12h6.5L10 9" }],
+    ["path", { "d": "m20 10-1.5 2 1.5 2" }],
+    ["path", { "d": "M22 12h-6.5L14 15" }],
+    ["path", { "d": "m4 10 1.5 2L4 14" }],
+    ["path", { "d": "m7 21 3-6-1.5-3" }],
+    ["path", { "d": "m7 3 3 6h4" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "snowflake" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Snowflake
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJtMTAgMjAtMS4yNS0yLjVMNiAxOCIgLz4KICA8cGF0aCBkPSJNMTAgNCA4Ljc1IDYuNSA2IDYiIC8+CiAgPHBhdGggZD0ibTE0IDIwIDEuMjUtMi41TDE4IDE4IiAvPgogIDxwYXRoIGQ9Im0xNCA0IDEuMjUgMi41TDE4IDYiIC8+CiAgPHBhdGggZD0ibTE3IDIxLTMtNmgtNCIgLz4KICA8cGF0aCBkPSJtMTcgMy0zIDYgMS41IDMiIC8+CiAgPHBhdGggZD0iTTIgMTJoNi41TDEwIDkiIC8+CiAgPHBhdGggZD0ibTIwIDEwLTEuNSAyIDEuNSAyIiAvPgogIDxwYXRoIGQ9Ik0yMiAxMmgtNi41TDE0IDE1IiAvPgogIDxwYXRoIGQ9Im00IDEwIDEuNSAyTDQgMTQiIC8+CiAgPHBhdGggZD0ibTcgMjEgMy02LTEuNS0zIiAvPgogIDxwYXRoIGQ9Im03IDMgMyA2aDQiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/snowflake
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Sparkles($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+      }
+    ],
+    ["path", { "d": "M20 2v4" }],
+    ["path", { "d": "M22 4h-4" }],
+    ["circle", { "cx": "4", "cy": "20", "r": "2" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "sparkles" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Sparkles
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTEuMDE3IDIuODE0YTEgMSAwIDAgMSAxLjk2NiAwbDEuMDUxIDUuNTU4YTIgMiAwIDAgMCAxLjU5NCAxLjU5NGw1LjU1OCAxLjA1MWExIDEgMCAwIDEgMCAxLjk2NmwtNS41NTggMS4wNTFhMiAyIDAgMCAwLTEuNTk0IDEuNTk0bC0xLjA1MSA1LjU1OGExIDEgMCAwIDEtMS45NjYgMGwtMS4wNTEtNS41NThhMiAyIDAgMCAwLTEuNTk0LTEuNTk0bC01LjU1OC0xLjA1MWExIDEgMCAwIDEgMC0xLjk2Nmw1LjU1OC0xLjA1MWEyIDIgMCAwIDAgMS41OTQtMS41OTR6IiAvPgogIDxwYXRoIGQ9Ik0yMCAydjQiIC8+CiAgPHBhdGggZD0iTTIyIDRoLTQiIC8+CiAgPGNpcmNsZSBjeD0iNCIgY3k9IjIwIiByPSIyIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/sparkles
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Thermometer_sun($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    ["path", { "d": "M12 2v2" }],
+    ["path", { "d": "M12 8a4 4 0 0 0-1.645 7.647" }],
+    ["path", { "d": "M2 12h2" }],
+    ["path", { "d": "M20 14.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z" }],
+    ["path", { "d": "m4.93 4.93 1.41 1.41" }],
+    ["path", { "d": "m6.34 17.66-1.41 1.41" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "thermometer-sun" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name ThermometerSun
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTIgMnYyIiAvPgogIDxwYXRoIGQ9Ik0xMiA4YTQgNCAwIDAgMC0xLjY0NSA3LjY0NyIgLz4KICA8cGF0aCBkPSJNMiAxMmgyIiAvPgogIDxwYXRoIGQ9Ik0yMCAxNC41NGE0IDQgMCAxIDEtNCAwVjRhMiAyIDAgMCAxIDQgMHoiIC8+CiAgPHBhdGggZD0ibTQuOTMgNC45MyAxLjQxIDEuNDEiIC8+CiAgPHBhdGggZD0ibTYuMzQgMTcuNjYtMS40MSAxLjQxIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/thermometer-sun
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Triangle_alert($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+      }
+    ],
+    ["path", { "d": "M12 9v4" }],
+    ["path", { "d": "M12 17h.01" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "triangle-alert" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name TriangleAlert
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJtMjEuNzMgMTgtOC0xNGEyIDIgMCAwIDAtMy40OCAwbC04IDE0QTIgMiAwIDAgMCA0IDIxaDE2YTIgMiAwIDAgMCAxLjczLTMiIC8+CiAgPHBhdGggZD0iTTEyIDl2NCIgLz4KICA8cGF0aCBkPSJNMTIgMTdoLjAxIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/triangle-alert
        * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
        *
        * @param {Object} props - Lucide icons props and any valid SVG attribute
@@ -1189,11 +1681,11 @@ function DeviceDialog($$renderer, $$props) {
     let { open = false, onclose, title, children } = $$props;
     if (open) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4 dialog-overlay animate-fade-in svelte-alpl3u" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1"><div class="dialog-content w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[80vh] overflow-hidden"><div class="flex items-center justify-between p-4 border-b border-stroke-default"><h2 id="dialog-title" class="text-lg font-semibold text-content-primary">${escape_html(title)}</h2> <button aria-label="Close dialog" class="w-10 h-10 rounded-xl bg-surface-recessed text-content-secondary hover:text-content-primary hover:bg-stroke-default transition-colors flex items-center justify-center">`);
+      $$renderer2.push(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4 dialog-overlay svelte-alpl3u" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1"><div class="dialog-content w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[85vh] overflow-hidden animate-dialog-in svelte-alpl3u"><div class="relative px-5 py-4 border-b border-stroke-default"><div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent-glow)] to-transparent"></div> <div class="flex items-center justify-between"><h2 id="dialog-title" class="font-display text-base tracking-[0.1em] text-content-primary uppercase">${escape_html(title)}</h2> <button aria-label="Close dialog" class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-error hover:border-error hover:bg-[rgba(255,71,87,0.1)] transition-all duration-300 flex items-center justify-center hover:shadow-[0_0_15px_rgba(255,71,87,0.3)]">`);
       X($$renderer2, { class: "w-5 h-5" });
-      $$renderer2.push(`<!----></button></div> <div class="p-4 overflow-y-auto max-h-[calc(80vh-64px)]">`);
+      $$renderer2.push(`<!----></button></div></div> <div class="relative p-5 overflow-y-auto max-h-[calc(85vh-80px)]"><div class="absolute inset-0 opacity-[0.02] pointer-events-none" style="background-image: linear-gradient(var(--color-accent) 1px, transparent 1px), linear-gradient(90deg, var(--color-accent) 1px, transparent 1px); background-size: 30px 30px;"></div> <div class="relative z-10">`);
       children($$renderer2);
-      $$renderer2.push(`<!----></div></div></div>`);
+      $$renderer2.push(`<!----></div></div></div></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
@@ -1207,6 +1699,7 @@ function LampCard($$renderer, $$props) {
     let status = store.lampStatuses.get(lamp.id);
     let isOnline = lamp.online === 1;
     let dialogOpen = false;
+    let isPowerPending = false;
     let activePreset = null;
     let displayPower = isOnline ? status?.power ?? false : false;
     let displayBrightness = status?.brightness ?? 0;
@@ -1217,21 +1710,24 @@ function LampCard($$renderer, $$props) {
         label: "Day",
         brightness: 100,
         colorTemp: 5e3,
-        moonlight: false
+        moonlight: false,
+        icon: Sun
       },
       {
         id: "night",
         label: "Night",
         brightness: 30,
         colorTemp: 2700,
-        moonlight: false
+        moonlight: false,
+        icon: Moon
       },
       {
         id: "moonlight",
         label: "Moonlight",
         brightness: 10,
         colorTemp: 2700,
-        moonlight: true
+        moonlight: true,
+        icon: Sparkles
       }
     ];
     function isPresetActive(preset) {
@@ -1242,35 +1738,27 @@ function LampCard($$renderer, $$props) {
       const tempMatch = Math.abs((status?.color_temp ?? 0) - preset.colorTemp) <= 200;
       return brightMatch && tempMatch;
     }
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !isOnline, true)}${attr_class(
-      `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? status?.moonlight_mode ? "bg-device-audio-bg text-device-audio-text" : "badge-lights" : "bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
-      void 0,
-      { "status-active": displayPower }
-    )}>`);
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify(displayPower ? "card-active glow-lights" : "")}`)}><div class="flex items-center gap-3"><button${attr("disabled", !isOnline, true)}${attr_class(`power-btn glow-lights ${stringify(displayPower ? "power-btn-on" : "")} ${stringify(status?.moonlight_mode && displayPower ? "glow-audio" : "")} disabled:opacity-40 disabled:cursor-not-allowed`, void 0, { "pulse-ring": isPowerPending })}>`);
     Power($$renderer2, { class: "w-4 h-4" });
-    $$renderer2.push(`<!----> `);
-    {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
+    $$renderer2.push(`<!----></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
     if (!isOnline) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">Offline</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-tertiary">Offline</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
       if (displayPower) {
         $$renderer2.push("<!--[-->");
         if (status?.moonlight_mode) {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<p class="text-xs text-device-audio-text">Moonlight</p>`);
+          $$renderer2.push(`<p class="text-xs text-device-audio-text neon-text-subtle">Moonlight</p>`);
         } else {
           $$renderer2.push("<!--[!-->");
-          $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(displayBrightness)}% · ${escape_html(displayColorTemp)}K</p>`);
+          $$renderer2.push(`<p class="text-xs text-content-secondary"><span class="text-device-lights-text">${escape_html(displayBrightness)}%</span> <span class="mx-1 text-content-tertiary">/</span> <span>${escape_html(displayColorTemp)}K</span></p>`);
         }
         $$renderer2.push(`<!--]-->`);
       } else {
         $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<p class="text-xs text-content-secondary">Off</p>`);
+        $$renderer2.push(`<p class="text-xs text-content-tertiary">Standby</p>`);
       }
       $$renderer2.push(`<!--]-->`);
     }
@@ -1280,7 +1768,7 @@ function LampCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Status</span> <span${attr_class(`font-medium ${stringify(displayPower ? status?.moonlight_mode ? "text-device-audio-text" : "text-device-lights-text" : "text-content-tertiary")}`)}>`);
+        $$renderer3.push(`<div class="space-y-5"><div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle"><span class="text-sm text-content-secondary uppercase tracking-wider">Status</span> <span${attr_class(`font-medium text-sm ${stringify(displayPower ? status?.moonlight_mode ? "text-device-audio-text neon-text-subtle" : "text-device-lights-text neon-text-subtle" : "text-content-tertiary")}`)}>`);
         if (!isOnline) {
           $$renderer3.push("<!--[-->");
           $$renderer3.push(`Offline`);
@@ -1288,31 +1776,34 @@ function LampCard($$renderer, $$props) {
           $$renderer3.push("<!--[!-->");
           if (displayPower) {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`${escape_html(status?.moonlight_mode ? "Moonlight" : "On")}`);
+            $$renderer3.push(`${escape_html(status?.moonlight_mode ? "Moonlight" : "Active")}`);
           } else {
             $$renderer3.push("<!--[!-->");
-            $$renderer3.push(`Off`);
+            $$renderer3.push(`Standby`);
           }
           $$renderer3.push(`<!--]-->`);
         }
         $$renderer3.push(`<!--]--></span></div> `);
         if (isOnline && status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all relative ${stringify(displayPower ? status.moonlight_mode ? "bg-device-audio-bg text-device-audio-text" : "badge-lights" : "bg-surface-recessed text-content-secondary")} hover:scale-[1.02]`)}>${escape_html(displayPower ? "Turn Off" : "Turn On")} `);
+          $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden ${stringify(displayPower ? status.moonlight_mode ? "glow-audio power-btn-on" : "glow-lights power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}><span class="relative z-10">${escape_html(displayPower ? "Power Off" : "Power On")}</span> `);
           {
             $$renderer3.push("<!--[!-->");
           }
           $$renderer3.push(`<!--]--></button> `);
           if (displayPower) {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div><p class="text-sm text-content-secondary mb-2">Presets</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
+            $$renderer3.push(`<div><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Quick Presets</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
             const each_array = ensure_array_like(presets);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let preset = each_array[$$index];
-              $$renderer3.push(`<button${attr_class(`py-2.5 text-sm rounded-lg transition-all relative ${stringify(isPresetActive(preset) || activePreset === preset.id ? preset.moonlight ? "bg-device-audio-bg text-device-audio-text" : "badge-lights" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}>${escape_html(preset.label)} `);
+              const active = isPresetActive(preset) || activePreset === preset.id;
+              $$renderer3.push(`<button${attr_class(`py-3 px-2 rounded-lg transition-all flex flex-col items-center gap-1.5 relative ${stringify(active ? preset.moonlight ? "glow-audio power-btn-on" : "glow-lights power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}><!---->`);
+              preset.icon?.($$renderer3, { class: "w-4 h-4" });
+              $$renderer3.push(`<!----> <span class="text-xs font-medium">${escape_html(preset.label)}</span> `);
               if (activePreset === preset.id) {
                 $$renderer3.push("<!--[-->");
-                $$renderer3.push(`<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-device-lights-text rounded-full animate-pulse"></span>`);
+                $$renderer3.push(`<div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>`);
               } else {
                 $$renderer3.push("<!--[!-->");
               }
@@ -1321,16 +1812,18 @@ function LampCard($$renderer, $$props) {
             $$renderer3.push(`<!--]--></div></div> `);
             if (!status.moonlight_mode) {
               $$renderer3.push("<!--[-->");
-              $$renderer3.push(`<div><div class="flex justify-between text-sm text-content-secondary mb-2"><span>Brightness</span> <span class="font-medium text-content-primary">${escape_html(displayBrightness)}%</span></div> <input type="range" min="1" max="100"${attr("value", displayBrightness)} class="w-full"/></div> <div><div class="flex justify-between text-sm text-content-secondary mb-2"><span>Color Temperature</span> <span class="font-medium text-content-primary">${escape_html(displayColorTemp)}K</span></div> <input type="range" min="1700" max="6500" step="100"${attr("value", displayColorTemp)} class="w-full"/> <div class="flex justify-between text-xs text-content-tertiary mt-1"><span>Warm</span> <span>Cool</span></div></div>`);
+              $$renderer3.push(`<div><div class="flex justify-between items-center mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider">Brightness</span> <span class="font-display text-lg text-device-lights-text neon-text-subtle">${escape_html(displayBrightness)}%</span></div> <input type="range" min="1" max="100"${attr("value", displayBrightness)} class="w-full" style="--color-accent: var(--color-lights-text); --color-accent-glow: var(--color-lights-glow);"/></div> <div><div class="flex justify-between items-center mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span> <span class="font-display text-lg text-content-primary">${escape_html(displayColorTemp)}K</span></div> <input type="range" min="1700" max="6500" step="100"${attr("value", displayColorTemp)} class="w-full"/> <div class="flex justify-between text-[10px] text-content-tertiary mt-2 uppercase tracking-wider"><span class="text-orange-400">Warm</span> <span class="text-sky-400">Cool</span></div></div>`);
             } else {
               $$renderer3.push("<!--[!-->");
-              $$renderer3.push(`<div class="py-4 text-center text-sm text-device-audio-text/80">Hardware night light mode active</div>`);
+              $$renderer3.push(`<div class="py-6 text-center rounded-lg bg-device-audio-bg/30 border border-device-audio-text/20">`);
+              Sparkles($$renderer3, { class: "w-6 h-6 mx-auto mb-2 text-device-audio-text" });
+              $$renderer3.push(`<!----> <p class="text-sm text-device-audio-text">Hardware Night Mode</p></div>`);
             }
             $$renderer3.push(`<!--]-->`);
           } else {
             $$renderer3.push("<!--[!-->");
           }
-          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">IP Address</span> <span class="font-mono text-xs text-content-tertiary">${escape_html(lamp.ip)}</span></div></div>`);
+          $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">IP Address</span> <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">${escape_html(lamp.ip)}</span></div></div>`);
         } else {
           $$renderer3.push("<!--[!-->");
         }
@@ -1344,10 +1837,12 @@ function RoborockCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { status, compact = false } = $$props;
     let dialogOpen = false;
+    let pendingCommand = null;
     let pendingFanMode = null;
     let pendingMopMode = null;
     let displayFanPower = status?.fanPower ?? 102;
     let displayMopMode = status?.waterBoxMode ?? 200;
+    let activeTab = "controls";
     const STATE_MAP = {
       1: "Starting",
       2: "Charger disconnected",
@@ -1384,7 +1879,7 @@ function RoborockCard($$renderer, $$props) {
       { mode: 203, name: "High", icon: Droplet, count: 3 }
     ];
     function getStateName(state) {
-      return STATE_MAP[state] || `Unknown`;
+      return STATE_MAP[state] || "Unknown";
     }
     function getFanModeName(fanPower) {
       const mode = FAN_MODES.find((m) => m.mode === fanPower);
@@ -1396,48 +1891,41 @@ function RoborockCard($$renderer, $$props) {
         case 11:
         case 17:
         case 18:
-          return { color: "text-success", bg: "bg-success/20" };
+          return { color: "text-success", bg: "glow-sensors" };
         case 8:
-          return { color: "text-info", bg: "bg-info/20" };
+          return { color: "text-accent", bg: "glow-robot" };
         case 3:
-          return { color: "text-content-tertiary", bg: "bg-surface-recessed" };
+          return { color: "text-content-tertiary", bg: "" };
         case 10:
-          return { color: "text-warning", bg: "bg-warning/20" };
+          return { color: "text-warning", bg: "glow-lights" };
         case 6:
         case 15:
         case 16:
         case 26:
-          return {
-            color: "text-device-sensors-text",
-            bg: "bg-device-sensors-bg"
-          };
+          return { color: "text-device-sensors-text", bg: "glow-sensors" };
         case 12:
         case 9:
-          return { color: "text-error", bg: "bg-error/20" };
+          return { color: "text-error", bg: "" };
         default:
-          return { color: "text-content-tertiary", bg: "bg-surface-recessed" };
+          return { color: "text-content-tertiary", bg: "" };
       }
     }
-    let style = status ? stateStyle(status.state) : { color: "text-content-tertiary", bg: "bg-surface-recessed" };
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(
-      // Load extended data when dialog opens
-      compact ? "p-2.5" : "p-3"
-    )} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stringify(style.bg)} ${stringify(style.color)}`, void 0, {
-      "status-active": status?.state === 5 || status?.state === 11 || status?.state === 17 || status?.state === 18
-    })}>`);
-    Globe($$renderer2, { class: "w-4 h-4" });
+    let style = status ? stateStyle(status.state) : { color: "text-content-tertiary", bg: "" };
+    let isActive = status && [5, 11, 17, 18].includes(status.state);
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify(isActive ? "card-active glow-robot" : "")}`)}><div class="flex items-center gap-3"><div${attr_class(`power-btn ${stringify(style.bg)} ${stringify(isActive ? "power-btn-on" : "")}`)}>`);
+    Bot($$renderer2, { class: "w-4 h-4" });
     $$renderer2.push(`<!----></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">Roborock</h4> `);
     if (status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p${attr_class(`text-xs ${stringify(style.color)}`)}>${escape_html(getStateName(status.state))}</p>`);
+      $$renderer2.push(`<p${attr_class(`text-xs ${stringify(style.color)} ${stringify(isActive ? "neon-text-subtle" : "")}`)}>${escape_html(getStateName(status.state))}</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">Offline</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-tertiary">Offline</p>`);
     }
     $$renderer2.push(`<!--]--></div> `);
     if (compact && status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="flex items-center gap-1 text-xs shrink-0">`);
+      $$renderer2.push(`<div class="flex items-center gap-1.5 text-xs shrink-0 px-2 py-1 rounded bg-surface-recessed">`);
       if (status.battery > 20) {
         $$renderer2.push("<!--[-->");
         Battery($$renderer2, { class: "w-3.5 h-3.5 text-success" });
@@ -1455,62 +1943,81 @@ function RoborockCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: "Roborock",
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Status</span> <span${attr_class(`font-medium ${stringify(style.color)}`)}>${escape_html(status ? getStateName(status.state) : "Offline")}</span></div> `);
+        $$renderer3.push(`<div class="space-y-5"><div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle"><span class="text-sm text-content-secondary uppercase tracking-wider">Status</span> <span${attr_class(`font-medium text-sm ${stringify(style.color)} ${stringify(isActive ? "neon-text-subtle" : "")}`)}>${escape_html(status ? getStateName(status.state) : "Offline")}</span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Battery</span> <p${attr_class(`text-3xl font-bold mt-1 ${stringify(status.battery > 20 ? "text-content-primary" : "text-error")}`)}>${escape_html(status.battery)}%</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Fan Speed</span> <p class="text-2xl font-bold mt-1 text-content-primary">${escape_html(getFanModeName(status.fanPower))}</p></div></div> <div class="flex gap-1 bg-surface-recessed rounded-lg p-1"><button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${stringify(
-            "bg-surface-elevated text-content-primary"
-          )}`)}>Controls</button> <button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${stringify("text-content-secondary hover:text-content-primary")}`)}>Rooms</button> <button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${stringify("text-content-secondary hover:text-content-primary")}`)}>Settings</button></div> `);
+          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div${attr_class(`rounded-xl p-4 text-center ${stringify(status.battery > 20 ? "bg-surface-recessed border border-stroke-subtle" : "bg-error/10 border border-error/30")}`)}><span class="text-xs text-content-tertiary uppercase tracking-wider">Battery</span> <p${attr_class(`font-display text-3xl mt-2 ${stringify(status.battery > 20 ? "text-content-primary" : "text-error")}`)}>${escape_html(status.battery)}%</p></div> <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Fan Speed</span> <p class="font-display text-2xl mt-2 text-content-primary">${escape_html(getFanModeName(status.fanPower))}</p></div></div> <div class="flex gap-1 bg-surface-recessed rounded-lg p-1 border border-stroke-subtle"><!--[-->`);
+          const each_array = ensure_array_like([
+            { id: "controls", label: "Controls" },
+            { id: "rooms", label: "Rooms" },
+            { id: "settings", label: "Settings" }
+          ]);
+          for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+            let tab = each_array[$$index];
+            $$renderer3.push(`<button${attr_class(`flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${stringify(activeTab === tab.id ? "glow-robot power-btn-on" : "text-content-secondary hover:text-content-primary")}`)}>${escape_html(tab.label)}</button>`);
+          }
+          $$renderer3.push(`<!--]--></div> `);
           {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div><p class="text-sm text-content-secondary mb-2">Actions</p> <div class="grid grid-cols-3 gap-2"><button class="py-4 rounded-xl bg-success/20 text-success text-sm font-medium relative hover:bg-success/30 transition-colors flex flex-col items-center gap-1">`);
-            Play($$renderer3, { class: "w-5 h-5" });
-            $$renderer3.push(`<!----> Start `);
-            {
-              $$renderer3.push("<!--[!-->");
-            }
-            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-warning/20 text-warning text-sm font-medium relative hover:bg-warning/30 transition-colors flex flex-col items-center gap-1">`);
-            Pause($$renderer3, { class: "w-5 h-5" });
-            $$renderer3.push(`<!----> Pause `);
-            {
-              $$renderer3.push("<!--[!-->");
-            }
-            $$renderer3.push(`<!--]--></button> <button class="py-4 rounded-xl bg-info/20 text-info text-sm font-medium relative hover:bg-info/30 transition-colors flex flex-col items-center gap-1">`);
-            House($$renderer3, { class: "w-5 h-5" });
-            $$renderer3.push(`<!----> Home `);
-            {
-              $$renderer3.push("<!--[!-->");
-            }
-            $$renderer3.push(`<!--]--></button></div></div> <div><button class="w-full py-3 rounded-xl bg-surface-recessed text-content-secondary text-sm font-medium relative hover:bg-stroke-default transition-colors">Find Robot `);
-            {
-              $$renderer3.push("<!--[!-->");
-            }
-            $$renderer3.push(`<!--]--></button></div> <div><p class="text-sm text-content-secondary mb-2">Suction Power</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
-            const each_array = ensure_array_like(FAN_MODES);
-            for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-              let fan = each_array[$$index];
-              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayFanPower === fan.mode ? "badge-audio ring-1 ring-device-audio-text/50" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}><!---->`);
-              fan.icon?.($$renderer3, { class: "w-4 h-4 mb-0.5" });
-              $$renderer3.push(`<!----> ${escape_html(fan.name)} `);
-              if (pendingFanMode === fan.mode) {
+            $$renderer3.push(`<div class="grid grid-cols-3 gap-2"><!--[-->`);
+            const each_array_1 = ensure_array_like([
+              {
+                cmd: "start",
+                icon: Play,
+                label: "Start",
+                glow: "glow-sensors"
+              },
+              {
+                cmd: "pause",
+                icon: Pause,
+                label: "Pause",
+                glow: "glow-lights"
+              },
+              { cmd: "home", icon: House, label: "Home", glow: "glow-robot" }
+            ]);
+            for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
+              let action = each_array_1[$$index_1];
+              $$renderer3.push(`<button${attr_class(`py-4 rounded-xl text-sm font-medium relative transition-all flex flex-col items-center gap-1.5 ${stringify(action.glow)} power-btn-on hover:scale-[1.02]`)}><!---->`);
+              action.icon?.($$renderer3, { class: "w-5 h-5" });
+              $$renderer3.push(`<!----> ${escape_html(action.label)} `);
+              if (pendingCommand === action.cmd) {
                 $$renderer3.push("<!--[-->");
-                $$renderer3.push(`<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-device-audio-text rounded-full animate-pulse"></span>`);
+                $$renderer3.push(`<div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>`);
               } else {
                 $$renderer3.push("<!--[!-->");
               }
               $$renderer3.push(`<!--]--></button>`);
             }
-            $$renderer3.push(`<!--]--></div></div> <div><p class="text-sm text-content-secondary mb-2">Mop Intensity</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
-            const each_array_1 = ensure_array_like(MOP_MODES);
-            for (let $$index_2 = 0, $$length = each_array_1.length; $$index_2 < $$length; $$index_2++) {
-              let mop = each_array_1[$$index_2];
-              $$renderer3.push(`<button${attr_class(`py-2 px-1 rounded-lg text-xs font-medium transition-colors relative ${stringify(displayMopMode === mop.mode ? "badge-sensors ring-1 ring-device-sensors-text/50" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}><div class="flex items-center justify-center gap-0.5 mb-0.5">`);
+            $$renderer3.push(`<!--]--></div> <button class="w-full py-3 rounded-xl bg-surface-recessed border border-stroke-default text-content-secondary text-sm font-medium relative hover:border-stroke-strong transition-all">Find Robot `);
+            {
+              $$renderer3.push("<!--[!-->");
+            }
+            $$renderer3.push(`<!--]--></button> <div><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Suction Power</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
+            const each_array_2 = ensure_array_like(FAN_MODES);
+            for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
+              let fan = each_array_2[$$index_2];
+              $$renderer3.push(`<button${attr_class(`py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1 ${stringify(displayFanPower === fan.mode ? "glow-audio power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}><!---->`);
+              fan.icon?.($$renderer3, { class: "w-4 h-4" });
+              $$renderer3.push(`<!----> ${escape_html(fan.name)} `);
+              if (pendingFanMode === fan.mode) {
+                $$renderer3.push("<!--[-->");
+                $$renderer3.push(`<div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>`);
+              } else {
+                $$renderer3.push("<!--[!-->");
+              }
+              $$renderer3.push(`<!--]--></button>`);
+            }
+            $$renderer3.push(`<!--]--></div></div> <div><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Mop Intensity</p> <div class="grid grid-cols-4 gap-1"><!--[-->`);
+            const each_array_3 = ensure_array_like(MOP_MODES);
+            for (let $$index_4 = 0, $$length = each_array_3.length; $$index_4 < $$length; $$index_4++) {
+              let mop = each_array_3[$$index_4];
+              $$renderer3.push(`<button${attr_class(`py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1 ${stringify(displayMopMode === mop.mode ? "glow-sensors power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}><div class="flex items-center justify-center gap-0.5">`);
               if (mop.count) {
                 $$renderer3.push("<!--[-->");
                 $$renderer3.push(`<!--[-->`);
-                const each_array_2 = ensure_array_like(Array(mop.count));
-                for (let $$index_1 = 0, $$length2 = each_array_2.length; $$index_1 < $$length2; $$index_1++) {
-                  each_array_2[$$index_1];
+                const each_array_4 = ensure_array_like(Array(mop.count));
+                for (let $$index_3 = 0, $$length2 = each_array_4.length; $$index_3 < $$length2; $$index_3++) {
+                  each_array_4[$$index_3];
                   $$renderer3.push(`<!---->`);
                   mop.icon?.($$renderer3, { class: "w-3 h-3" });
                   $$renderer3.push(`<!---->`);
@@ -1525,7 +2032,7 @@ function RoborockCard($$renderer, $$props) {
               $$renderer3.push(`<!--]--></div> ${escape_html(mop.name)} `);
               if (pendingMopMode === mop.mode) {
                 $$renderer3.push("<!--[-->");
-                $$renderer3.push(`<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-device-sensors-text rounded-full animate-pulse"></span>`);
+                $$renderer3.push(`<div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>`);
               } else {
                 $$renderer3.push("<!--[!-->");
               }
@@ -1536,7 +2043,11 @@ function RoborockCard($$renderer, $$props) {
           $$renderer3.push(`<!--]-->`);
         } else {
           $$renderer3.push("<!--[!-->");
-          $$renderer3.push(`<div class="text-center py-8 text-content-secondary">Start bridge to control robot</div>`);
+          $$renderer3.push(`<div class="text-center py-8">`);
+          Bot($$renderer3, {
+            class: "w-12 h-12 mx-auto mb-3 text-content-tertiary opacity-50"
+          });
+          $$renderer3.push(`<!----> <p class="text-content-tertiary">Start bridge to control robot</p></div>`);
         }
         $$renderer3.push(`<!--]--></div>`);
       }
@@ -1587,15 +2098,13 @@ function TuyaSensorCard($$renderer, $$props) {
           const isWet = waterValue === "alarm" || waterValue === "1" || waterValue === 1;
           const battery = status["4"];
           const lowBattery = battery !== void 0 && battery <= LOW_BATTERY_THRESHOLD;
-          if (isWet) {
-            return {
-              text: "Water detected!",
-              alert: true,
-              color: "text-error",
-              lowBattery,
-              batteryPercent: battery
-            };
-          }
+          if (isWet) return {
+            text: "Water detected!",
+            alert: true,
+            color: "text-error",
+            lowBattery,
+            batteryPercent: battery
+          };
           return {
             text: lowBattery ? `Dry · ${battery}%` : "Dry",
             alert: false,
@@ -1645,27 +2154,35 @@ function TuyaSensorCard($$renderer, $$props) {
     }
     let config = categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
     let statusInfo = getStatusInfo(parsedStatus(), device.category);
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer ${stringify(statusInfo.lowBattery ? "border-warning/50 bg-warning/10" : "")}`)}><div class="flex items-center gap-2.5"><div${attr_class(
-      `w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stringify(statusInfo.alert ? "bg-error/20 text-error" : statusInfo.lowBattery ? "bg-warning/20 text-warning" : "badge-sensors")}`,
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify(statusInfo.alert ? "card-active border-error/50" : statusInfo.lowBattery ? "border-warning/50" : "")}`)}><div class="flex items-center gap-3"><div${attr_class(
+      `power-btn ${stringify(statusInfo.alert ? "bg-error/20 text-error border-error/50" : statusInfo.lowBattery ? "bg-warning/20 text-warning border-warning/50" : "glow-sensors power-btn-on")}`,
       void 0,
-      { "status-active": statusInfo.alert }
+      { "animate-glow": statusInfo.alert }
     )}><!---->`);
     config.icon?.($$renderer2, { class: "w-4 h-4" });
-    $$renderer2.push(`<!----></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.lowBattery ? "text-warning" : statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-success" : "bg-content-tertiary")}`, void 0, { "status-dot": device.online })}></div></div></div> `);
+    $$renderer2.push(`<!----></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.lowBattery ? "text-warning" : statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text-subtle" : "")}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-success animate-glow" : "bg-content-tertiary")}`)}></div></div></div> `);
     DeviceDialog($$renderer2, {
       open: dialogOpen,
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div${attr_class(`rounded-xl p-6 text-center ${stringify(statusInfo.alert ? "bg-error/20" : "bg-surface-recessed")}`)}><div${attr_class(`flex justify-center ${stringify(statusInfo.alert ? "text-error" : "text-device-sensors-text")}`)}><!---->`);
-        config.icon?.($$renderer3, { class: "w-10 h-10" });
-        $$renderer3.push(`<!----></div> <p${attr_class(`text-2xl font-bold mt-2 ${stringify(statusInfo.color)}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-secondary mt-1">${escape_html(config.label)} Sensor</p></div> `);
+        $$renderer3.push(`<div class="space-y-5"><div${attr_class(`rounded-xl p-6 text-center ${stringify(statusInfo.alert ? "bg-error/10 border border-error/30" : "bg-surface-recessed border border-stroke-subtle")}`)}><div${attr_class(`flex justify-center ${stringify(statusInfo.alert ? "text-error" : "text-device-sensors-text")}`)}>`);
+        if (statusInfo.alert) {
+          $$renderer3.push("<!--[-->");
+          Triangle_alert($$renderer3, { class: "w-12 h-12 animate-glow" });
+        } else {
+          $$renderer3.push("<!--[!-->");
+          $$renderer3.push(`<!---->`);
+          config.icon?.($$renderer3, { class: "w-12 h-12" });
+          $$renderer3.push(`<!---->`);
+        }
+        $$renderer3.push(`<!--]--></div> <p${attr_class(`font-display text-2xl mt-3 ${stringify(statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text" : "")}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">${escape_html(config.label)} Sensor</p></div> `);
         if (device.category === "wsdcg") {
           $$renderer3.push("<!--[-->");
           const status = parsedStatus();
           if (status) {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Temperature</span> <p class="text-2xl font-bold mt-1 text-device-sensors-text">${escape_html((status["103"] / 100).toFixed(1))}°C</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary">Humidity</span> <p class="text-2xl font-bold mt-1 text-info">${escape_html(status["102"])}%</p></div></div>`);
+            $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span> <p class="font-display text-2xl mt-2 text-device-sensors-text neon-text-subtle">${escape_html((status["103"] / 100).toFixed(1))}°C</p></div> <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span> <p class="font-display text-2xl mt-2 text-accent neon-text-subtle">${escape_html(status["102"])}%</p></div></div>`);
           } else {
             $$renderer3.push("<!--[!-->");
           }
@@ -1682,7 +2199,9 @@ function TuyaSensorCard($$renderer, $$props) {
             const battery = status["4"] || status["103"];
             if (battery !== void 0) {
               $$renderer3.push("<!--[-->");
-              $$renderer3.push(`<div class="bg-surface-recessed rounded-xl p-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Battery</span> <span${attr_class(`font-bold ${stringify(battery > 20 ? "text-success" : "text-error")}`)}>${escape_html(battery)}%</span></div> <div class="mt-2 h-2 bg-stroke-default rounded-full overflow-hidden"><div${attr_class(`h-full rounded-full transition-all ${stringify(battery > 20 ? "bg-success" : "bg-error")}`)}${attr_style(`width: ${stringify(battery)}%`)}></div></div></div>`);
+              $$renderer3.push(`<div class="rounded-xl p-4 bg-surface-recessed border border-stroke-subtle"><div class="flex items-center justify-between mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider flex items-center gap-2">`);
+              Battery($$renderer3, { class: "w-4 h-4" });
+              $$renderer3.push(`<!----> Battery</span> <span${attr_class(`font-display text-lg ${stringify(battery > 20 ? "text-success" : "text-error")}`)}>${escape_html(battery)}%</span></div> <div class="h-2 bg-[var(--color-bg-base)] rounded-full overflow-hidden"><div${attr_class(`h-full rounded-full transition-all ${stringify(battery > 20 ? "bg-success" : "bg-error")} ${stringify(battery > 20 ? "" : "animate-glow")}`)}${attr_style(`width: ${stringify(battery)}%`)}></div></div></div>`);
             } else {
               $$renderer3.push("<!--[!-->");
             }
@@ -1694,7 +2213,7 @@ function TuyaSensorCard($$renderer, $$props) {
         } else {
           $$renderer3.push("<!--[!-->");
         }
-        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">Type</span> <span class="font-medium text-content-primary">${escape_html(config.label)}</span></div> <div class="flex justify-between"><span class="text-content-secondary">Online</span> <span${attr_class(device.online ? "text-success" : "text-error")}>${escape_html(device.online ? "Yes" : "No")}</span></div> <div class="flex justify-between"><span class="text-content-secondary">Device ID</span> <span class="font-mono text-xs text-content-tertiary">${escape_html(device.id.slice(0, 12))}...</span></div></div></div>`);
+        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span> <span class="text-sm font-medium text-content-primary">${escape_html(config.label)}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Device ID</span> <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">${escape_html(device.id.slice(0, 12))}...</span></div></div></div>`);
       }
     });
     $$renderer2.push(`<!---->`);
@@ -1717,21 +2236,21 @@ function TRVCard($$renderer, $$props) {
     let serverTargetTemp = status()?.["4"] ? status()["4"] / 10 : null;
     let targetTemp = serverTargetTemp;
     let valve = status()?.["3"] || "unknown";
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><div${attr_class(`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stringify(valve === "opened" ? "badge-climate-heat" : "badge-climate-cool")}`, void 0, { "status-active": valve === "opened" })}>`);
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify(valve === "opened" ? "card-active glow-climate-heat" : "")}`)}><div class="flex items-center gap-3"><div${attr_class(`power-btn ${stringify(valve === "opened" ? "power-btn-on glow-climate-heat" : "glow-climate-cool")}`)}>`);
     if (valve === "opened") {
       $$renderer2.push("<!--[-->");
       Flame($$renderer2, { class: "w-4 h-4" });
     } else {
       $$renderer2.push("<!--[!-->");
-      Radio($$renderer2, { class: "w-4 h-4" });
+      Snowflake($$renderer2, { class: "w-4 h-4" });
     }
     $$renderer2.push(`<!--]--></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
     if (currentTemp !== null) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(currentTemp)}°C ${escape_html(valve === "opened" ? "→" : "·")} ${escape_html(targetTemp)}°C</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-secondary"><span${attr_class(valve === "opened" ? "text-device-climate-heat-text" : "")}>${escape_html(currentTemp)}°C</span> <span class="mx-1 text-content-tertiary">/</span> <span class="text-device-climate-heat-text">${escape_html(targetTemp)}°C</span></p>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">No data</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-tertiary">No data</p>`);
     }
     $$renderer2.push(`<!--]--></div></div></div> `);
     DeviceDialog($$renderer2, {
@@ -1739,13 +2258,13 @@ function TRVCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Valve</span> <span${attr_class(`font-medium ${stringify(valve === "opened" ? "text-device-climate-heat-text" : "text-device-climate-cool-text")}`)}>${escape_html(valve === "opened" ? "Heating" : "Idle")}</span></div> `);
+        $$renderer3.push(`<div class="space-y-5"><div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle"><span class="text-sm text-content-secondary uppercase tracking-wider">Valve</span> <span${attr_class(`font-medium text-sm ${stringify(valve === "opened" ? "text-device-climate-heat-text neon-text-subtle" : "text-device-climate-cool-text neon-text-subtle")}`)}>${escape_html(valve === "opened" ? "Heating" : "Idle")}</span></div> `);
         if (currentTemp !== null && targetTemp !== null) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary uppercase tracking-wide">Current</span> <p class="text-2xl sm:text-3xl font-bold mt-1 text-content-primary">${escape_html(currentTemp)}°C</p></div> <div class="bg-surface-recessed rounded-xl p-4 text-center"><span class="text-xs text-content-secondary uppercase tracking-wide">Target</span> <p class="text-2xl sm:text-3xl font-bold mt-1 text-device-climate-heat-text">${escape_html(targetTemp)}°C</p></div></div> <div><p class="text-sm text-content-secondary mb-3">Set Temperature</p> <div class="flex items-center justify-center gap-4"><button${attr("disabled", targetTemp !== null && targetTemp <= 5, true)} class="w-14 h-14 rounded-full badge-climate-cool text-2xl font-medium hover:opacity-80 disabled:opacity-50 transition-all">−</button> <div class="relative">`);
+          $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Current</span> <p class="font-display text-3xl mt-2 text-content-primary">${escape_html(currentTemp)}°</p></div> <div class="rounded-xl p-4 text-center glow-climate-heat power-btn-on"><span class="text-xs uppercase tracking-wider opacity-80">Target</span> <p class="font-display text-3xl mt-2">${escape_html(targetTemp)}°</p></div></div> <div><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Set Temperature</p> <div class="flex items-center justify-center gap-4"><button${attr("disabled", targetTemp !== null && targetTemp <= 5, true)} class="w-14 h-14 rounded-full glow-climate-cool power-btn-on text-2xl font-medium hover:scale-105 disabled:opacity-40 transition-all">−</button> <div class="relative">`);
           {
             $$renderer3.push("<!--[!-->");
-            $$renderer3.push(`<button class="text-3xl font-bold w-24 text-center text-content-primary hover:text-device-climate-heat-text transition-colors cursor-text" title="Click to edit">${escape_html(targetTemp)}°C</button>`);
+            $$renderer3.push(`<button class="font-display text-3xl w-28 text-center text-content-primary hover:text-device-climate-heat-text transition-colors cursor-text" title="Click to edit">${escape_html(targetTemp)}°C</button>`);
           }
           $$renderer3.push(`<!--]--> `);
           {
@@ -1755,18 +2274,20 @@ function TRVCard($$renderer, $$props) {
           {
             $$renderer3.push("<!--[!-->");
           }
-          $$renderer3.push(`<!--]--></div> <button${attr("disabled", targetTemp !== null && targetTemp >= 30, true)} class="w-14 h-14 rounded-full badge-climate-heat text-2xl font-medium hover:opacity-80 disabled:opacity-50 transition-all">+</button></div></div> <div><p class="text-sm text-content-secondary mb-2">Quick Set</p> <div class="grid grid-cols-4 gap-2"><!--[-->`);
+          $$renderer3.push(`<!--]--></div> <button${attr("disabled", targetTemp !== null && targetTemp >= 30, true)} class="w-14 h-14 rounded-full glow-climate-heat power-btn-on text-2xl font-medium hover:scale-105 disabled:opacity-40 transition-all">+</button></div></div> <div><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Quick Set</p> <div class="grid grid-cols-4 gap-2"><!--[-->`);
           const each_array = ensure_array_like([15, 18, 21, 24]);
           for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
             let temp = each_array[$$index];
-            $$renderer3.push(`<button${attr_class(`py-2 text-sm rounded-lg transition-colors ${stringify(targetTemp === temp ? "badge-climate-heat" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}>${escape_html(temp)}°</button>`);
+            $$renderer3.push(`<button${attr_class(`py-3 rounded-lg transition-all font-medium ${stringify(targetTemp === temp ? "glow-climate-heat power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}>${escape_html(temp)}°</button>`);
           }
           $$renderer3.push(`<!--]--></div></div>`);
         } else {
           $$renderer3.push("<!--[!-->");
-          $$renderer3.push(`<div class="text-center py-8 text-content-secondary">No data available</div>`);
+          $$renderer3.push(`<div class="text-center py-8 text-content-tertiary">`);
+          Thermometer_sun($$renderer3, { class: "w-12 h-12 mx-auto mb-3 opacity-50" });
+          $$renderer3.push(`<!----> <p>No data available</p></div>`);
         }
-        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-default space-y-2 text-sm"><div class="flex justify-between"><span class="text-content-secondary">Device ID</span> <span class="font-mono text-xs text-content-tertiary">${escape_html(device.id.slice(0, 12))}...</span></div> <div class="flex justify-between"><span class="text-content-secondary">Online</span> <span${attr_class(device.online ? "text-success" : "text-error")}>${escape_html(device.online ? "Yes" : "No")}</span></div></div></div>`);
+        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Device ID</span> <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">${escape_html(device.id.slice(0, 12))}...</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div></div></div>`);
       }
     });
     $$renderer2.push(`<!---->`);
@@ -1777,21 +2298,13 @@ function YamahaCard($$renderer, $$props) {
     let { device, compact = false } = $$props;
     let displayName = translateDeviceName(device.name);
     let dialogOpen = false;
-    let displayPower = "standby";
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", true, true)}${attr_class(
-      `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify("bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
-      void 0,
-      { "status-active": displayPower === "on" }
-    )}>`);
+    let isPowerPending = false;
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify("")}`)}><div class="flex items-center gap-3"><button${attr("disabled", true, true)}${attr_class(`power-btn glow-audio ${stringify("")} disabled:opacity-40 disabled:cursor-not-allowed`, void 0, { "pulse-ring": isPowerPending })}>`);
     Volume_2($$renderer2, { class: "w-4 h-4" });
-    $$renderer2.push(`<!----> `);
+    $$renderer2.push(`<!----></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
     {
       $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> `);
-    {
-      $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html("Offline")}</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-tertiary">${escape_html("Offline")}</p>`);
     }
     $$renderer2.push(`<!--]--></div></div></div> `);
     DeviceDialog($$renderer2, {
@@ -1799,7 +2312,7 @@ function YamahaCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Status</span> <span${attr_class(`font-medium ${stringify("text-content-tertiary")}`)}>${escape_html("Offline")}</span></div> `);
+        $$renderer3.push(`<div class="space-y-5"><div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle"><span class="text-sm text-content-secondary uppercase tracking-wider">Status</span> <span${attr_class(`font-medium text-sm ${stringify("text-content-tertiary")}`)}>${escape_html("Offline")}</span></div> `);
         {
           $$renderer3.push("<!--[!-->");
         }
@@ -1814,13 +2327,20 @@ function AirPurifierCard($$renderer, $$props) {
     let { compact = false } = $$props;
     let status = store.airPurifier;
     let dialogOpen = false;
+    let isPowerPending = false;
     let displayPower = status?.power ?? false;
     let displayMode = status?.mode ?? "auto";
     function aqiColor(aqi) {
-      if (aqi <= 50) return "text-success bg-success/20";
-      if (aqi <= 100) return "text-warning bg-warning/20";
-      if (aqi <= 150) return "text-device-climate-heat-text bg-device-climate-heat-bg";
-      return "text-error bg-error/20";
+      if (aqi <= 50) return "text-success";
+      if (aqi <= 100) return "text-warning";
+      if (aqi <= 150) return "text-device-climate-heat-text";
+      return "text-error";
+    }
+    function aqiBg(aqi) {
+      if (aqi <= 50) return "bg-success/10 border-success/30";
+      if (aqi <= 100) return "bg-warning/10 border-warning/30";
+      if (aqi <= 150) return "bg-device-climate-heat-bg border-device-climate-heat-text/30";
+      return "bg-error/10 border-error/30";
     }
     function aqiLabel(aqi) {
       if (aqi <= 50) return "Good";
@@ -1828,29 +2348,26 @@ function AirPurifierCard($$renderer, $$props) {
       if (aqi <= 150) return "Unhealthy";
       return "Very Unhealthy";
     }
+    const modes = [
+      { value: "auto", label: "Auto", icon: Gauge },
+      { value: "silent", label: "Night", icon: Moon },
+      { value: "favorite", label: "Manual", icon: Zap }
+    ];
     const modeLabels = { auto: "Auto", silent: "Night", favorite: "Manual" };
-    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card transition-card hover:scale-[1.02] ${stringify(compact ? "p-2.5" : "p-3")} w-full text-left cursor-pointer`)}><div class="flex items-center gap-2.5"><button${attr("disabled", !status, true)}${attr_class(
-      `w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative ${stringify(displayPower ? "badge-air" : "bg-surface-recessed text-content-tertiary")} hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`,
-      void 0,
-      { "status-active": displayPower }
-    )}>`);
+    $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify(displayPower ? "card-active glow-air" : "")}`)}><div class="flex items-center gap-3"><button${attr("disabled", !status, true)}${attr_class(`power-btn glow-air ${stringify(displayPower ? "power-btn-on" : "")} disabled:opacity-40 disabled:cursor-not-allowed`, void 0, { "pulse-ring": isPowerPending })}>`);
     Wind($$renderer2, { class: "w-4 h-4" });
-    $$renderer2.push(`<!----> `);
-    {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">Air Purifier</h4> `);
+    $$renderer2.push(`<!----></button> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">Air Purifier</h4> `);
     if (displayPower) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(modeLabels[displayMode] || displayMode)} · ${escape_html(status?.aqi ?? 0)} AQI</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-secondary"><span class="text-device-air-text">${escape_html(modeLabels[displayMode] || displayMode)}</span> <span class="mx-1 text-content-tertiary">/</span> <span${attr_class(aqiColor(status?.aqi ?? 0))}>${escape_html(status?.aqi ?? 0)} AQI</span></p>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<p class="text-xs text-content-secondary">${escape_html(status ? "Off" : "Offline")}</p>`);
+      $$renderer2.push(`<p class="text-xs text-content-tertiary">${escape_html(status ? "Standby" : "Offline")}</p>`);
     }
     $$renderer2.push(`<!--]--></div> `);
     if (compact && status?.power) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div${attr_class(`px-2 py-1 rounded-md text-xs font-medium shrink-0 ${stringify(aqiColor(status.aqi))}`)}>${escape_html(status.aqi)}</div>`);
+      $$renderer2.push(`<div${attr_class(`px-2 py-1 rounded-md text-xs font-medium shrink-0 border ${stringify(aqiBg(status.aqi))} ${stringify(aqiColor(status.aqi))}`)}>${escape_html(status.aqi)}</div>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
@@ -1860,44 +2377,52 @@ function AirPurifierCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: "Air Purifier",
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-4"><div class="flex items-center justify-between"><span class="text-content-secondary">Status</span> <span${attr_class(`font-medium ${stringify(displayPower ? "text-device-air-text" : "text-content-tertiary")}`)}>${escape_html(displayPower ? "On" : status ? "Off" : "Offline")}</span></div> `);
+        $$renderer3.push(`<div class="space-y-5"><div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle"><span class="text-sm text-content-secondary uppercase tracking-wider">Status</span> <span${attr_class(`font-medium text-sm ${stringify(displayPower ? "text-device-air-text neon-text-subtle" : "text-content-tertiary")}`)}>${escape_html(displayPower ? "Active" : status ? "Standby" : "Offline")}</span></div> `);
         if (status) {
           $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl text-lg font-medium transition-all relative ${stringify(displayPower ? "badge-air" : "bg-surface-recessed text-content-secondary")} hover:scale-[1.02]`)}>${escape_html(displayPower ? "Turn Off" : "Turn On")} `);
+          $$renderer3.push(`<button${attr_class(`w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden ${stringify(displayPower ? "glow-air power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}><span class="relative z-10 flex items-center justify-center gap-2">`);
+          Power($$renderer3, { class: "w-5 h-5" });
+          $$renderer3.push(`<!----> ${escape_html(displayPower ? "Power Off" : "Power On")}</span> `);
           {
             $$renderer3.push("<!--[!-->");
           }
           $$renderer3.push(`<!--]--></button> `);
           if (displayPower) {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div${attr_class(`rounded-xl p-4 text-center ${stringify(aqiColor(status.aqi))}`)}><span class="text-xs uppercase tracking-wide opacity-80">Air Quality Index</span> <p class="text-4xl font-bold mt-1">${escape_html(status.aqi)}</p> <p class="text-sm mt-1">${escape_html(aqiLabel(status.aqi))}</p></div> <div><p class="text-sm text-content-secondary mb-2">Mode</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
-            const each_array = ensure_array_like([
-              { value: "auto", label: "Auto" },
-              { value: "silent", label: "Night" },
-              { value: "favorite", label: "Manual" }
-            ]);
+            $$renderer3.push(`<div${attr_class(`rounded-xl p-5 text-center border ${stringify(aqiBg(status.aqi))}`)}><span class="text-xs uppercase tracking-wider text-content-tertiary">Air Quality Index</span> <p${attr_class(`font-display text-5xl mt-2 ${stringify(aqiColor(status.aqi))} neon-text`)}>${escape_html(status.aqi)}</p> <p${attr_class(`text-sm mt-2 ${stringify(aqiColor(status.aqi))}`)}>${escape_html(aqiLabel(status.aqi))}</p></div> <div><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Operating Mode</p> <div class="grid grid-cols-3 gap-2"><!--[-->`);
+            const each_array = ensure_array_like(modes);
             for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
               let mode = each_array[$$index];
-              $$renderer3.push(`<button${attr_class(`py-3 text-sm rounded-lg transition-colors ${stringify(displayMode === mode.value ? "badge-air" : "bg-surface-recessed text-content-secondary hover:bg-stroke-default")}`)}>${escape_html(mode.label)}</button>`);
+              $$renderer3.push(`<button${attr_class(`py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium ${stringify(displayMode === mode.value ? "glow-air power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}><!---->`);
+              mode.icon?.($$renderer3, { class: "w-5 h-5" });
+              $$renderer3.push(`<!----> ${escape_html(mode.label)}</button>`);
             }
             $$renderer3.push(`<!--]--></div></div> <div class="grid grid-cols-3 gap-3">`);
             if (status.humidity !== void 0) {
               $$renderer3.push("<!--[-->");
-              $$renderer3.push(`<div class="bg-surface-recessed rounded-xl p-3 text-center"><span class="text-xs text-content-secondary">Humidity</span> <p class="text-lg font-bold mt-1 text-content-primary">${escape_html(status.humidity)}%</p></div>`);
+              $$renderer3.push(`<div class="rounded-xl p-3 text-center bg-surface-recessed border border-stroke-subtle">`);
+              Droplets($$renderer3, { class: "w-4 h-4 mx-auto text-accent" });
+              $$renderer3.push(`<!----> <p class="font-display text-lg mt-1 text-content-primary">${escape_html(status.humidity)}%</p> <span class="text-[10px] text-content-tertiary uppercase">Humidity</span></div>`);
             } else {
               $$renderer3.push("<!--[!-->");
             }
             $$renderer3.push(`<!--]--> `);
             if (status.temperature !== void 0) {
               $$renderer3.push("<!--[-->");
-              $$renderer3.push(`<div class="bg-surface-recessed rounded-xl p-3 text-center"><span class="text-xs text-content-secondary">Temp</span> <p class="text-lg font-bold mt-1 text-content-primary">${escape_html(status.temperature)}°C</p></div>`);
+              $$renderer3.push(`<div class="rounded-xl p-3 text-center bg-surface-recessed border border-stroke-subtle">`);
+              Thermometer($$renderer3, { class: "w-4 h-4 mx-auto text-device-climate-heat-text" });
+              $$renderer3.push(`<!----> <p class="font-display text-lg mt-1 text-content-primary">${escape_html(status.temperature)}°</p> <span class="text-[10px] text-content-tertiary uppercase">Temp</span></div>`);
             } else {
               $$renderer3.push("<!--[!-->");
             }
             $$renderer3.push(`<!--]--> `);
             if (status.filter_life !== void 0) {
               $$renderer3.push("<!--[-->");
-              $$renderer3.push(`<div class="bg-surface-recessed rounded-xl p-3 text-center"><span class="text-xs text-content-secondary">Filter</span> <p${attr_class(`text-lg font-bold mt-1 ${stringify(status.filter_life < 20 ? "text-error" : "text-content-primary")}`)}>${escape_html(status.filter_life)}%</p></div>`);
+              $$renderer3.push(`<div${attr_class(`rounded-xl p-3 text-center bg-surface-recessed border border-stroke-subtle ${stringify(status.filter_life < 20 ? "border-error/50" : "")}`)}>`);
+              Funnel($$renderer3, {
+                class: `w-4 h-4 mx-auto ${stringify(status.filter_life < 20 ? "text-error" : "text-device-sensors-text")}`
+              });
+              $$renderer3.push(`<!----> <p${attr_class(`font-display text-lg mt-1 ${stringify(status.filter_life < 20 ? "text-error" : "text-content-primary")}`)}>${escape_html(status.filter_life)}%</p> <span class="text-[10px] text-content-tertiary uppercase">Filter</span></div>`);
             } else {
               $$renderer3.push("<!--[!-->");
             }
@@ -1926,18 +2451,18 @@ function _page($$renderer, $$props) {
         $$renderer4.push(`<title>Smart Home</title>`);
       });
     });
-    $$renderer2.push(`<div class="pb-24 space-y-6">`);
+    $$renderer2.push(`<div class="pb-24 space-y-8 svelte-1uha8ag">`);
     if (store.loading && !hasLoaded) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="space-y-6"><!--[-->`);
-      const each_array = ensure_array_like(Array(3));
-      for (let $$index_1 = 0, $$length = each_array.length; $$index_1 < $$length; $$index_1++) {
-        each_array[$$index_1];
-        $$renderer2.push(`<section><div class="w-20 h-5 rounded bg-surface-recessed animate-pulse mb-3"></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"><!--[-->`);
+      $$renderer2.push(`<div class="space-y-8 svelte-1uha8ag"><!--[-->`);
+      const each_array = ensure_array_like(Array(4));
+      for (let i = 0, $$length = each_array.length; i < $$length; i++) {
+        each_array[i];
+        $$renderer2.push(`<section class="relative svelte-1uha8ag"${attr_style(`animation-delay: ${stringify(i * 100)}ms`)}><div class="flex items-center gap-3 mb-4 svelte-1uha8ag"><div class="w-8 h-8 rounded-lg bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="w-24 h-5 rounded bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_1 = ensure_array_like(Array(4));
-        for (let $$index = 0, $$length2 = each_array_1.length; $$index < $$length2; $$index++) {
-          each_array_1[$$index];
-          $$renderer2.push(`<div class="card rounded-xl p-2.5"><div class="flex items-center gap-2.5"><div class="w-9 h-9 rounded-lg bg-surface-recessed animate-pulse"></div> <div class="flex-1 space-y-1.5"><div class="w-20 h-3.5 rounded bg-surface-recessed animate-pulse"></div> <div class="w-14 h-3 rounded bg-surface-recessed animate-pulse"></div></div></div></div>`);
+        for (let j = 0, $$length2 = each_array_1.length; j < $$length2; j++) {
+          each_array_1[j];
+          $$renderer2.push(`<div class="card p-3 relative overflow-hidden svelte-1uha8ag"${attr_style(`animation-delay: ${stringify((i * 4 + j) * 50)}ms`)}><div class="flex items-center gap-3 svelte-1uha8ag"><div class="w-9 h-9 rounded-lg bg-surface-recessed skeleton-glow svelte-1uha8ag"></div> <div class="flex-1 space-y-2 svelte-1uha8ag"><div class="w-20 h-3.5 rounded bg-surface-recessed skeleton-glow svelte-1uha8ag"></div> <div class="w-14 h-3 rounded bg-surface-recessed skeleton-glow svelte-1uha8ag"></div></div></div> <div class="absolute inset-0 scan-line-overlay svelte-1uha8ag"></div></div>`);
         }
         $$renderer2.push(`<!--]--></div></section>`);
       }
@@ -1946,7 +2471,9 @@ function _page($$renderer, $$props) {
       $$renderer2.push("<!--[!-->");
       if (lamps.length > 0) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<section><h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2"><span class="text-device-lights-text">💡</span> Lights <span class="text-xs text-content-tertiary">(${escape_html(lamps.length)})</span></h2> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"><!--[-->`);
+        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-lights svelte-1uha8ag"><div class="section-icon glow-lights svelte-1uha8ag">`);
+        Lightbulb($$renderer2, { class: "w-4 h-4" });
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Lights</h2> <span class="section-count svelte-1uha8ag">${escape_html(lamps.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_2 = ensure_array_like(lamps);
         for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
           let lamp = each_array_2[$$index_2];
@@ -1959,7 +2486,9 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<!--]--> `);
       if (thermostats.length > 0 || store.airPurifier) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<section><h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2"><span class="text-device-climate-heat-text">🌡️</span> Climate <span class="text-xs text-content-tertiary">(${escape_html(thermostats.length + (store.airPurifier ? 1 : 0))})</span></h2> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"><!--[-->`);
+        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-climate svelte-1uha8ag"><div class="section-icon glow-climate-heat svelte-1uha8ag">`);
+        Thermometer($$renderer2, { class: "w-4 h-4" });
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length + (store.airPurifier ? 1 : 0))}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_3 = ensure_array_like(thermostats);
         for (let $$index_3 = 0, $$length = each_array_3.length; $$index_3 < $$length; $$index_3++) {
           let device = each_array_3[$$index_3];
@@ -1979,7 +2508,9 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<!--]--> `);
       if (sensors.length > 0) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<section><h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2"><span class="text-device-sensors-text">📡</span> Sensors <span class="text-xs text-content-tertiary">(${escape_html(sensors.length)})</span></h2> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"><!--[-->`);
+        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-sensors svelte-1uha8ag"><div class="section-icon glow-sensors svelte-1uha8ag">`);
+        Radio($$renderer2, { class: "w-4 h-4" });
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Sensors</h2> <span class="section-count svelte-1uha8ag">${escape_html(sensors.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_4 = ensure_array_like(sensors);
         for (let $$index_4 = 0, $$length = each_array_4.length; $$index_4 < $$length; $$index_4++) {
           let device = each_array_4[$$index_4];
@@ -1992,7 +2523,9 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<!--]--> `);
       if (store.yamahaDevices.length > 0) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<section><h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2"><span class="text-device-audio-text">🔊</span> Audio <span class="text-xs text-content-tertiary">(${escape_html(store.yamahaDevices.length)})</span></h2> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"><!--[-->`);
+        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-audio svelte-1uha8ag"><div class="section-icon glow-audio svelte-1uha8ag">`);
+        Volume_2($$renderer2, { class: "w-4 h-4" });
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Audio</h2> <span class="section-count svelte-1uha8ag">${escape_html(store.yamahaDevices.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_5 = ensure_array_like(store.yamahaDevices);
         for (let $$index_5 = 0, $$length = each_array_5.length; $$index_5 < $$length; $$index_5++) {
           let device = each_array_5[$$index_5];
@@ -2002,7 +2535,9 @@ function _page($$renderer, $$props) {
       } else {
         $$renderer2.push("<!--[!-->");
       }
-      $$renderer2.push(`<!--]--> <section><h2 class="text-sm font-medium text-content-secondary mb-3 flex items-center gap-2"><span class="text-device-robot-text">🤖</span> Robot <span class="text-xs text-content-tertiary">(1)</span></h2> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">`);
+      $$renderer2.push(`<!--]--> <section class="svelte-1uha8ag"><div class="section-header section-header-robot svelte-1uha8ag"><div class="section-icon glow-robot svelte-1uha8ag">`);
+      Bot($$renderer2, { class: "w-4 h-4" });
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Robot</h2> <span class="section-count svelte-1uha8ag">1</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag">`);
       RoborockCard($$renderer2, { status: store.roborock, compact: true });
       $$renderer2.push(`<!----></div></section>`);
     }

@@ -30,9 +30,9 @@
 <svelte:window on:keydown={handleKeydown} />
 
 {#if open}
-  <!-- Backdrop -->
+  <!-- Backdrop with blur -->
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 dialog-overlay animate-fade-in"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 dialog-overlay"
     onclick={handleBackdropClick}
     onkeydown={handleKeydown}
     role="dialog"
@@ -40,36 +40,70 @@
     aria-labelledby="dialog-title"
     tabindex="-1"
   >
-    <!-- Dialog -->
-    <div class="dialog-content w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[80vh] overflow-hidden">
-      <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-stroke-default">
-        <h2 id="dialog-title" class="text-lg font-semibold text-content-primary">{title}</h2>
-        <button
-          onclick={onclose}
-          aria-label="Close dialog"
-          class="w-10 h-10 rounded-xl bg-surface-recessed text-content-secondary hover:text-content-primary
-                 hover:bg-stroke-default transition-colors flex items-center justify-center"
-        >
-          <X class="w-5 h-5" />
-        </button>
+    <!-- Dialog panel -->
+    <div class="dialog-content w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[85vh] overflow-hidden animate-dialog-in">
+      <!-- Header with glow line -->
+      <div class="relative px-5 py-4 border-b border-stroke-default">
+        <!-- Header glow accent -->
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent-glow)] to-transparent"></div>
+
+        <div class="flex items-center justify-between">
+          <h2 id="dialog-title" class="font-display text-base tracking-[0.1em] text-content-primary uppercase">
+            {title}
+          </h2>
+          <button
+            onclick={onclose}
+            aria-label="Close dialog"
+            class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default
+                   text-content-secondary hover:text-error hover:border-error hover:bg-[rgba(255,71,87,0.1)]
+                   transition-all duration-300 flex items-center justify-center
+                   hover:shadow-[0_0_15px_rgba(255,71,87,0.3)]"
+          >
+            <X class="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      <!-- Content -->
-      <div class="p-4 overflow-y-auto max-h-[calc(80vh-64px)]">
-        {@render children()}
+      <!-- Content area with subtle grid -->
+      <div class="relative p-5 overflow-y-auto max-h-[calc(85vh-80px)]">
+        <!-- Subtle grid pattern -->
+        <div class="absolute inset-0 opacity-[0.02] pointer-events-none"
+             style="background-image: linear-gradient(var(--color-accent) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--color-accent) 1px, transparent 1px);
+                    background-size: 30px 30px;">
+        </div>
+        <div class="relative z-10">
+          {@render children()}
+        </div>
       </div>
     </div>
   </div>
 {/if}
 
 <style>
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+      filter: brightness(1.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: brightness(1);
+    }
+  }
+
+  .animate-dialog-in {
+    animation: dialog-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dialog-overlay {
+    animation: fade-in 0.2s ease-out;
+  }
+
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.15s ease-out;
   }
 </style>

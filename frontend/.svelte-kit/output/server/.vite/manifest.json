@@ -33,9 +33,9 @@
     "file": "chunks/false.js",
     "name": "false"
   },
-  "_house.js": {
-    "file": "chunks/house.js",
-    "name": "house",
+  "_flame.js": {
+    "file": "chunks/flame.js",
+    "name": "flame",
     "imports": [
       "_index2.js",
       "_Icon.js"
@@ -65,9 +65,9 @@
       "_environment.js"
     ]
   },
-  "_power.js": {
-    "file": "chunks/power.js",
-    "name": "power",
+  "_lightbulb.js": {
+    "file": "chunks/lightbulb.js",
+    "name": "lightbulb",
     "imports": [
       "_index2.js",
       "_Icon.js"
@@ -123,6 +123,14 @@
       "_Icon.js"
     ]
   },
+  "_zap.js": {
+    "file": "chunks/zap.js",
+    "name": "zap",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
   "node_modules/@sveltejs/kit/src/runtime/app/server/remote/index.js": {
     "file": "remote-entry.js",
     "name": "remote-entry",
@@ -173,13 +181,12 @@
       "_exports.js",
       "_utils.js",
       "_state.svelte.js",
-      "_house.js",
-      "_sun.js",
-      "_Icon.js",
+      "_zap.js",
+      "_lightbulb.js",
       "_thermometer.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.CecQHiiH.css"
+      "_app/immutable/assets/_layout.C7GetxNx.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -197,13 +204,15 @@
       "_index2.js",
       "_x.js",
       "_context.js",
-      "_power.js",
+      "_sun.js",
       "_Icon.js",
-      "_house.js",
-      "_thermometer.js"
+      "_zap.js",
+      "_flame.js",
+      "_thermometer.js",
+      "_lightbulb.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.DSRsvZHy.css"
+      "_app/immutable/assets/_page.D0c9KvZb.css"
     ]
   },
   "src/routes/heater-schedule/+page.svelte": {
@@ -217,7 +226,11 @@
       "_Icon.js",
       "_thermometer.js",
       "_trash-2.js",
+      "_flame.js",
       "_context.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.B6f6-Jif.css"
     ]
   },
   "src/routes/lighting/+page.svelte": {
@@ -228,10 +241,13 @@
     "imports": [
       "_index2.js",
       "_x.js",
-      "_sun.js",
+      "_lightbulb.js",
       "_trash-2.js",
-      "_power.js",
+      "_sun.js",
       "_context.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.AOkJYMsS.css"
     ]
   }
 }

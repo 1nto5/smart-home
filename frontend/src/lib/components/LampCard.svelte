@@ -5,7 +5,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Power } from 'lucide-svelte';
+  import { Power, Sun, Moon, Sparkles } from 'lucide-svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
@@ -87,9 +87,9 @@
 
   // Preset definitions
   const presets = [
-    { id: 'day', label: 'Day', brightness: 100, colorTemp: 5000, moonlight: false },
-    { id: 'night', label: 'Night', brightness: 30, colorTemp: 2700, moonlight: false },
-    { id: 'moonlight', label: 'Moonlight', brightness: 10, colorTemp: 2700, moonlight: true },
+    { id: 'day', label: 'Day', brightness: 100, colorTemp: 5000, moonlight: false, icon: Sun },
+    { id: 'night', label: 'Night', brightness: 30, colorTemp: 2700, moonlight: false, icon: Moon },
+    { id: 'moonlight', label: 'Moonlight', brightness: 10, colorTemp: 2700, moonlight: true, icon: Sparkles },
   ] as const;
 
   async function applyPreset(preset: typeof presets[number]) {
@@ -136,37 +136,39 @@
   onkeydown={(e) => e.key === 'Enter' && (dialogOpen = true)}
   role="button"
   tabindex="0"
-  class="card transition-card hover:scale-[1.02] {compact ? 'p-2.5' : 'p-3'} w-full text-left cursor-pointer"
+  class="card {compact ? 'p-3' : 'p-4'} w-full text-left cursor-pointer
+         {displayPower ? 'card-active glow-lights' : ''}"
 >
-  <div class="flex items-center gap-2.5">
+  <div class="flex items-center gap-3">
     <!-- Power toggle button -->
     <button
       onclick={togglePower}
       disabled={!isOnline}
-      class="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative
-             {displayPower ? (status?.moonlight_mode ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights') : 'bg-surface-recessed text-content-tertiary'}
-             hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-      class:status-active={displayPower}
+      class="power-btn glow-lights {displayPower ? 'power-btn-on' : ''}
+             {status?.moonlight_mode && displayPower ? 'glow-audio' : ''}
+             disabled:opacity-40 disabled:cursor-not-allowed"
+      class:pulse-ring={isPowerPending}
     >
       <Power class="w-4 h-4" />
-      {#if isPowerPending}
-        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-device-lights-text rounded-full animate-pulse"></span>
-      {/if}
     </button>
 
     <!-- Info -->
     <div class="min-w-0 flex-1">
       <h4 class="font-medium text-sm text-content-primary truncate">{displayName}</h4>
       {#if !isOnline}
-        <p class="text-xs text-content-secondary">Offline</p>
+        <p class="text-xs text-content-tertiary">Offline</p>
       {:else if displayPower}
         {#if status?.moonlight_mode}
-          <p class="text-xs text-device-audio-text">Moonlight</p>
+          <p class="text-xs text-device-audio-text neon-text-subtle">Moonlight</p>
         {:else}
-          <p class="text-xs text-content-secondary">{displayBrightness}% &middot; {displayColorTemp}K</p>
+          <p class="text-xs text-content-secondary">
+            <span class="text-device-lights-text">{displayBrightness}%</span>
+            <span class="mx-1 text-content-tertiary">/</span>
+            <span>{displayColorTemp}K</span>
+          </p>
         {/if}
       {:else}
-        <p class="text-xs text-content-secondary">Off</p>
+        <p class="text-xs text-content-tertiary">Standby</p>
       {/if}
     </div>
   </div>
@@ -174,17 +176,17 @@
 
 <!-- Detail Dialog -->
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
-  <div class="space-y-4">
-    <!-- Status -->
-    <div class="flex items-center justify-between">
-      <span class="text-content-secondary">Status</span>
-      <span class="font-medium {displayPower ? (status?.moonlight_mode ? 'text-device-audio-text' : 'text-device-lights-text') : 'text-content-tertiary'}">
+  <div class="space-y-5">
+    <!-- Status indicator -->
+    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+      <span class="text-sm text-content-secondary uppercase tracking-wider">Status</span>
+      <span class="font-medium text-sm {displayPower ? (status?.moonlight_mode ? 'text-device-audio-text neon-text-subtle' : 'text-device-lights-text neon-text-subtle') : 'text-content-tertiary'}">
         {#if !isOnline}
           Offline
         {:else if displayPower}
-          {status?.moonlight_mode ? 'Moonlight' : 'On'}
+          {status?.moonlight_mode ? 'Moonlight' : 'Active'}
         {:else}
-          Off
+          Standby
         {/if}
       </span>
     </div>
@@ -193,32 +195,35 @@
       <!-- Large Power Button -->
       <button
         onclick={togglePower}
-        class="w-full py-4 rounded-xl text-lg font-medium transition-all relative
-               {displayPower ? (status.moonlight_mode ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights') : 'bg-surface-recessed text-content-secondary'}
-               hover:scale-[1.02]"
+        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden
+               {displayPower
+                 ? (status.moonlight_mode ? 'glow-audio power-btn-on' : 'glow-lights power-btn-on')
+                 : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
       >
-        {displayPower ? 'Turn Off' : 'Turn On'}
+        <span class="relative z-10">{displayPower ? 'Power Off' : 'Power On'}</span>
         {#if isPowerPending}
-          <span class="absolute top-2 right-2 w-2 h-2 bg-device-lights-text rounded-full animate-pulse"></span>
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
         {/if}
       </button>
 
       {#if displayPower}
         <!-- Presets -->
         <div>
-          <p class="text-sm text-content-secondary mb-2">Presets</p>
+          <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Quick Presets</p>
           <div class="grid grid-cols-3 gap-2">
             {#each presets as preset}
+              {@const active = isPresetActive(preset) || activePreset === preset.id}
               <button
                 onclick={() => applyPreset(preset)}
-                class="py-2.5 text-sm rounded-lg transition-all relative
-                       {isPresetActive(preset) || activePreset === preset.id
-                         ? (preset.moonlight ? 'bg-device-audio-bg text-device-audio-text' : 'badge-lights')
-                         : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+                class="py-3 px-2 rounded-lg transition-all flex flex-col items-center gap-1.5 relative
+                       {active
+                         ? (preset.moonlight ? 'glow-audio power-btn-on' : 'glow-lights power-btn-on')
+                         : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                {preset.label}
+                <svelte:component this={preset.icon} class="w-4 h-4" />
+                <span class="text-xs font-medium">{preset.label}</span>
                 {#if activePreset === preset.id}
-                  <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-device-lights-text rounded-full animate-pulse"></span>
+                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
                 {/if}
               </button>
             {/each}
@@ -228,9 +233,9 @@
         {#if !status.moonlight_mode}
           <!-- Brightness -->
           <div>
-            <div class="flex justify-between text-sm text-content-secondary mb-2">
-              <span>Brightness</span>
-              <span class="font-medium text-content-primary">{displayBrightness}%</span>
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs text-content-tertiary uppercase tracking-wider">Brightness</span>
+              <span class="font-display text-lg text-device-lights-text neon-text-subtle">{displayBrightness}%</span>
             </div>
             <input
               type="range"
@@ -239,14 +244,15 @@
               value={displayBrightness}
               oninput={(e) => handleBrightnessInput(parseInt(e.currentTarget.value))}
               class="w-full"
+              style="--color-accent: var(--color-lights-text); --color-accent-glow: var(--color-lights-glow);"
             />
           </div>
 
           <!-- Color Temperature -->
           <div>
-            <div class="flex justify-between text-sm text-content-secondary mb-2">
-              <span>Color Temperature</span>
-              <span class="font-medium text-content-primary">{displayColorTemp}K</span>
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span>
+              <span class="font-display text-lg text-content-primary">{displayColorTemp}K</span>
             </div>
             <input
               type="range"
@@ -257,24 +263,25 @@
               oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
               class="w-full"
             />
-            <div class="flex justify-between text-xs text-content-tertiary mt-1">
-              <span>Warm</span>
-              <span>Cool</span>
+            <div class="flex justify-between text-[10px] text-content-tertiary mt-2 uppercase tracking-wider">
+              <span class="text-orange-400">Warm</span>
+              <span class="text-sky-400">Cool</span>
             </div>
           </div>
         {:else}
           <!-- Moonlight mode info -->
-          <div class="py-4 text-center text-sm text-device-audio-text/80">
-            Hardware night light mode active
+          <div class="py-6 text-center rounded-lg bg-device-audio-bg/30 border border-device-audio-text/20">
+            <Sparkles class="w-6 h-6 mx-auto mb-2 text-device-audio-text" />
+            <p class="text-sm text-device-audio-text">Hardware Night Mode</p>
           </div>
         {/if}
       {/if}
 
       <!-- Device Info -->
-      <div class="pt-4 border-t border-stroke-default space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-content-secondary">IP Address</span>
-          <span class="font-mono text-xs text-content-tertiary">{lamp.ip}</span>
+      <div class="pt-4 border-t border-stroke-subtle space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-content-tertiary uppercase tracking-wider">IP Address</span>
+          <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">{lamp.ip}</span>
         </div>
       </div>
     {/if}

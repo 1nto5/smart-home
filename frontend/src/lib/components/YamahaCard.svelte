@@ -4,7 +4,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Volume2, VolumeX } from 'lucide-svelte';
+  import { Volume2, VolumeX, Power, Tv, Bluetooth, Music, Gamepad2, Mic, Radio } from 'lucide-svelte';
 
   let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -16,29 +16,25 @@
   let optimisticPower = $state<'on' | 'standby' | null>(null);
   let isPowerPending = $state(false);
 
-  // Local slider state for preview
+  // Local slider state
   let previewVolume = $state<number | null>(null);
   let previewSubwooferVol = $state<number | null>(null);
 
-  // Display values (preview or actual)
+  // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? 'standby');
   let displayVolume = $derived(previewVolume ?? status?.volume ?? 0);
   let displaySubwooferVol = $derived(previewSubwooferVol ?? status?.subwoofer_volume ?? 0);
 
   $effect(() => {
     if (!fetched && device.last_status) {
-      try {
-        status = JSON.parse(device.last_status);
-      } catch {}
+      try { status = JSON.parse(device.last_status); } catch {}
     }
   });
 
   $effect(() => {
     if (!fetched) {
       fetched = true;
-      getYamahaStatus(device.id)
-        .then(res => status = res.status)
-        .catch(() => {});
+      getYamahaStatus(device.id).then(res => status = res.status).catch(() => {});
     }
   });
 
@@ -67,14 +63,11 @@
     isPowerPending = false;
   }
 
-  // Debounced volume controls
   const [sendVolumeDebounced] = debounce(async (vol: number) => {
     try {
       await controlYamaha(device.id, { volume: vol });
       if (status) status = { ...status, volume: vol };
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     previewVolume = null;
   }, 300);
 
@@ -82,9 +75,7 @@
     try {
       await controlYamaha(device.id, { subwoofer_volume: vol });
       if (status) status = { ...status, subwoofer_volume: vol };
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     previewSubwooferVol = null;
   }, 300);
 
@@ -134,26 +125,21 @@
   async function toggleClearVoice() {
     const newVal = !status?.clear_voice;
     if (status) status = { ...status, clear_voice: newVal };
-    try {
-      await controlYamaha(device.id, { clear_voice: newVal });
-    } catch (e) {
-      console.error(e);
-      if (status) status = { ...status, clear_voice: !newVal };
-    }
+    try { await controlYamaha(device.id, { clear_voice: newVal }); }
+    catch (e) { console.error(e); if (status) status = { ...status, clear_voice: !newVal }; }
   }
 
   async function toggleBassExtension() {
     const newVal = !status?.bass_extension;
     if (status) status = { ...status, bass_extension: newVal };
-    try {
-      await controlYamaha(device.id, { bass_extension: newVal });
-    } catch (e) {
-      console.error(e);
-      if (status) status = { ...status, bass_extension: !newVal };
-    }
+    try { await controlYamaha(device.id, { bass_extension: newVal }); }
+    catch (e) { console.error(e); if (status) status = { ...status, bass_extension: !newVal }; }
   }
 
-  const inputs = ['tv', 'bluetooth'];
+  const inputs = [
+    { id: 'tv', label: 'TV', icon: Tv },
+    { id: 'bluetooth', label: 'BT', icon: Bluetooth },
+  ];
 
   const soundPrograms = [
     { id: 'movie', label: 'Movie' },
@@ -171,22 +157,19 @@
   onkeydown={(e) => e.key === 'Enter' && (dialogOpen = true)}
   role="button"
   tabindex="0"
-  class="card transition-card hover:scale-[1.02] {compact ? 'p-2.5' : 'p-3'} w-full text-left cursor-pointer"
+  class="card {compact ? 'p-3' : 'p-4'} w-full text-left cursor-pointer
+         {displayPower === 'on' ? 'card-active glow-audio' : ''}"
 >
-  <div class="flex items-center gap-2.5">
+  <div class="flex items-center gap-3">
     <!-- Power toggle -->
     <button
       onclick={(e) => { e.stopPropagation(); togglePower(); }}
       disabled={!status}
-      class="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 relative
-             {displayPower === 'on' ? 'badge-audio' : 'bg-surface-recessed text-content-tertiary'}
-             hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-      class:status-active={displayPower === 'on'}
+      class="power-btn glow-audio {displayPower === 'on' ? 'power-btn-on' : ''}
+             disabled:opacity-40 disabled:cursor-not-allowed"
+      class:pulse-ring={isPowerPending}
     >
       <Volume2 class="w-4 h-4" />
-      {#if isPowerPending}
-        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-device-audio-text rounded-full animate-pulse"></span>
-      {/if}
     </button>
 
     <!-- Info -->
@@ -194,10 +177,12 @@
       <h4 class="font-medium text-sm text-content-primary truncate">{displayName}</h4>
       {#if displayPower === 'on'}
         <p class="text-xs text-content-secondary">
-          {status?.mute ? 'Muted' : `${displayVolume}%`} · {status?.input}
+          <span class="{status?.mute ? 'text-error' : 'text-device-audio-text'}">{status?.mute ? 'Muted' : `${displayVolume}%`}</span>
+          <span class="mx-1 text-content-tertiary">/</span>
+          <span class="uppercase">{status?.input}</span>
         </p>
       {:else}
-        <p class="text-xs text-content-secondary">{status ? 'Standby' : 'Offline'}</p>
+        <p class="text-xs text-content-tertiary">{status ? 'Standby' : 'Offline'}</p>
       {/if}
     </div>
   </div>
@@ -205,12 +190,12 @@
 
 <!-- Detail Dialog -->
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
-  <div class="space-y-4">
+  <div class="space-y-5">
     <!-- Status -->
-    <div class="flex items-center justify-between">
-      <span class="text-content-secondary">Status</span>
-      <span class="font-medium {displayPower === 'on' ? 'text-device-audio-text' : 'text-content-tertiary'}">
-        {displayPower === 'on' ? 'On' : status ? 'Standby' : 'Offline'}
+    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+      <span class="text-sm text-content-secondary uppercase tracking-wider">Status</span>
+      <span class="font-medium text-sm {displayPower === 'on' ? 'text-device-audio-text neon-text-subtle' : 'text-content-tertiary'}">
+        {displayPower === 'on' ? 'Active' : status ? 'Standby' : 'Offline'}
       </span>
     </div>
 
@@ -218,22 +203,24 @@
       <!-- Power Button -->
       <button
         onclick={togglePower}
-        class="w-full py-4 rounded-xl text-lg font-medium transition-all relative
-               {displayPower === 'on' ? 'badge-audio' : 'bg-surface-recessed text-content-secondary'}
-               hover:scale-[1.02]"
+        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden
+               {displayPower === 'on' ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
       >
-        {displayPower === 'on' ? 'Turn Off' : 'Turn On'}
+        <span class="relative z-10 flex items-center justify-center gap-2">
+          <Power class="w-5 h-5" />
+          {displayPower === 'on' ? 'Power Off' : 'Power On'}
+        </span>
         {#if isPowerPending}
-          <span class="absolute top-2 right-2 w-2 h-2 bg-device-audio-text rounded-full animate-pulse"></span>
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
         {/if}
       </button>
 
       {#if displayPower === 'on'}
         <!-- Volume -->
         <div>
-          <div class="flex justify-between text-sm text-content-secondary mb-2">
-            <span>Volume</span>
-            <span class="font-medium text-content-primary">{status.mute ? 'Muted' : `${displayVolume}%`}</span>
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs text-content-tertiary uppercase tracking-wider">Volume</span>
+            <span class="font-display text-lg {status.mute ? 'text-error' : 'text-device-audio-text neon-text-subtle'}">{status.mute ? 'Muted' : `${displayVolume}%`}</span>
           </div>
           <div class="flex gap-2 items-center">
             <input
@@ -243,12 +230,13 @@
               value={displayVolume}
               oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
               class="flex-1"
+              style="--color-accent: var(--color-audio-text); --color-accent-glow: var(--color-audio-glow);"
             />
             <button
               onclick={toggleMute}
-              class="w-10 h-10 rounded-lg transition-colors flex items-center justify-center
-                     {status.mute ? 'bg-error/20 text-error' : 'bg-surface-recessed text-content-secondary'}
-                     hover:bg-stroke-default"
+              class="w-10 h-10 rounded-lg transition-all flex items-center justify-center
+                     {status.mute ? 'bg-error/20 text-error border border-error/50' : 'bg-surface-recessed border border-stroke-default text-content-secondary'}
+                     hover:scale-105"
             >
               {#if status.mute}
                 <VolumeX class="w-5 h-5" />
@@ -261,9 +249,9 @@
 
         <!-- Subwoofer Volume -->
         <div>
-          <div class="flex justify-between text-sm text-content-secondary mb-2">
-            <span>Subwoofer</span>
-            <span class="font-medium text-content-primary">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs text-content-tertiary uppercase tracking-wider">Subwoofer</span>
+            <span class="font-display text-lg text-content-primary">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
           </div>
           <input
             type="range"
@@ -278,15 +266,16 @@
 
         <!-- Input Selection -->
         <div>
-          <p class="text-sm text-content-secondary mb-2">Input</p>
+          <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Input Source</p>
           <div class="grid grid-cols-2 gap-2">
             {#each inputs as inp}
               <button
-                onclick={() => setInput(inp)}
-                class="py-3 text-sm rounded-lg transition-colors uppercase
-                       {status.input === inp ? 'badge-audio' : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+                onclick={() => setInput(inp.id)}
+                class="py-3 rounded-lg transition-all flex items-center justify-center gap-2 font-medium
+                       {status.input === inp.id ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                {inp === 'bluetooth' ? 'BT' : 'TV'}
+                <svelte:component this={inp.icon} class="w-4 h-4" />
+                {inp.label}
               </button>
             {/each}
           </div>
@@ -294,13 +283,13 @@
 
         <!-- Sound Program -->
         <div>
-          <p class="text-sm text-content-secondary mb-2">Sound Program</p>
+          <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Sound Program</p>
           <div class="grid grid-cols-3 gap-2">
             {#each soundPrograms as prog}
               <button
                 onclick={() => setSoundProgram(prog.id)}
-                class="py-2.5 text-sm rounded-lg transition-colors
-                       {status.sound_program === prog.id ? 'badge-audio' : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+                class="py-2.5 text-sm rounded-lg transition-all font-medium
+                       {status.sound_program === prog.id ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
                 {prog.label}
               </button>
@@ -310,26 +299,27 @@
 
         <!-- Audio Toggles -->
         <div>
-          <p class="text-sm text-content-secondary mb-2">Audio</p>
+          <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Audio Enhancements</p>
           <div class="grid grid-cols-2 gap-2">
             <button
               onclick={toggleClearVoice}
-              class="py-3 text-sm rounded-lg transition-colors
-                     {status.clear_voice ? 'badge-audio' : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+              class="py-3 rounded-lg transition-all flex items-center justify-center gap-2 font-medium
+                     {status.clear_voice ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
             >
+              <Mic class="w-4 h-4" />
               Clear Voice
             </button>
             <button
               onclick={toggleBassExtension}
-              class="py-3 text-sm rounded-lg transition-colors
-                     {status.bass_extension ? 'badge-audio' : 'bg-surface-recessed text-content-secondary hover:bg-stroke-default'}"
+              class="py-3 rounded-lg transition-all flex items-center justify-center gap-2 font-medium
+                     {status.bass_extension ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
             >
+              <Radio class="w-4 h-4" />
               Bass Ext.
             </button>
           </div>
         </div>
       {/if}
-
     {/if}
   </div>
 </DeviceDialog>
