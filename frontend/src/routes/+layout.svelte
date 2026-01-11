@@ -4,7 +4,7 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Palette, Calendar, House, Monitor, Sun, Moon, Thermometer } from 'lucide-svelte';
+  import { Home, House, Monitor, Sun, Moon, Thermometer, Lightbulb } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { children } = $props();
@@ -22,8 +22,7 @@
 
   const navItems: { href: string; label: string; icon: ComponentType }[] = [
     { href: '/', label: 'Home', icon: Home },
-    { href: '/presets', label: 'Presets', icon: Palette },
-    { href: '/schedule', label: 'Schedule', icon: Calendar },
+    { href: '/lighting', label: 'Lighting', icon: Lightbulb },
     { href: '/heater-schedule', label: 'Heating', icon: Thermometer },
   ];
 
