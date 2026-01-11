@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { getPresets, applyPreset, createSchedule, deleteSchedule, toggleSchedule, clearPendingActions } from '$lib/api';
-  import { Sun, Moon, Power, Lightbulb, Clock, Plus, Trash2, Play } from 'lucide-svelte';
+  import { getPresets, applyPreset, createSchedule, deleteSchedule, toggleSchedule, clearPendingActions, updateLampPreset, createLampPreset, deleteLampPreset } from '$lib/api';
+  import { Sun, Moon, Power, Lightbulb, Clock, Plus, Trash2, Play, X } from 'lucide-svelte';
   import { browser } from '$app/environment';
   import type { Preset, ApplyResult } from '$lib/types';
   import type { ComponentType } from 'svelte';
@@ -15,9 +15,27 @@
   let newTime = $state('19:00');
   let loading = $state(false);
 
+  // Edit preset state
+  let editingPreset = $state<string | null>(null);
+  let editBrightness = $state(100);
+  let editColorTemp = $state(4000);
+  let editPower = $state(true);
+
+  // New preset form state
+  let showNewPresetForm = $state(false);
+  let createPresetId = $state('');
+  let createPresetName = $state('');
+  let createPresetBrightness = $state(100);
+  let createPresetColorTemp = $state(4000);
+  let createPresetPower = $state(true);
+
+  async function refreshPresets() {
+    presets = await getPresets();
+  }
+
   $effect(() => {
     if (browser) {
-      getPresets().then(p => presets = p);
+      refreshPresets();
     }
   });
 
@@ -40,6 +58,62 @@
       console.error(e);
     }
     applyingPreset = null;
+  }
+
+  function startEditPreset(name: string, preset: Preset) {
+    editingPreset = name;
+    editBrightness = preset.brightness;
+    editColorTemp = preset.colorTemp;
+    editPower = preset.power;
+  }
+
+  async function savePreset(id: string) {
+    loading = true;
+    try {
+      await updateLampPreset(id, editBrightness, editColorTemp, editPower);
+      editingPreset = null;
+      await refreshPresets();
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
+  }
+
+  function cancelEdit() {
+    editingPreset = null;
+  }
+
+  async function handleCreatePreset() {
+    if (!createPresetId.trim() || !createPresetName.trim()) return;
+    loading = true;
+    try {
+      const id = createPresetId.trim().toLowerCase().replace(/\s+/g, '-');
+      await createLampPreset(id, createPresetName.trim(), createPresetBrightness, createPresetColorTemp, createPresetPower);
+      createPresetId = '';
+      createPresetName = '';
+      createPresetBrightness = 100;
+      createPresetColorTemp = 4000;
+      createPresetPower = true;
+      showNewPresetForm = false;
+      await refreshPresets();
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message || 'Failed to create preset');
+    }
+    loading = false;
+  }
+
+  async function handleDeletePreset(id: string) {
+    if (!confirm(`Delete preset "${id}"? This will also delete any schedules using this preset.`)) return;
+    loading = true;
+    try {
+      await deleteLampPreset(id);
+      await refreshPresets();
+      await store.refreshSchedules();
+    } catch (e) {
+      console.error(e);
+    }
+    loading = false;
   }
 
   async function handleCreate() {
@@ -69,6 +143,11 @@
     await clearPendingActions();
     await store.refreshPending();
   }
+
+  function getPresetName(presetId: string): string {
+    const preset = presets[presetId];
+    return preset?.name ?? presetId;
+  }
 </script>
 
 <svelte:head>
@@ -78,13 +157,95 @@
 <div class="space-y-8">
   <!-- Presets -->
   <section>
-    <h2 class="text-lg font-medium text-content-primary mb-4 flex items-center gap-2">
-      <Lightbulb class="w-5 h-5" />
-      Lamp Presets
-    </h2>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-medium text-content-primary flex items-center gap-2">
+        <Lightbulb class="w-5 h-5" />
+        Lamp Presets
+      </h2>
+      <button
+        onclick={() => showNewPresetForm = !showNewPresetForm}
+        class="text-sm px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors flex items-center gap-1"
+      >
+        <Plus class="w-4 h-4" />
+        Add Preset
+      </button>
+    </div>
+
+    {#if showNewPresetForm}
+      <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 mb-4">
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="Preset ID (e.g. reading)"
+              bind:value={createPresetId}
+              class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary flex-1"
+            />
+            <input
+              type="text"
+              placeholder="Display name (e.g. Reading)"
+              bind:value={createPresetName}
+              class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary flex-1"
+            />
+          </div>
+          <div class="flex flex-wrap items-center gap-4">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" bind:checked={createPresetPower} class="accent-accent" />
+              <span class="text-content-primary">Power On</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="text-content-secondary text-sm">Brightness:</span>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                bind:value={createPresetBrightness}
+                class="w-24 accent-accent"
+              />
+              <span class="text-content-primary w-12">{createPresetBrightness}%</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-content-secondary text-sm">Color:</span>
+              <input
+                type="range"
+                min="2700"
+                max="6500"
+                step="100"
+                bind:value={createPresetColorTemp}
+                class="w-24 accent-accent"
+              />
+              <span class="text-content-primary w-16">{createPresetColorTemp}K</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button
+              onclick={handleCreatePreset}
+              disabled={loading || !createPresetId.trim() || !createPresetName.trim()}
+              class="bg-accent hover:bg-accent/80 disabled:opacity-50 px-4 py-2 rounded-lg text-white font-medium"
+            >
+              Create
+            </button>
+            <button
+              onclick={() => showNewPresetForm = false}
+              class="px-3 py-2 rounded-lg bg-surface-recessed text-content-secondary hover:bg-stroke-default transition-colors"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    {/if}
+
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {#each Object.entries(presets) as [name, preset] (name)}
-        <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4">
+        <div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 relative group">
+          <button
+            onclick={() => handleDeletePreset(name)}
+            class="absolute top-2 right-2 p-1 rounded bg-error/20 text-error opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Delete preset"
+          >
+            <X class="w-3 h-3" />
+          </button>
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <svelte:component this={getIcon(name)} class="w-5 h-5 text-accent" />
@@ -99,9 +260,57 @@
               <Play class="w-4 h-4" />
             </button>
           </div>
-          <p class="text-sm text-content-secondary">
-            {preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : 'Off'}
-          </p>
+          {#if editingPreset === name}
+            <div class="space-y-2">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" bind:checked={editPower} class="accent-accent" />
+                <span class="text-sm text-content-primary">Power</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  bind:value={editBrightness}
+                  class="w-full accent-accent"
+                />
+                <span class="text-sm text-content-primary w-10">{editBrightness}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="2700"
+                  max="6500"
+                  step="100"
+                  bind:value={editColorTemp}
+                  class="w-full accent-accent"
+                />
+                <span class="text-sm text-content-primary w-14">{editColorTemp}K</span>
+              </div>
+              <div class="flex gap-2 mt-2">
+                <button
+                  onclick={() => savePreset(name)}
+                  disabled={loading}
+                  class="text-xs px-2 py-1 bg-success/20 text-success rounded disabled:opacity-50"
+                >
+                  Save
+                </button>
+                <button
+                  onclick={cancelEdit}
+                  class="text-xs px-2 py-1 bg-surface-recessed text-content-secondary rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          {:else}
+            <button
+              onclick={() => startEditPreset(name, preset)}
+              class="text-sm text-content-secondary hover:text-accent transition-colors"
+            >
+              {preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : 'Off'}
+            </button>
+          {/if}
         </div>
       {/each}
     </div>
@@ -169,7 +378,7 @@
               <span class="text-xl font-mono text-content-primary">{schedule.time}</span>
               <div>
                 <span class="font-medium text-content-primary">{schedule.name}</span>
-                <span class="text-sm text-content-secondary ml-2">({schedule.preset})</span>
+                <span class="text-sm text-content-secondary ml-2">({getPresetName(schedule.preset)})</span>
               </div>
             </div>
             <div class="flex gap-2">
@@ -214,7 +423,7 @@
           <div class="bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between">
             <div>
               <span class="font-mono text-sm text-content-primary">{action.device_id}</span>
-              <span class="text-sm text-content-secondary ml-2">→ {action.preset}</span>
+              <span class="text-sm text-content-secondary ml-2">→ {getPresetName(action.preset)}</span>
             </div>
             <span class="text-xs text-content-tertiary">
               Retry #{action.retry_count}

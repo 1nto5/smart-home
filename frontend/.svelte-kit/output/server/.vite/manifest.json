@@ -65,14 +65,6 @@
       "_environment.js"
     ]
   },
-  "_play.js": {
-    "file": "chunks/play.js",
-    "name": "play",
-    "imports": [
-      "_index2.js",
-      "_Icon.js"
-    ]
-  },
   "_power.js": {
     "file": "chunks/power.js",
     "name": "power",
@@ -187,7 +179,7 @@
       "_thermometer.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.B1xArozA.css"
+      "_app/immutable/assets/_layout.CxnXw0j_.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -203,9 +195,8 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_play.js",
-      "_context.js",
       "_x.js",
+      "_context.js",
       "_power.js",
       "_Icon.js",
       "_house.js",
@@ -222,11 +213,10 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_play.js",
+      "_x.js",
       "_Icon.js",
       "_thermometer.js",
       "_trash-2.js",
-      "_x.js",
       "_context.js"
     ]
   },
@@ -237,7 +227,7 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_play.js",
+      "_x.js",
       "_sun.js",
       "_trash-2.js",
       "_power.js",

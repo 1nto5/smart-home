@@ -38,6 +38,16 @@ export interface Preset {
   power: boolean;
 }
 
+export interface LampPreset {
+  id: string;
+  name: string;
+  brightness: number;
+  color_temp: number;
+  power: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Schedule {
   id: number;
   name: string;

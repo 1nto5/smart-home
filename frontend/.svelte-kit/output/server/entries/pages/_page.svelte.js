@@ -1,8 +1,7 @@
 import { U as sanitize_props, V as spread_props, W as slot, Z as attr_class, Y as attr, _ as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
-import { s as store, P as Play } from "../../chunks/play.js";
+import { X, s as store, P as Play } from "../../chunks/x.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
-import { X } from "../../chunks/x.js";
 import { P as Power } from "../../chunks/power.js";
 import { I as Icon } from "../../chunks/Icon.js";
 import { H as House } from "../../chunks/house.js";

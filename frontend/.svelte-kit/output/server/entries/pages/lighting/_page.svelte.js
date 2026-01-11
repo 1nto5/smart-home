@@ -1,5 +1,5 @@
 import { a2 as head, X as ensure_array_like, Y as attr, Z as attr_class, _ as stringify } from "../../../chunks/index2.js";
-import { P as Play, s as store } from "../../../chunks/play.js";
+import { X, P as Play, s as store } from "../../../chunks/x.js";
 import { L as Lightbulb, M as Moon, S as Sun } from "../../../chunks/sun.js";
 import { P as Plus, C as Clock, T as Trash_2 } from "../../../chunks/trash-2.js";
 import { P as Power } from "../../../chunks/power.js";
@@ -11,6 +11,11 @@ function _page($$renderer, $$props) {
     let newName = "";
     let newPreset = "night";
     let newTime = "19:00";
+    let loading = false;
+    let editingPreset = null;
+    let editBrightness = 100;
+    let editColorTemp = 4e3;
+    let editPower = true;
     function getIcon(presetName) {
       switch (presetName) {
         case "day":
@@ -23,22 +28,42 @@ function _page($$renderer, $$props) {
           return Lightbulb;
       }
     }
+    function getPresetName(presetId) {
+      const preset = presets[presetId];
+      return preset?.name ?? presetId;
+    }
     head("92554t", $$renderer2, ($$renderer3) => {
       $$renderer3.title(($$renderer4) => {
         $$renderer4.push(`<title>Smart Home - Lighting</title>`);
       });
     });
-    $$renderer2.push(`<div class="space-y-8"><section><h2 class="text-lg font-medium text-content-primary mb-4 flex items-center gap-2">`);
+    $$renderer2.push(`<div class="space-y-8"><section><div class="flex items-center justify-between mb-4"><h2 class="text-lg font-medium text-content-primary flex items-center gap-2">`);
     Lightbulb($$renderer2, { class: "w-5 h-5" });
-    $$renderer2.push(`<!----> Lamp Presets</h2> <div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><!--[-->`);
+    $$renderer2.push(`<!----> Lamp Presets</h2> <button class="text-sm px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors flex items-center gap-1">`);
+    Plus($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----> Add Preset</button></div> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> <div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><!--[-->`);
     const each_array = ensure_array_like(Object.entries(presets));
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
       let [name, preset] = each_array[$$index];
-      $$renderer2.push(`<div class="bg-surface-elevated border border-stroke-default rounded-xl p-4"><div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><!---->`);
+      $$renderer2.push(`<div class="bg-surface-elevated border border-stroke-default rounded-xl p-4 relative group"><button class="absolute top-2 right-2 p-1 rounded bg-error/20 text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Delete preset">`);
+      X($$renderer2, { class: "w-3 h-3" });
+      $$renderer2.push(`<!----></button> <div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><!---->`);
       getIcon(name)?.($$renderer2, { class: "w-5 h-5 text-accent" });
       $$renderer2.push(`<!----> <span class="font-medium text-content-primary">${escape_html(preset.name)}</span></div> <button${attr("disabled", applyingPreset !== null, true)} class="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50" title="Apply to all lamps">`);
       Play($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></button></div> <p class="text-sm text-content-secondary">${escape_html(preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : "Off")}</p></div>`);
+      $$renderer2.push(`<!----></button></div> `);
+      if (editingPreset === name) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<div class="space-y-2"><label class="flex items-center gap-2"><input type="checkbox"${attr("checked", editPower, true)} class="accent-accent"/> <span class="text-sm text-content-primary">Power</span></label> <div class="flex items-center gap-2"><input type="range" min="1" max="100"${attr("value", editBrightness)} class="w-full accent-accent"/> <span class="text-sm text-content-primary w-10">${escape_html(editBrightness)}%</span></div> <div class="flex items-center gap-2"><input type="range" min="2700" max="6500" step="100"${attr("value", editColorTemp)} class="w-full accent-accent"/> <span class="text-sm text-content-primary w-14">${escape_html(editColorTemp)}K</span></div> <div class="flex gap-2 mt-2"><button${attr("disabled", loading, true)} class="text-xs px-2 py-1 bg-success/20 text-success rounded disabled:opacity-50">Save</button> <button class="text-xs px-2 py-1 bg-surface-recessed text-content-secondary rounded">Cancel</button></div></div>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<button class="text-sm text-content-secondary hover:text-accent transition-colors">${escape_html(preset.power ? `${preset.brightness}% / ${preset.colorTemp}K` : "Off")}</button>`);
+      }
+      $$renderer2.push(`<!--]--></div>`);
     }
     $$renderer2.push(`<!--]--></div> `);
     {
@@ -76,7 +101,7 @@ function _page($$renderer, $$props) {
       const each_array_2 = ensure_array_like(store.schedules);
       for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
         let schedule = each_array_2[$$index_2];
-        $$renderer2.push(`<div${attr_class("bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between", void 0, { "opacity-50": !schedule.enabled })}><div class="flex items-center gap-4"><span class="text-xl font-mono text-content-primary">${escape_html(schedule.time)}</span> <div><span class="font-medium text-content-primary">${escape_html(schedule.name)}</span> <span class="text-sm text-content-secondary ml-2">(${escape_html(schedule.preset)})</span></div></div> <div class="flex gap-2"><button${attr_class(`text-sm px-3 py-1 rounded-lg font-medium transition-colors ${stringify(schedule.enabled ? "bg-success/20 text-success" : "bg-surface-recessed text-content-secondary")}`)}>${escape_html(schedule.enabled ? "On" : "Off")}</button> <button class="text-sm px-3 py-1 rounded-lg bg-error/20 text-error hover:bg-error/30 font-medium transition-colors">`);
+        $$renderer2.push(`<div${attr_class("bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between", void 0, { "opacity-50": !schedule.enabled })}><div class="flex items-center gap-4"><span class="text-xl font-mono text-content-primary">${escape_html(schedule.time)}</span> <div><span class="font-medium text-content-primary">${escape_html(schedule.name)}</span> <span class="text-sm text-content-secondary ml-2">(${escape_html(getPresetName(schedule.preset))})</span></div></div> <div class="flex gap-2"><button${attr_class(`text-sm px-3 py-1 rounded-lg font-medium transition-colors ${stringify(schedule.enabled ? "bg-success/20 text-success" : "bg-surface-recessed text-content-secondary")}`)}>${escape_html(schedule.enabled ? "On" : "Off")}</button> <button class="text-sm px-3 py-1 rounded-lg bg-error/20 text-error hover:bg-error/30 font-medium transition-colors">`);
         Trash_2($$renderer2, { class: "w-4 h-4" });
         $$renderer2.push(`<!----></button></div></div>`);
       }
@@ -99,7 +124,7 @@ function _page($$renderer, $$props) {
       const each_array_3 = ensure_array_like(store.pendingActions);
       for (let $$index_3 = 0, $$length = each_array_3.length; $$index_3 < $$length; $$index_3++) {
         let action = each_array_3[$$index_3];
-        $$renderer2.push(`<div class="bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between"><div><span class="font-mono text-sm text-content-primary">${escape_html(action.device_id)}</span> <span class="text-sm text-content-secondary ml-2">→ ${escape_html(action.preset)}</span></div> <span class="text-xs text-content-tertiary">Retry #${escape_html(action.retry_count)}</span></div>`);
+        $$renderer2.push(`<div class="bg-surface-elevated border border-stroke-default rounded-xl p-3 flex items-center justify-between"><div><span class="font-mono text-sm text-content-primary">${escape_html(action.device_id)}</span> <span class="text-sm text-content-secondary ml-2">→ ${escape_html(getPresetName(action.preset))}</span></div> <span class="text-xs text-content-tertiary">Retry #${escape_html(action.retry_count)}</span></div>`);
       }
       $$renderer2.push(`<!--]--></div>`);
     }
