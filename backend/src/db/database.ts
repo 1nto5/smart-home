@@ -211,6 +211,17 @@ export function initDatabase(): Database {
     }
   }
 
+  // Per-device heater preset temperatures (overrides default preset temp)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS heater_preset_devices (
+      preset_id TEXT NOT NULL,
+      device_id TEXT NOT NULL,
+      target_temp REAL NOT NULL,
+      PRIMARY KEY (preset_id, device_id),
+      FOREIGN KEY (preset_id) REFERENCES heater_presets(id) ON DELETE CASCADE
+    )
+  `);
+
   // Heater schedules
   db.run(`
     CREATE TABLE IF NOT EXISTS heater_schedules (

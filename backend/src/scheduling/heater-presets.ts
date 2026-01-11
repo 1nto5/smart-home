@@ -12,6 +12,12 @@ export interface HeaterPreset {
   updated_at?: string;
 }
 
+export interface HeaterPresetDevice {
+  preset_id: string;
+  device_id: string;
+  target_temp: number;
+}
+
 export function getHeaterPresets(): HeaterPreset[] {
   const db = getDb();
   return db.query('SELECT * FROM heater_presets ORDER BY target_temp DESC').all() as HeaterPreset[];
@@ -72,7 +78,62 @@ export function deleteHeaterPreset(id: string): boolean {
   // Delete any schedules using this preset first
   db.run('DELETE FROM heater_schedules WHERE preset_id = ?', [id]);
 
+  // Delete per-device temps (CASCADE should handle this, but be explicit)
+  db.run('DELETE FROM heater_preset_devices WHERE preset_id = ?', [id]);
+
   // Delete the preset
   const result = db.run('DELETE FROM heater_presets WHERE id = ?', [id]);
   return result.changes > 0;
+}
+
+// Per-device temperature overrides
+
+export function getPresetDeviceTemps(presetId: string): HeaterPresetDevice[] {
+  const db = getDb();
+  return db.query(
+    'SELECT * FROM heater_preset_devices WHERE preset_id = ?'
+  ).all(presetId) as HeaterPresetDevice[];
+}
+
+export function setPresetDeviceTemp(presetId: string, deviceId: string, targetTemp: number): HeaterPresetDevice {
+  const db = getDb();
+
+  // Validate temperature range
+  if (targetTemp < 5 || targetTemp > 30) {
+    throw new Error('Temperature must be between 5 and 30');
+  }
+
+  // Upsert: insert or replace
+  db.run(
+    'INSERT OR REPLACE INTO heater_preset_devices (preset_id, device_id, target_temp) VALUES (?, ?, ?)',
+    [presetId, deviceId, targetTemp]
+  );
+
+  return { preset_id: presetId, device_id: deviceId, target_temp: targetTemp };
+}
+
+export function deletePresetDeviceTemp(presetId: string, deviceId: string): boolean {
+  const db = getDb();
+  const result = db.run(
+    'DELETE FROM heater_preset_devices WHERE preset_id = ? AND device_id = ?',
+    [presetId, deviceId]
+  );
+  return result.changes > 0;
+}
+
+export function getEffectiveTemp(presetId: string, deviceId: string): number {
+  const db = getDb();
+
+  // First check for device-specific temp
+  const deviceTemp = db.query(
+    'SELECT target_temp FROM heater_preset_devices WHERE preset_id = ? AND device_id = ?'
+  ).get(presetId, deviceId) as { target_temp: number } | null;
+
+  if (deviceTemp) {
+    return deviceTemp.target_temp;
+  }
+
+  // Fall back to preset default temp
+  const preset = getHeaterPreset(presetId);
+  return preset?.target_temp ?? 18;
 }

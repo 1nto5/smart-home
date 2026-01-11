@@ -78,6 +78,9 @@ import {
   isValidHeaterPreset,
   createHeaterPreset,
   deleteHeaterPreset,
+  getPresetDeviceTemps,
+  setPresetDeviceTemp,
+  deletePresetDeviceTemp,
   getHeaterSchedules,
   createHeaterSchedule,
   deleteHeaterSchedule,
@@ -795,6 +798,47 @@ app.post('/api/heater-presets/:id/apply', async (c) => {
 
   const result = await applyPresetToAllHeaters(presetId);
   return c.json(result);
+});
+
+// Get per-device temps for a preset
+app.get('/api/heater-presets/:id/devices', (c) => {
+  const presetId = c.req.param('id');
+  if (!isValidHeaterPreset(presetId)) {
+    return c.json({ error: `Invalid preset: ${presetId}` }, 400);
+  }
+  const deviceTemps = getPresetDeviceTemps(presetId);
+  return c.json(deviceTemps);
+});
+
+// Set per-device temp for a preset
+app.put('/api/heater-presets/:presetId/devices/:deviceId', async (c) => {
+  const presetId = c.req.param('presetId');
+  const deviceId = c.req.param('deviceId');
+  const body = await c.req.json();
+
+  if (!isValidHeaterPreset(presetId)) {
+    return c.json({ error: `Invalid preset: ${presetId}` }, 400);
+  }
+
+  if (body.target_temp === undefined) {
+    return c.json({ error: 'target_temp required' }, 400);
+  }
+
+  try {
+    const result = setPresetDeviceTemp(presetId, deviceId, body.target_temp);
+    return c.json(result);
+  } catch (e: any) {
+    return c.json({ error: e.message }, 400);
+  }
+});
+
+// Delete per-device temp (revert to preset default)
+app.delete('/api/heater-presets/:presetId/devices/:deviceId', (c) => {
+  const presetId = c.req.param('presetId');
+  const deviceId = c.req.param('deviceId');
+
+  const deleted = deletePresetDeviceTemp(presetId, deviceId);
+  return c.json({ success: deleted });
 });
 
 // Get all heater schedules

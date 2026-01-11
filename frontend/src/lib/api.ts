@@ -1,4 +1,4 @@
-import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
+import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterPresetDevice, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
@@ -243,6 +243,29 @@ export async function createHeaterPreset(id: string, name: string, target_temp: 
 
 export async function deleteHeaterPreset(id: string): Promise<{ success: boolean }> {
   return fetcher(`/heater-presets/${id}`, { method: 'DELETE' });
+}
+
+// Per-device heater preset temps
+export async function getPresetDeviceTemps(presetId: string): Promise<HeaterPresetDevice[]> {
+  return fetcher(`/heater-presets/${presetId}/devices`);
+}
+
+export async function setPresetDeviceTemp(
+  presetId: string,
+  deviceId: string,
+  target_temp: number
+): Promise<HeaterPresetDevice> {
+  return fetcher(`/heater-presets/${presetId}/devices/${deviceId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ target_temp }),
+  });
+}
+
+export async function deletePresetDeviceTemp(
+  presetId: string,
+  deviceId: string
+): Promise<{ success: boolean }> {
+  return fetcher(`/heater-presets/${presetId}/devices/${deviceId}`, { method: 'DELETE' });
 }
 
 // Heater schedules

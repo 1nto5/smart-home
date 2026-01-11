@@ -4,7 +4,7 @@
  */
 
 import { getDb } from '../db/database';
-import { getHeaterPreset, isValidHeaterPreset, type HeaterPreset } from './heater-presets';
+import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp, type HeaterPreset } from './heater-presets';
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
 
@@ -122,7 +122,7 @@ async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<
 }
 
 /**
- * Apply preset to a single TRV
+ * Apply preset to a single TRV (uses per-device temp if set, otherwise preset default)
  */
 export async function applyPresetToHeater(deviceId: string, presetId: string): Promise<boolean> {
   const preset = getHeaterPreset(presetId);
@@ -131,7 +131,9 @@ export async function applyPresetToHeater(deviceId: string, presetId: string): P
     return false;
   }
 
-  return applyTempToHeater(deviceId, preset.target_temp);
+  // Get effective temp for this device (may be per-device or preset default)
+  const targetTemp = getEffectiveTemp(presetId, deviceId);
+  return applyTempToHeater(deviceId, targetTemp);
 }
 
 /**
