@@ -1,0 +1,132 @@
+import{c as Oe,a as l,d as Ut,f as p,s as m}from"../chunks/DN_vEeGv.js";import{f as oe,p as Wt,s as x,c as rt,d as Yt,g as o,j as n,k as e,t as P,l as Zt,e as er,m as s,$ as tr,n as a,o as ae,v as rr}from"../chunks/CEuPnrTr.js";import{l as qe,s as Xe,i as S}from"../chunks/CK2TXMS2.js";import{I as Be,s as Ge,e as se,b as ar,l as sr,m as or,a as v,d as ve,r as L,n as nr,o as ir,p as Me,q as cr,v as lr,w as dr,x as vr,y as pr,z as ur,A as fr}from"../chunks/CV8eAOJH.js";import{h as br,b as M,X as mr,P as _r}from"../chunks/DMfFZMmU.js";import{b as xr}from"../chunks/B1Sn1HrY.js";import{T as gr}from"../chunks/CJp3lMog.js";import{P as at,C as st,a as yr,T as ot}from"../chunks/Q-qo6P3F.js";import{F as hr}from"../chunks/DPuSmdJ7.js";import"../chunks/DjnKCaAL.js";function wr(F,C){const y=qe(C,["children","$$slots","$$events","$$legacy"]);/**
+ * @license lucide-svelte v0.562.0 - ISC
+ *
+ * ISC License
+ *
+ * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * ---
+ *
+ * The MIT License (MIT) (for portions derived from Feather)
+ *
+ * Copyright (c) 2013-2023 Cole Bemis
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */const A=[["path",{d:"m6 9 6 6 6-6"}]];Be(F,Xe({name:"chevron-down"},()=>y,{get iconNode(){return A},children:(N,d)=>{var h=Oe(),H=oe(h);Ge(H,C,"default",{}),l(N,h)},$$slots:{default:!0}}))}function kr(F,C){const y=qe(C,["children","$$slots","$$events","$$legacy"]);/**
+ * @license lucide-svelte v0.562.0 - ISC
+ *
+ * ISC License
+ *
+ * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * ---
+ *
+ * The MIT License (MIT) (for portions derived from Feather)
+ *
+ * Copyright (c) 2013-2023 Cole Bemis
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */const A=[["path",{d:"m18 15-6-6-6 6"}]];Be(F,Xe({name:"chevron-up"},()=>y,{get iconNode(){return A},children:(N,d)=>{var h=Oe(),H=oe(h);Ge(H,C,"default",{}),l(N,h)},$$slots:{default:!0}}))}function Pr(F,C){const y=qe(C,["children","$$slots","$$events","$$legacy"]);/**
+ * @license lucide-svelte v0.562.0 - ISC
+ *
+ * ISC License
+ *
+ * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * ---
+ *
+ * The MIT License (MIT) (for portions derived from Feather)
+ *
+ * Copyright (c) 2013-2023 Cole Bemis
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */const A=[["path",{d:"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}],["path",{d:"M3 3v5h5"}]];Be(F,Xe({name:"rotate-ccw"},()=>y,{get iconNode(){return A},children:(N,d)=>{var h=Oe(),H=oe(h);Ge(H,C,"default",{}),l(N,h)},$$slots:{default:!0}}))}var $r=p('<div class="card card-active glow-climate-heat mb-4"><div class="p-4"><div class="flex flex-col sm:flex-row gap-3"><input type="text" placeholder="Preset ID (e.g. away)" class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-device-climate-heat-text focus:outline-none transition-colors"/> <input type="text" placeholder="Display name (e.g. Away)" class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-device-climate-heat-text focus:outline-none transition-colors"/> <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-recessed border border-stroke-subtle"><input type="number" min="5" max="30" step="0.5" class="bg-transparent w-16 text-content-primary text-center font-display focus:outline-none [appearance:textfield] [&amp;::-webkit-outer-spin-button]:appearance-none [&amp;::-webkit-inner-spin-button]:appearance-none"/> <span class="text-device-climate-heat-text font-display">°C</span></div> <button class="px-4 py-2.5 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider disabled:opacity-50 transition-all">Create</button> <button class="px-3 py-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors"><!></button></div></div></div>'),Cr=p('<div class="flex items-center gap-2"><input type="number" min="5" max="30" step="0.5" class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&amp;::-webkit-outer-spin-button]:appearance-none [&amp;::-webkit-inner-spin-button]:appearance-none"/> <span class="text-device-climate-heat-text">°C</span> <button class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded hover:bg-success/30 transition-colors">Save</button> <button class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors">Cancel</button></div>'),Hr=p('<button class="font-display text-2xl text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform"> </button>'),Tr=p('<p class="text-sm text-content-tertiary">No TRV devices found</p>'),Dr=p('<input type="number" min="5" max="30" step="0.5" class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center text-sm font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&amp;::-webkit-outer-spin-button]:appearance-none [&amp;::-webkit-inner-spin-button]:appearance-none"/> <button class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded disabled:opacity-50 hover:bg-success/30 transition-colors">Save</button> <button class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors">Cancel</button>',1),Sr=p('<button class="p-1.5 rounded bg-surface-recessed border border-stroke-subtle text-content-tertiary hover:text-content-secondary transition-colors disabled:opacity-50" title="Reset to default"><!></button>'),Ar=p("<button> </button> <!>",1),Nr=p('<div class="flex items-center justify-between bg-surface-elevated rounded-lg p-3 border border-stroke-subtle"><span class="text-sm text-content-primary"> </span> <div class="flex items-center gap-2"><!></div></div>'),jr=p('<div class="space-y-2"></div>'),zr=p('<div class="border-t border-stroke-subtle bg-surface-recessed/50 p-4"><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Per-device temperatures <span class="text-content-secondary"> </span></p> <!></div>'),Er=p('<div class="card overflow-hidden hover:border-device-climate-heat-text/30 transition-colors"><div class="p-4"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center"><!></div> <span class="font-display text-sm uppercase tracking-wider text-content-primary"> </span></div> <div class="flex items-center gap-1.5"><button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50" title="Apply to all heaters"><!></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors" title="Per-device settings"><!></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all" title="Delete preset"><!></button></div></div> <!></div> <!></div>'),Fr=p('<option class="svelte-1wpfyiy"> </option>'),Rr=p('<div class="card p-6 text-center"><!> <p class="text-content-tertiary">No schedules configured</p></div>'),Vr=p('<div><div class="flex items-center justify-between mb-2"><div class="font-display text-xl text-accent neon-text-subtle"> </div> <div class="flex gap-1.5"><button> </button> <button class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"><!></button></div></div> <div class="text-sm"><span class="font-medium text-content-primary"> </span> <span class="text-content-tertiary mx-1">→</span> <span class="text-device-climate-heat-text"> </span></div></div>'),Lr=p('<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>'),Mr=p('<button class="ml-3 px-3 py-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary text-sm hover:border-stroke-strong transition-colors">Clear All</button>'),Or=p('<div class="card p-4 flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-success animate-glow"></div> <p class="text-content-secondary text-sm">All heaters online - no pending actions</p></div>'),qr=p('<div class="card p-3 flex items-center justify-between border-warning/30"><div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-warning animate-glow"></div> <span class="font-mono text-sm text-content-primary"> </span> <span class="text-content-tertiary">→</span> <span class="text-sm text-device-climate-heat-text"> </span></div> <span class="text-xs font-display text-content-tertiary px-2 py-1 rounded bg-surface-recessed"> </span></div>'),Xr=p('<div class="space-y-2"></div>'),Br=p('<div class="space-y-8 pb-24"><section><div class="section-header section-header-climate svelte-1wpfyiy"><div class="section-icon glow-climate-heat svelte-1wpfyiy"><!></div> <h2 class="section-title svelte-1wpfyiy">Heater Presets</h2> <span class="section-count svelte-1wpfyiy"> </span> <div class="section-line svelte-1wpfyiy"></div> <button class="ml-3 px-3 py-1.5 rounded-lg glow-climate-heat power-btn-on text-sm font-medium flex items-center gap-1.5 transition-transform hover:scale-105"><!> Add</button></div> <!> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div></section> <section><div class="section-header svelte-1wpfyiy"><div class="section-icon svelte-1wpfyiy" style="background: color-mix(in srgb, var(--color-accent) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent);"><!></div> <h2 class="section-title svelte-1wpfyiy" style="color: var(--color-accent);">Create Schedule</h2> <div class="section-line svelte-1wpfyiy" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);"></div></div> <div class="card p-4"><div class="flex flex-col sm:flex-row flex-wrap gap-3"><input type="text" placeholder="Schedule name" class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 w-full sm:flex-1 sm:min-w-[150px] text-content-primary placeholder:text-content-tertiary focus:border-accent focus:outline-none transition-colors"/> <div class="flex gap-3"><select class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary flex-1 sm:flex-initial focus:border-accent focus:outline-none transition-colors svelte-1wpfyiy"></select> <input type="time" class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary font-display focus:border-accent focus:outline-none transition-colors"/></div> <button>Add</button></div></div></section> <section><div class="section-header svelte-1wpfyiy"><div class="section-icon svelte-1wpfyiy" style="background: color-mix(in srgb, var(--color-accent) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent);"><!></div> <h2 class="section-title svelte-1wpfyiy" style="color: var(--color-accent);">Schedules</h2> <span class="section-count svelte-1wpfyiy"> </span> <div class="section-line svelte-1wpfyiy" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);"></div></div> <!></section> <section><div class="section-header svelte-1wpfyiy"><div class="section-icon svelte-1wpfyiy" style="background: color-mix(in srgb, var(--color-warning) 15%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); color: var(--color-warning);"><!></div> <h2 class="section-title svelte-1wpfyiy" style="color: var(--color-warning);">Pending Actions</h2> <span class="section-count svelte-1wpfyiy"> </span> <div class="section-line svelte-1wpfyiy" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning) 40%, transparent) 0%, transparent 100%);"></div> <!></div> <!></section></div>');function ta(F,C){Wt(C,!0);let y=x(""),A=x("night"),N=x("22:00"),d=x(!1),h=x(null),H=x(21),I=x(null),ne=x(rt([])),J=x(rt([])),K=x(null),ie=x(21);Yt(()=>{xr&&sr().then(t=>{o(ne,t.filter(r=>r.category==="wkf"),!0)})});async function nt(t){e(I)===t?(o(I,null),o(J,[],!0)):(o(I,t,!0),o(J,await Me(t),!0)),o(K,null)}function it(t,r){const i=e(J).find(c=>c.device_id===t);return i?{temp:i.target_temp,isCustom:!0}:{temp:r,isCustom:!1}}function ct(t,r){o(K,t,!0),o(ie,r,!0)}async function lt(t,r){o(d,!0);try{await ur(t,r,e(ie)),o(J,await Me(t),!0),o(K,null)}catch(i){console.error(i)}o(d,!1)}async function dt(t,r){o(d,!0);try{await fr(t,r),o(J,await Me(t),!0)}catch(i){console.error(i)}o(d,!1)}async function vt(){if(e(y).trim()){o(d,!0);try{await or(e(y).trim(),e(A),e(N)),o(y,""),await v.refreshHeaterSchedules()}catch(t){console.error(t)}o(d,!1)}}async function pt(t){await vr(t),await v.refreshHeaterSchedules()}async function ut(t){await dr(t),await v.refreshHeaterSchedules()}async function ft(){await pr(),await v.refreshPendingHeater()}function bt(t){o(h,t.id,!0),o(H,t.target_temp,!0)}async function mt(t){await lr(t,e(H)),o(h,null),await v.refreshHeaterPresets()}function _t(){o(h,null)}let Q=x(!1),O=x(""),q=x(""),ce=x(20);async function xt(){if(!(!e(O).trim()||!e(q).trim())){o(d,!0);try{const t=e(O).trim().toLowerCase().replace(/\s+/g,"-");await nr(t,e(q).trim(),e(ce)),o(O,""),o(q,""),o(ce,20),o(Q,!1),await v.refreshHeaterPresets()}catch(t){console.error(t),alert(t.message||"Failed to create preset")}o(d,!1)}}async function gt(t){if(confirm(`Delete preset "${t}"? This will also delete any schedules using this preset.`)){o(d,!0);try{await cr(t),await v.refreshHeaterPresets(),await v.refreshHeaterSchedules()}catch(r){console.error(r)}o(d,!1)}}async function yt(t){o(d,!0);try{const r=await ir(t);console.log("Applied preset:",r),await v.refreshPendingHeater()}catch(r){console.error(r)}o(d,!1)}function Ie(t){const r=v.heaterPresets.find(i=>i.id===t);return(r==null?void 0:r.name)??t}function ht(t){const r=e(ne).find(i=>i.id===t);return(r==null?void 0:r.name)??t}var pe=Br();br("1wpfyiy",t=>{er(()=>{tr.title="Smart Home - Heater Schedule"})});var ue=s(pe),fe=s(ue),be=s(fe),wt=s(be);gr(wt,{class:"w-4 h-4"}),a(be);var me=n(be,4),kt=s(me,!0);a(me);var _e=n(me,4);_e.__click=()=>o(Q,!e(Q));var Pt=s(_e);at(Pt,{class:"w-4 h-4"}),ae(),a(_e),a(fe);var Je=n(fe,2);{var $t=t=>{var r=$r(),i=s(r),c=s(i),u=s(c);L(u);var g=n(u,2);L(g);var _=n(g,2),T=s(_);L(T),ae(2),a(_);var $=n(_,2);$.__click=xt;var D=n($,2);D.__click=()=>o(Q,!1);var w=s(D);mr(w,{class:"w-5 h-5"}),a(D),a(c),a(i),a(r),P(f=>$.disabled=f,[()=>e(d)||!e(O).trim()||!e(q).trim()]),M(u,()=>e(O),f=>o(O,f)),M(g,()=>e(q),f=>o(q,f)),M(T,()=>e(ce),f=>o(ce,f)),l(t,r)};S(Je,t=>{e(Q)&&t($t)})}var Ke=n(Je,2);se(Ke,21,()=>v.heaterPresets,t=>t.id,(t,r)=>{var i=Er(),c=s(i),u=s(c),g=s(u),_=s(g),T=s(_);hr(T,{class:"w-4 h-4"}),a(_);var $=n(_,2),D=s($,!0);a($),a(g);var w=n(g,2),f=s(w);f.__click=()=>yt(e(r).id);var R=s(f);_r(R,{class:"w-4 h-4"}),a(f);var E=n(f,2);E.__click=()=>nt(e(r).id);var de=s(E);{var U=b=>{kr(b,{class:"w-4 h-4"})},De=b=>{wr(b,{class:"w-4 h-4"})};S(de,b=>{e(I)===e(r).id?b(U):b(De,!1)})}a(E);var X=n(E,2);X.__click=()=>gt(e(r).id);var Se=s(X);ot(Se,{class:"w-4 h-4"}),a(X),a(w),a(u);var Ae=n(u,2);{var Lt=b=>{var k=Cr(),j=s(k);L(j);var W=n(j,4);W.__click=()=>mt(e(r).id);var Ne=n(W,2);Ne.__click=_t,a(k),M(j,()=>e(H),je=>o(H,je)),l(b,k)},Mt=b=>{var k=Hr();k.__click=()=>bt(e(r));var j=s(k);a(k),P(()=>m(j,`${e(r).target_temp??""}°C`)),l(b,k)};S(Ae,b=>{e(h)===e(r).id?b(Lt):b(Mt,!1)})}a(c);var Ot=n(c,2);{var qt=b=>{var k=zr(),j=s(k),W=n(s(j)),Ne=s(W);a(W),a(j);var je=n(j,2);{var Xt=B=>{var Y=Tr();l(B,Y)},Bt=B=>{var Y=jr();se(Y,21,()=>e(ne),ze=>ze.id,(ze,V)=>{const Z=rr(()=>it(e(V).id,e(r).target_temp));var Ee=Nr(),Fe=s(Ee),Gt=s(Fe,!0);a(Fe);var tt=n(Fe,2),It=s(tt);{var Jt=G=>{var ee=Dr(),z=oe(ee);L(z);var te=n(z,2);te.__click=()=>lt(e(r).id,e(V).id);var Re=n(te,2);Re.__click=()=>o(K,null),P(()=>te.disabled=e(d)),M(z,()=>e(ie),Ve=>o(ie,Ve)),l(G,ee)},Kt=G=>{var ee=Ar(),z=oe(ee);z.__click=()=>ct(e(V).id,e(Z).temp);var te=s(z);a(z);var Re=n(z,2);{var Ve=Le=>{var re=Sr();re.__click=()=>dt(e(r).id,e(V).id);var Qt=s(re);Pr(Qt,{class:"w-3 h-3"}),a(re),P(()=>re.disabled=e(d)),l(Le,re)};S(Re,Le=>{e(Z).isCustom&&Le(Ve)})}P(()=>{ve(z,1,`font-display text-sm ${e(Z).isCustom?"text-device-climate-heat-text":"text-content-secondary"} hover:text-device-climate-heat-text transition-colors`),m(te,`${e(Z).temp??""}°C ${e(Z).isCustom?"":"(default)"}`)}),l(G,ee)};S(It,G=>{e(K)===e(V).id?G(Jt):G(Kt,!1)})}a(tt),a(Ee),P(()=>m(Gt,e(V).name||e(V).id)),l(ze,Ee)}),a(Y),l(B,Y)};S(je,B=>{e(ne).length===0?B(Xt):B(Bt,!1)})}a(k),P(()=>m(Ne,`(override default ${e(r).target_temp??""}°C)`)),l(b,k)};S(Ot,b=>{e(I)===e(r).id&&b(qt)})}a(i),P(()=>{m(D,e(r).name),f.disabled=e(d)}),l(t,i)}),a(Ke),a(ue);var xe=n(ue,2),ge=s(xe),Qe=s(ge),Ct=s(Qe);at(Ct,{class:"w-4 h-4"}),a(Qe),ae(4),a(ge);var Ue=n(ge,2),We=s(Ue),ye=s(We);L(ye);var he=n(ye,2),le=s(he);se(le,21,()=>v.heaterPresets,t=>t.id,(t,r)=>{var i=Fr(),c=s(i);a(i);var u={};P(()=>{m(c,`${e(r).name??""} (${e(r).target_temp??""}°C)`),u!==(u=e(r).id)&&(i.value=(i.__value=e(r).id)??"")}),l(t,i)}),a(le);var Ye=n(le,2);L(Ye),a(he);var we=n(he,2);we.__click=vt,a(We),a(Ue),a(xe);var ke=n(xe,2),Pe=s(ke),$e=s(Pe),Ht=s($e);st(Ht,{class:"w-4 h-4"}),a($e);var Ze=n($e,4),Tt=s(Ze,!0);a(Ze),ae(2),a(Pe);var Dt=n(Pe,2);{var St=t=>{var r=Rr(),i=s(r);st(i,{class:"w-10 h-10 mx-auto text-content-tertiary mb-2 opacity-50"}),ae(2),a(r),l(t,r)},At=t=>{var r=Lr();se(r,21,()=>v.heaterSchedules,i=>i.id,(i,c)=>{var u=Vr();let g;var _=s(u),T=s(_),$=s(T,!0);a(T);var D=n(T,2),w=s(D);w.__click=()=>ut(e(c).id);var f=s(w,!0);a(w);var R=n(w,2);R.__click=()=>pt(e(c).id);var E=s(R);ot(E,{class:"w-3.5 h-3.5"}),a(R),a(D),a(_);var de=n(_,2),U=s(de),De=s(U,!0);a(U);var X=n(U,4),Se=s(X,!0);a(X),a(de),a(u),P(Ae=>{g=ve(u,1,"card p-3 transition-opacity svelte-1wpfyiy",null,g,{"opacity-50":!e(c).enabled,"card-active":e(c).enabled,"glow-accent":e(c).enabled}),m($,e(c).time),ve(w,1,`px-2.5 py-1 rounded-lg font-medium text-xs transition-all
+                         ${e(c).enabled?"glow-accent power-btn-on":"bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong"}`,"svelte-1wpfyiy"),m(f,e(c).enabled?"On":"Off"),m(De,e(c).name),m(Se,Ae)},[()=>Ie(e(c).preset_id)]),l(i,u)}),a(r),l(t,r)};S(Dt,t=>{v.heaterSchedules.length===0?t(St):t(At,!1)})}a(ke);var et=n(ke,2),Ce=s(et),He=s(Ce),Nt=s(He);yr(Nt,{class:"w-4 h-4"}),a(He);var Te=n(He,4),jt=s(Te,!0);a(Te);var zt=n(Te,4);{var Et=t=>{var r=Mr();r.__click=ft,l(t,r)};S(zt,t=>{v.pendingHeaterActions.length>0&&t(Et)})}a(Ce);var Ft=n(Ce,2);{var Rt=t=>{var r=Or();l(t,r)},Vt=t=>{var r=Xr();se(r,21,()=>v.pendingHeaterActions,i=>i.id,(i,c)=>{var u=qr(),g=s(u),_=n(s(g),2),T=s(_,!0);a(_);var $=n(_,4),D=s($,!0);a($),a(g);var w=n(g,2),f=s(w);a(w),a(u),P((R,E)=>{m(T,R),m(D,E),m(f,`Retry #${e(c).retry_count??""}`)},[()=>ht(e(c).device_id),()=>Ie(e(c).preset_id)]),l(i,u)}),a(r),l(t,r)};S(Ft,t=>{v.pendingHeaterActions.length===0?t(Rt):t(Vt,!1)})}a(et),a(pe),P((t,r)=>{m(kt,v.heaterPresets.length),we.disabled=t,ve(we,1,`px-5 py-2.5 rounded-lg font-semibold uppercase tracking-wider transition-all w-full sm:w-auto
+                 ${r??""}`,"svelte-1wpfyiy"),m(Tt,v.heaterSchedules.length),m(jt,v.pendingHeaterActions.length)},[()=>e(d)||!e(y).trim(),()=>!e(d)&&e(y).trim()?"glow-accent power-btn-on":"bg-surface-recessed border border-stroke-default text-content-tertiary"]),M(ye,()=>e(y),t=>o(y,t)),ar(le,()=>e(A),t=>o(A,t)),M(Ye,()=>e(N),t=>o(N,t)),l(F,pe),Zt()}Ut(["click"]);export{ta as component};

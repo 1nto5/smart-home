@@ -1,9 +1,9 @@
-import { U as sanitize_props, V as spread_props, W as slot, a2 as head, _ as attr_class, Z as attr, X as ensure_array_like, a0 as stringify } from "../../../chunks/index2.js";
+import { U as sanitize_props, V as spread_props, W as slot, a2 as head, X as ensure_array_like, Z as attr, _ as attr_class, a0 as stringify } from "../../../chunks/index2.js";
 import { P as Play, s as store } from "../../../chunks/play.js";
-import { I as Icon } from "../../../chunks/Icon.js";
 import { T as Thermometer } from "../../../chunks/thermometer.js";
 import { P as Plus, T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
 import { F as Flame } from "../../../chunks/flame.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function Chevron_down($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
@@ -149,82 +149,6 @@ function Chevron_up($$renderer, $$props) {
     }
   ]));
 }
-function Circle_pause($$renderer, $$props) {
-  const $$sanitized_props = sanitize_props($$props);
-  /**
-   * @license lucide-svelte v0.562.0 - ISC
-   *
-   * ISC License
-   *
-   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
-   *
-   * Permission to use, copy, modify, and/or distribute this software for any
-   * purpose with or without fee is hereby granted, provided that the above
-   * copyright notice and this permission notice appear in all copies.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-   *
-   * ---
-   *
-   * The MIT License (MIT) (for portions derived from Feather)
-   *
-   * Copyright (c) 2013-2023 Cole Bemis
-   *
-   * Permission is hereby granted, free of charge, to any person obtaining a copy
-   * of this software and associated documentation files (the "Software"), to deal
-   * in the Software without restriction, including without limitation the rights
-   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   * copies of the Software, and to permit persons to whom the Software is
-   * furnished to do so, subject to the following conditions:
-   *
-   * The above copyright notice and this permission notice shall be included in all
-   * copies or substantial portions of the Software.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-   * SOFTWARE.
-   *
-   */
-  const iconNode = [
-    ["circle", { "cx": "12", "cy": "12", "r": "10" }],
-    ["line", { "x1": "10", "x2": "10", "y1": "15", "y2": "9" }],
-    ["line", { "x1": "14", "x2": "14", "y1": "15", "y2": "9" }]
-  ];
-  Icon($$renderer, spread_props([
-    { name: "circle-pause" },
-    $$sanitized_props,
-    {
-      /**
-       * @component @name CirclePause
-       * @description Lucide SVG icon component, renders SVG Element with children.
-       *
-       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgLz4KICA8bGluZSB4MT0iMTAiIHgyPSIxMCIgeTE9IjE1IiB5Mj0iOSIgLz4KICA8bGluZSB4MT0iMTQiIHgyPSIxNCIgeTE9IjE1IiB5Mj0iOSIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/circle-pause
-       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
-       *
-       * @param {Object} props - Lucide icons props and any valid SVG attribute
-       * @returns {FunctionalComponent} Svelte component
-       *
-       */
-      iconNode,
-      children: ($$renderer2) => {
-        $$renderer2.push(`<!--[-->`);
-        slot($$renderer2, $$props, "default", {});
-        $$renderer2.push(`<!--]-->`);
-      },
-      $$slots: { default: true }
-    }
-  ]));
-}
 function Rotate_ccw($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
@@ -311,7 +235,6 @@ function _page($$renderer, $$props) {
     let loading = false;
     let editingPreset = null;
     let editTemp = 21;
-    let selectedOverrideMode = "pause";
     let expandedPreset = null;
     let trvDevices = [];
     let presetDeviceTemps = [];
@@ -334,22 +257,7 @@ function _page($$renderer, $$props) {
         $$renderer4.push(`<title>Smart Home - Heater Schedule</title>`);
       });
     });
-    $$renderer2.push(`<div class="space-y-8 pb-24"><section${attr_class(`card ${stringify(store.heaterOverride?.enabled ? "card-active border-warning/50" : "")}`)}><div class="p-4"><div class="section-header section-header-warning mb-4 svelte-1wpfyiy"><div class="section-icon svelte-1wpfyiy" style="background: color-mix(in srgb, var(--color-warning) 15%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); color: var(--color-warning);">`);
-    Circle_pause($$renderer2, { class: "w-4 h-4" });
-    $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1wpfyiy" style="color: var(--color-warning);">Override Mode</h2> <div class="section-line svelte-1wpfyiy" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning) 40%, transparent) 0%, transparent 100%);"></div> <button${attr("disabled", loading, true)}${attr_class(`ml-3 px-4 py-2 rounded-lg font-semibold uppercase tracking-wider text-sm transition-all disabled:opacity-50 ${stringify(store.heaterOverride?.enabled ? "bg-warning/20 text-warning border border-warning/50 shadow-[0_0_15px_-3px] shadow-warning/40" : "bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong")}`)}>${escape_html(store.heaterOverride?.enabled ? "Active" : "Off")}</button></div> `);
-    if (store.heaterOverride?.enabled) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="rounded-lg p-3 mb-4 bg-warning/10 border border-warning/30 flex items-center gap-2">`);
-      Circle_alert($$renderer2, { class: "w-4 h-4 text-warning shrink-0" });
-      $$renderer2.push(`<!----> <p class="text-sm text-warning">Schedules paused while override active</p></div>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center"><div class="flex items-center gap-4"><label class="flex items-center gap-2 cursor-pointer group"><input type="radio" name="overrideMode" value="pause"${attr("checked", selectedOverrideMode === "pause", true)} class="sr-only peer"/> <div class="w-4 h-4 rounded-full border-2 border-stroke-default peer-checked:border-warning peer-checked:bg-warning/20 transition-colors flex items-center justify-center"><div class="w-2 h-2 rounded-full bg-warning scale-0 peer-checked:scale-100 transition-transform"></div></div> <span class="text-content-primary text-sm group-hover:text-warning transition-colors">Pause schedules</span></label> <label class="flex items-center gap-2 cursor-pointer group"><input type="radio" name="overrideMode" value="fixed"${attr("checked", selectedOverrideMode === "fixed", true)} class="sr-only peer"/> <div class="w-4 h-4 rounded-full border-2 border-stroke-default peer-checked:border-warning peer-checked:bg-warning/20 transition-colors flex items-center justify-center"><div class="w-2 h-2 rounded-full bg-warning scale-0 peer-checked:scale-100 transition-transform"></div></div> <span class="text-content-primary text-sm group-hover:text-warning transition-colors">Fixed temperature</span></label></div> `);
-    {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></div></div></section> <section><div class="section-header section-header-climate svelte-1wpfyiy"><div class="section-icon glow-climate-heat svelte-1wpfyiy">`);
+    $$renderer2.push(`<div class="space-y-8 pb-24"><section><div class="section-header section-header-climate svelte-1wpfyiy"><div class="section-icon glow-climate-heat svelte-1wpfyiy">`);
     Thermometer($$renderer2, { class: "w-4 h-4" });
     $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1wpfyiy">Heater Presets</h2> <span class="section-count svelte-1wpfyiy">${escape_html(store.heaterPresets.length)}</span> <div class="section-line svelte-1wpfyiy"></div> <button class="ml-3 px-3 py-1.5 rounded-lg glow-climate-heat power-btn-on text-sm font-medium flex items-center gap-1.5 transition-transform hover:scale-105">`);
     Plus($$renderer2, { class: "w-4 h-4" });
