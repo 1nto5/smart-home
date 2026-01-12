@@ -1,6 +1,7 @@
 import TuyAPI from 'tuyapi';
 import { getDb, recordContactChange, getLastContactState, recordSensorReading } from '../db/database';
 import { triggerAlarm } from '../notifications/alarm-service';
+import { evaluateSensorTrigger } from '../automations/automation-triggers';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -71,6 +72,9 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
     if (lastState === null || lastState !== isOpen) {
       recordContactChange(device.id, device.name, isOpen);
       console.log(`📍 ${device.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
+
+      // Trigger automations
+      evaluateSensorTrigger(device.id, device.name, isOpen ? 'open' : 'closed');
 
       // Trigger door alarm (only creates if alarm is armed, handled inside triggerAlarm)
       if (isOpen) {
