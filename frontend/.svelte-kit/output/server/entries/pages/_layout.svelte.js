@@ -141,6 +141,89 @@ function Monitor($$renderer, $$props) {
     }
   ]));
 }
+function Refresh_cw($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "path",
+      { "d": "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" }
+    ],
+    ["path", { "d": "M21 3v5h-5" }],
+    [
+      "path",
+      { "d": "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" }
+    ],
+    ["path", { "d": "M8 16H3v5" }]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "refresh-cw" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name RefreshCw
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMyAxMmE5IDkgMCAwIDEgOS05IDkuNzUgOS43NSAwIDAgMSA2Ljc0IDIuNzRMMjEgOCIgLz4KICA8cGF0aCBkPSJNMjEgM3Y1aC01IiAvPgogIDxwYXRoIGQ9Ik0yMSAxMmE5IDkgMCAwIDEtOSA5IDkuNzUgOS43NSAwIDAgMS02Ljc0LTIuNzRMMyAxNiIgLz4KICA8cGF0aCBkPSJNOCAxNkgzdjUiIC8+Cjwvc3ZnPgo=) - https://lucide.dev/icons/refresh-cw
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function Shield_off($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
@@ -232,6 +315,7 @@ function _layout($$renderer, $$props) {
     var $$store_subs;
     let { children } = $$props;
     let alarmLoading = false;
+    let isRefreshing = false;
     const navItems = [
       { href: "/", label: "Dashboard", icon: House },
       { href: "/lighting", label: "Lighting", icon: Lightbulb },
@@ -252,7 +336,11 @@ function _layout($$renderer, $$props) {
       item.icon?.($$renderer2, { class: "w-4 h-4" });
       $$renderer2.push(`<!----> <span class="hidden sm:inline text-sm">${escape_html(item.label)}</span></a>`);
     }
-    $$renderer2.push(`<!--]--> <button${attr("disabled", alarmLoading, true)}${attr_class(`ml-2 p-2 rounded-lg transition-all duration-200 ${stringify("text-content-secondary hover:text-content-primary hover:bg-surface-recessed")}`)}${attr("title", "Alarm rozbrojony - kliknij aby uzbroić")}>`);
+    $$renderer2.push(`<!--]--> <button${attr("disabled", isRefreshing, true)} class="ml-2 p-2 rounded-lg transition-all duration-200 text-content-secondary hover:text-content-primary hover:bg-surface-recessed" title="Odśwież">`);
+    Refresh_cw($$renderer2, {
+      class: `w-4 h-4 ${stringify("")}`
+    });
+    $$renderer2.push(`<!----></button> <button${attr("disabled", alarmLoading, true)}${attr_class(`p-2 rounded-lg transition-all duration-200 ${stringify("text-content-secondary hover:text-content-primary hover:bg-surface-recessed")}`)}${attr("title", "Alarm rozbrojony - kliknij aby uzbroić")}>`);
     {
       $$renderer2.push("<!--[!-->");
       Shield_off($$renderer2, { class: "w-4 h-4" });

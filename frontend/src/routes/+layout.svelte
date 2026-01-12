@@ -4,7 +4,7 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff } from 'lucide-svelte';
+  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
   import { getAlarmStatus, armAlarm, disarmAlarm } from '$lib/api';
 
@@ -12,6 +12,14 @@
 
   let alarmArmed = $state(false);
   let alarmLoading = $state(false);
+  let isRefreshing = $state(false);
+
+  async function handleRefresh() {
+    isRefreshing = true;
+    await store.refreshAll();
+    await loadAlarmStatus();
+    setTimeout(() => isRefreshing = false, 500);
+  }
 
   async function loadAlarmStatus() {
     try {
@@ -90,11 +98,21 @@
           </a>
         {/each}
 
+        <!-- Refresh Button -->
+        <button
+          onclick={handleRefresh}
+          disabled={isRefreshing}
+          class="ml-2 p-2 rounded-lg transition-all duration-200 text-content-secondary hover:text-content-primary hover:bg-surface-recessed"
+          title="Odśwież"
+        >
+          <RefreshCw class="w-4 h-4 {isRefreshing ? 'animate-spin' : ''}" />
+        </button>
+
         <!-- Alarm Toggle -->
         <button
           onclick={toggleAlarm}
           disabled={alarmLoading}
-          class="ml-2 p-2 rounded-lg transition-all duration-200 {alarmArmed
+          class="p-2 rounded-lg transition-all duration-200 {alarmArmed
             ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30'
             : 'text-content-secondary hover:text-content-primary hover:bg-surface-recessed'}"
           title={alarmArmed ? 'Alarm UZBROJONY - kliknij aby rozbroić' : 'Alarm rozbrojony - kliknij aby uzbroić'}
