@@ -22,30 +22,15 @@ interface XiaomiDevice {
 }
 
 /**
- * Initialize online state cache and apply current time window preset to all online lamps
+ * Initialize online state cache (for reconnect detection)
  */
-export async function initOnlineStateCache(): Promise<void> {
+export function initOnlineStateCache(): void {
   const db = getDb();
   const lamps = db.query("SELECT id, name, online FROM xiaomi_devices WHERE category = 'lamp'").all() as XiaomiDevice[];
 
-  const timeWindow = getCurrentTimeWindow();
-  const preset = getPresetForTimeWindow(timeWindow);
-  console.log(`Current time window: ${timeWindow} (preset: ${preset})`);
-
-  // Initialize cache first
   for (const lamp of lamps) {
     lastOnlineState.set(lamp.id, lamp.online === 1);
   }
-
-  // Apply presets in parallel
-  await Promise.all(lamps.filter(l => l.online === 1).map(async (lamp) => {
-    try {
-      console.log(`Applying ${preset} to ${lamp.name} (startup)`);
-      await applyPresetToLamp(lamp.id, preset);
-    } catch (e: any) {
-      console.error(`Failed to apply ${preset} to ${lamp.name}:`, e.message);
-    }
-  }));
 
   console.log(`Initialized online state cache for ${lamps.length} lamps`);
 }

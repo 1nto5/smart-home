@@ -226,8 +226,8 @@ export async function startPoller(): Promise<void> {
   console.log('Connecting to gateway for local device access...');
   await connectDevice(GATEWAY_ID).catch(e => console.error('Gateway connection error:', e.message));
 
-  // Initialize online state cache and apply current preset to online lamps
-  await initOnlineStateCache();
+  // Initialize online state cache (for reconnect detection)
+  initOnlineStateCache();
 
   console.log('Starting poller (sensors every 5min, doors every 5s)');
 
