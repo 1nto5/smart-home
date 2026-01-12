@@ -21,7 +21,6 @@ let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
 let sensorRefreshCounter = 0;
 let cleanupCounter = 0;
-let lastAqiValue: number | null = null;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = 'bf889f95067d327853rwzw';
@@ -168,20 +167,13 @@ async function refreshTrvStatuses(): Promise<void> {
   }
 }
 
-// Poll AQI from air purifier and trigger automations on threshold crossings
+// Poll AQI from air purifier and trigger automations
 async function pollAqi(): Promise<void> {
   try {
     const status = await getPurifierStatus();
     if (!status) return;
 
-    const currentAqi = status.aqi;
-
-    // Only evaluate on threshold crossings, not continuously
-    if (lastAqiValue !== null && lastAqiValue !== currentAqi) {
-      evaluateAqiTrigger(lastAqiValue, currentAqi);
-    }
-
-    lastAqiValue = currentAqi;
+    evaluateAqiTrigger(status.aqi);
   } catch (e: any) {
     console.error('AQI poll error:', e.message);
   }
