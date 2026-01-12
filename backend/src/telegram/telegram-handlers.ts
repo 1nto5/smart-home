@@ -295,8 +295,8 @@ async function handleLampAction(
     console.log(`Telegram: Applying lamp preset ${param}`);
     const result = await applyPresetToAllLamps(param);
     const menu = lampsKeyboard();
-    const successCount = result.results.filter((r: any) => r.success).length;
-    const text = `${menu.text}\n\n✅ Applied <b>${param}</b> to ${successCount}/${result.results.length} lamps`;
+    const totalCount = result.success.length + result.pending.length + result.failed.length;
+    const text = `${menu.text}\n\n✅ Applied <b>${param}</b> to ${result.success.length}/${totalCount} lamps`;
     await editMessage(chatId, messageId, text, menu.keyboard);
     return;
   }
@@ -347,8 +347,8 @@ async function handleHeaterAction(
     console.log(`Telegram: Applying heater preset ${param}`);
     const result = await applyPresetToAllHeaters(param);
     const menu = heatersKeyboard();
-    const successCount = result.results.filter((r: any) => r.success).length;
-    const text = `${menu.text}\n\n✅ Applied <b>${param}</b> to ${successCount}/${result.results.length} heaters`;
+    const totalCount = result.success.length + result.pending.length + result.failed.length;
+    const text = `${menu.text}\n\n✅ Applied <b>${param}</b> to ${result.success.length}/${totalCount} heaters`;
     await editMessage(chatId, messageId, text, menu.keyboard);
     return;
   }
