@@ -1,8 +1,9 @@
 <script lang="ts">
   import { controlAirPurifier } from '$lib/api';
   import { store } from '$lib/stores.svelte';
+  import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter } from 'lucide-svelte';
+  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus } from 'lucide-svelte';
 
   let { compact = false }: { compact?: boolean } = $props();
   let status = $derived(store.airPurifier);
@@ -13,9 +14,13 @@
   let optimisticMode = $state<string | null>(null);
   let isPowerPending = $state(false);
 
+  // Fan speed state
+  let previewFanSpeed = $state<number | null>(null);
+
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
+  let displayFanSpeed = $derived(previewFanSpeed ?? status?.fan_speed ?? 1);
 
   async function togglePower() {
     const newPower = !displayPower;
@@ -44,6 +49,25 @@
     }
     optimisticMode = null;
   }
+
+  // Debounced fan speed control
+  const [sendFanSpeedDebounced] = debounce(async (level: number) => {
+    try {
+      await controlAirPurifier({ fan_speed: level });
+      store.refreshAirPurifier();
+    } catch (e) {
+      console.error(e);
+    }
+    previewFanSpeed = null;
+  }, 300);
+
+  function handleFanSpeedInput(level: number) {
+    const clamped = Math.max(1, Math.min(3, level));
+    previewFanSpeed = clamped;
+    sendFanSpeedDebounced(clamped);
+  }
+
+  const fanSpeedLabels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
 
   function aqiColor(aqi: number): string {
     if (aqi <= 50) return 'text-success';
@@ -170,6 +194,51 @@
             {/each}
           </div>
         </div>
+
+        <!-- Fan Speed (only in Manual mode) -->
+        {#if displayMode === 'favorite'}
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs text-content-tertiary uppercase tracking-wider">Fan Speed</span>
+              <span class="font-display text-lg text-device-air-text neon-text-subtle">{fanSpeedLabels[displayFanSpeed]}</span>
+            </div>
+            <div class="flex gap-2 items-center">
+              <button
+                onclick={() => handleFanSpeedInput(displayFanSpeed - 1)}
+                disabled={displayFanSpeed <= 1}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Minus class="w-5 h-5" />
+              </button>
+              <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+                <div
+                  class="absolute inset-y-0 left-0 bg-device-air-text/30 transition-all duration-150"
+                  style="width: {((displayFanSpeed - 1) / 2) * 100}%"
+                ></div>
+                <div
+                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-air-text shadow-[0_0_10px_var(--color-air-glow)] transition-all duration-150"
+                  style="left: calc({((displayFanSpeed - 1) / 2) * 100}% - 8px + {displayFanSpeed === 1 ? '8px' : displayFanSpeed === 3 ? '-8px' : '0px'})"
+                ></div>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="1"
+                  value={displayFanSpeed}
+                  oninput={(e) => handleFanSpeedInput(parseInt(e.currentTarget.value))}
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <button
+                onclick={() => handleFanSpeedInput(displayFanSpeed + 1)}
+                disabled={displayFanSpeed >= 3}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Plus class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        {/if}
 
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-3">
