@@ -431,8 +431,85 @@ Select an action:`;
           { text: '🔇 Mute', callback_data: 'soundbar:mute' },
           { text: '🔈 Unmute', callback_data: 'soundbar:unmute' },
         ],
+        [
+          { text: '📺 TV', callback_data: 'soundbar:input:tv' },
+          { text: '🔵 Bluetooth', callback_data: 'soundbar:input:bluetooth' },
+        ],
+        [{ text: '🎵 Sound Programs »', callback_data: 'soundbar:programs' }],
+        [{ text: '🎚️ Audio Settings »', callback_data: 'soundbar:audio' }],
         [{ text: '📊 Status', callback_data: 'soundbar:status' }],
         [{ text: '« Back to Menu', callback_data: 'menu:main' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Soundbar sound programs submenu
+ */
+export function soundbarProgramsKeyboard(): { text: string; keyboard: InlineKeyboard } {
+  const text = `🎵 <b>Sound Programs</b>
+
+Select a sound mode:`;
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        [
+          { text: '🎬 Movie', callback_data: 'soundbar:program:movie' },
+          { text: '🎵 Music', callback_data: 'soundbar:program:music' },
+        ],
+        [
+          { text: '⚽ Sports', callback_data: 'soundbar:program:sports' },
+          { text: '🎮 Game', callback_data: 'soundbar:program:game' },
+        ],
+        [
+          { text: '📺 TV', callback_data: 'soundbar:program:tv_program' },
+          { text: '🎧 Stereo', callback_data: 'soundbar:program:stereo' },
+        ],
+        [{ text: '« Back', callback_data: 'menu:soundbar' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Soundbar audio settings submenu
+ */
+export function soundbarAudioKeyboard(
+  clearVoice: boolean,
+  bassExtension: boolean,
+  subwooferVol: number
+): { text: string; keyboard: InlineKeyboard } {
+  const text = `🎚️ <b>Audio Settings</b>
+
+Clear Voice: ${clearVoice ? '✅ On' : '❌ Off'}
+Bass Extension: ${bassExtension ? '✅ On' : '❌ Off'}
+Subwoofer: ${subwooferVol > 0 ? '+' : ''}${subwooferVol}`;
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        [
+          {
+            text: `🗣️ Clear Voice: ${clearVoice ? 'ON' : 'OFF'}`,
+            callback_data: 'soundbar:clearvoice:toggle',
+          },
+        ],
+        [
+          {
+            text: `🔊 Bass Ext: ${bassExtension ? 'ON' : 'OFF'}`,
+            callback_data: 'soundbar:bass:toggle',
+          },
+        ],
+        [
+          { text: '➖', callback_data: 'soundbar:subvol:down' },
+          { text: `Sub: ${subwooferVol > 0 ? '+' : ''}${subwooferVol}`, callback_data: 'soundbar:noop' },
+          { text: '➕', callback_data: 'soundbar:subvol:up' },
+        ],
+        [{ text: '« Back', callback_data: 'menu:soundbar' }],
       ],
     },
   };
