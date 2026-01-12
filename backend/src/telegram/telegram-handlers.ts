@@ -321,7 +321,8 @@ async function handleRoborockAction(
           100: 'Full',
         };
         const stateName = stateMap[status.state] || `Unknown (${status.state})`;
-        const text = `${menu.text}\n\n📊 <b>Status:</b>\nState: ${stateName}\nBattery: ${status.battery}%\nFan: ${status.fan_power}`;
+        const fanPower = status.fan_power !== undefined ? `${status.fan_power}%` : 'N/A';
+        const text = `${menu.text}\n\n📊 <b>Status:</b>\nState: ${stateName}\nBattery: ${status.battery}%\nFan: ${fanPower}`;
         await editMessage(chatId, messageId, text, menu.keyboard);
       } else {
         await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);
@@ -360,7 +361,7 @@ async function handlePurifierAction(
     const status = await getPurifierStatus();
     const menu = purifierKeyboard();
     if (status) {
-      const text = `${menu.text}\n\n📊 <b>Status:</b>\nPower: ${status.power ? 'On' : 'Off'}\nMode: ${status.mode}\nAQI: ${status.aqi}\nTemp: ${status.temperature}°C\nHumidity: ${status.humidity}%\nFilter: ${status.filter_life_remaining}%`;
+      const text = `${menu.text}\n\n📊 <b>Status:</b>\nPower: ${status.power ? 'On' : 'Off'}\nMode: ${status.mode}\nAQI: ${status.aqi}\nFilter: ${status.filter_life}%`;
       await editMessage(chatId, messageId, text, menu.keyboard);
     } else {
       await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);
