@@ -1,5 +1,5 @@
-import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride } from './api';
-import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
+import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride, getHomeStatus } from './api';
+import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData } from './types';
 
 // WebSocket connection state
 let ws: WebSocket | null = null;
@@ -19,6 +19,7 @@ function createStore() {
   let heaterSchedules = $state<HeaterSchedule[]>([]);
   let pendingHeaterActions = $state<PendingHeaterAction[]>([]);
   let heaterOverride = $state<HeaterOverride | null>(null);
+  let homeStatus = $state<HomeStatusData | null>(null);
   let loading = $state(false);
   let error = $state<string | null>(null);
   let wsConnected = $state(false);
@@ -81,6 +82,7 @@ function createStore() {
     get heaterSchedules() { return heaterSchedules; },
     get pendingHeaterActions() { return pendingHeaterActions; },
     get heaterOverride() { return heaterOverride; },
+    get homeStatus() { return homeStatus; },
     get loading() { return loading; },
     get error() { return error; },
     get wsConnected() { return wsConnected; },
@@ -193,6 +195,14 @@ function createStore() {
       }
     },
 
+    async refreshHomeStatus() {
+      try {
+        homeStatus = await getHomeStatus();
+      } catch (e: any) {
+        console.error('Failed to fetch home status:', e);
+      }
+    },
+
     async refreshAll() {
       loading = true;
       await Promise.all([
@@ -207,6 +217,7 @@ function createStore() {
         this.refreshHeaterSchedules(),
         this.refreshPendingHeater(),
         this.refreshHeaterOverride(),
+        this.refreshHomeStatus(),
       ]);
       loading = false;
     },

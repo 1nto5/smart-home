@@ -3,7 +3,7 @@
  * Manages lamp schedules and applies presets
  */
 
-import { getDb } from '../db/database';
+import { getDb, setLampPreset } from '../db/database';
 import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
 import { createPendingAction } from './pending-service';
 import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
@@ -167,6 +167,9 @@ export async function applyPresetToAllLamps(
       result.pending.push(lampId);
     }
   }
+
+  // Track current lamp preset
+  setLampPreset(presetName);
 
   console.log(`Applied ${presetName}: ${result.success.length} ok, ${result.pending.length} pending`);
   return result;

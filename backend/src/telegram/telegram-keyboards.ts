@@ -360,31 +360,33 @@ Select an action:`;
 export function weatherKeyboard(): { text: string; keyboard: InlineKeyboard } {
   const db = getDb();
 
-  // Get latest reading from weather station
-  const reading = db.query(`
-    SELECT temperature, humidity, battery, recorded_at
-    FROM sensor_history
-    WHERE device_id = (SELECT id FROM devices WHERE category = 'wsdcg' LIMIT 1)
-    ORDER BY recorded_at DESC
-    LIMIT 1
-  `).get() as SensorReading | null;
+  // Get weather station device with last_status
+  const device = db.query(`
+    SELECT last_status, updated_at FROM devices WHERE category = 'wsdcg' LIMIT 1
+  `).get() as { last_status: string | null; updated_at: string } | null;
 
   let statusText = 'No data available';
-  if (reading) {
-    const temp = reading.temperature !== null ? `${reading.temperature}°C` : 'N/A';
-    const hum = reading.humidity !== null ? `${reading.humidity}%` : 'N/A';
-    const bat = reading.battery !== null ? `${reading.battery}%` : 'N/A';
-    const time = new Date(reading.recorded_at + 'Z').toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' });
-    statusText = `🌡️ Temperature: <b>${temp}</b>
+  if (device?.last_status) {
+    try {
+      const status = JSON.parse(device.last_status);
+      // DPS mapping: 103=temp*100, 101=humidity*100, 102=battery
+      const temp = status['103'] !== undefined ? `${(status['103'] / 100).toFixed(1)}°C` : 'N/A';
+      const hum = status['101'] !== undefined ? `${(status['101'] / 100).toFixed(1)}%` : 'N/A';
+      const bat = status['102'] !== undefined ? `${status['102']}%` : 'N/A';
+      statusText = `🌡️ Temperature: <b>${temp}</b>
 💧 Humidity: <b>${hum}</b>
-🔋 Battery: <b>${bat}</b>
-
-🕐 Updated: ${time}`;
+🔋 Battery: <b>${bat}</b>`;
+    } catch {}
   }
+
+  // Show current time for "Retrieved"
+  const now = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Warsaw' });
 
   const text = `🌡️ <b>Weather Station</b>
 
-${statusText}`;
+${statusText}
+
+🕐 Retrieved: ${now}`;
 
   return {
     text,

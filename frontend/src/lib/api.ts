@@ -1,4 +1,4 @@
-import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterPresetDevice, HeaterSchedule, PendingHeaterAction, HeaterOverride } from './types';
+import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterPresetDevice, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData } from './types';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
@@ -329,4 +329,9 @@ export async function armAlarm(): Promise<AlarmStatus> {
 
 export async function disarmAlarm(): Promise<AlarmStatus> {
   return fetcher('/alarm/disarm', { method: 'POST' });
+}
+
+// Home status
+export async function getHomeStatus(): Promise<HomeStatusData> {
+  return fetcher('/home-status');
 }

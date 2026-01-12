@@ -2444,6 +2444,45 @@ function AirPurifierCard($$renderer, $$props) {
     $$renderer2.push(`<!---->`);
   });
 }
+function HomeStatusCard($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let status = store.homeStatus;
+    $$renderer2.push(`<div class="card p-4 mb-6"><div class="flex items-center gap-3 mb-4"><div class="section-icon glow-accent svelte-cnjzzp">`);
+    House($$renderer2, { class: "w-4 h-4" });
+    $$renderer2.push(`<!----></div> <h2 class="section-title text-accent svelte-cnjzzp">Home Status</h2></div> `);
+    if (status) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      Thermometer($$renderer2, { class: "w-5 h-5 text-device-sensors-text mb-1" });
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Temp</span> <span class="font-display text-lg text-content-primary">${escape_html(status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : "N/A")}</span></div> <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      Droplet($$renderer2, { class: "w-5 h-5 text-accent mb-1" });
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span> <span class="font-display text-lg text-content-primary">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(1)}%` : "N/A")}</span></div> <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      Lightbulb($$renderer2, { class: "w-5 h-5 text-device-lights-text mb-1" });
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Lights</span> <span class="font-display text-lg text-content-primary truncate max-w-full">${escape_html(status.lamp.preset_name ?? "N/A")}</span></div> <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      Flame($$renderer2, { class: "w-5 h-5 text-device-climate-heat-text mb-1" });
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Heating</span> <span class="font-display text-lg text-content-primary truncate max-w-full">`);
+      if (status.heater.override) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`${escape_html(status.heater.override.mode === "pause" ? "Paused" : `${status.heater.override.fixed_temp}°C`)}`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`${escape_html(status.heater.preset_name ?? "N/A")}`);
+      }
+      $$renderer2.push(`<!--]--></span> `);
+      if (status.heater.avg_temp !== null) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<span class="text-xs text-content-tertiary">avg ${escape_html(status.heater.avg_temp)}°C</span>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div></div>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+      $$renderer2.push(`<div class="text-center text-content-tertiary py-4">Loading...</div>`);
+    }
+    $$renderer2.push(`<!--]--></div>`);
+  });
+}
 function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let lamps = store.lamps.filter((l) => l.category === "lamp");
@@ -2473,6 +2512,8 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<!--]--></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
+      HomeStatusCard($$renderer2);
+      $$renderer2.push(`<!----> `);
       if (lamps.length > 0) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-lights svelte-1uha8ag"><div class="section-icon glow-lights svelte-1uha8ag">`);
