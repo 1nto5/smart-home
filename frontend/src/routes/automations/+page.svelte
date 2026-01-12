@@ -22,6 +22,9 @@
   let formTelegramPrompt = $state('');
   let formTelegramActionYes = $state<AutomationAction[]>([]);
   let formUseTelegram = $state(false);
+  let formUseTimeRange = $state(false);
+  let formTimeStart = $state('');
+  let formTimeEnd = $state('');
 
   // Load data on mount
   $effect(() => {
@@ -53,6 +56,9 @@
     formTelegramPrompt = '';
     formTelegramActionYes = [];
     formUseTelegram = false;
+    formUseTimeRange = false;
+    formTimeStart = '';
+    formTimeEnd = '';
     editingId = null;
   }
 
@@ -85,6 +91,12 @@
       formTelegramActionYes = [];
     }
     formTelegramPrompt = automation.telegram_prompt || '';
+
+    // Time range
+    formUseTimeRange = !!(automation.active_time_start && automation.active_time_end);
+    formTimeStart = automation.active_time_start || '';
+    formTimeEnd = automation.active_time_end || '';
+
     showForm = true;
   }
 
@@ -130,6 +142,8 @@
       telegram_action_yes: formUseTelegram && formTelegramActionYes.length > 0
         ? JSON.stringify(formTelegramActionYes)
         : null,
+      active_time_start: formUseTimeRange && formTimeStart ? formTimeStart : null,
+      active_time_end: formUseTimeRange && formTimeEnd ? formTimeEnd : null,
     };
 
     try {
@@ -232,6 +246,12 @@
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="font-display text-sm uppercase tracking-wider text-content-primary">{automation.name}</span>
+                  {#if automation.active_time_start && automation.active_time_end}
+                    <span class="inline-flex items-center gap-1 text-xs text-content-tertiary" title="Active time range">
+                      <Clock class="w-3 h-3" />
+                      {automation.active_time_start}–{automation.active_time_end}
+                    </span>
+                  {/if}
                   {#if automation.telegram_prompt}
                     <MessageCircle class="w-4 h-4 text-accent" title="Telegram prompt" />
                   {/if}
@@ -414,6 +434,31 @@
                 />
                 <span class="text-content-tertiary text-sm">PM2.5</span>
               </div>
+            </div>
+          {/if}
+        </div>
+
+        <!-- Time range toggle -->
+        <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" bind:checked={formUseTimeRange} class="w-4 h-4 accent-accent" />
+            <Clock class="w-5 h-5 text-accent" />
+            <span class="text-content-primary">Active only during specific hours</span>
+          </label>
+          {#if formUseTimeRange}
+            <div class="flex flex-wrap items-center gap-2 mt-3 ml-7">
+              <span class="text-sm text-content-secondary">From</span>
+              <input
+                type="time"
+                bind:value={formTimeStart}
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-1.5 text-content-primary text-sm"
+              />
+              <span class="text-sm text-content-secondary">to</span>
+              <input
+                type="time"
+                bind:value={formTimeEnd}
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-1.5 text-content-primary text-sm"
+              />
             </div>
           {/if}
         </div>

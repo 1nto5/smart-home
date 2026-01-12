@@ -427,9 +427,19 @@ export function initDatabase(): Database {
       actions TEXT NOT NULL,
       telegram_prompt TEXT,
       telegram_action_yes TEXT,
+      active_time_start TEXT,
+      active_time_end TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Add time range columns to existing automations table (migration)
+  try {
+    db.run(`ALTER TABLE automations ADD COLUMN active_time_start TEXT`);
+  } catch (e) { /* column may already exist */ }
+  try {
+    db.run(`ALTER TABLE automations ADD COLUMN active_time_end TEXT`);
+  } catch (e) { /* column may already exist */ }
 
   // Automation pending confirmations (Telegram prompts awaiting response)
   db.run(`
@@ -778,6 +788,8 @@ export interface Automation {
   actions: string; // JSON array
   telegram_prompt: string | null;
   telegram_action_yes: string | null;
+  active_time_start: string | null; // HH:MM format
+  active_time_end: string | null;   // HH:MM format
   created_at: string;
 }
 
@@ -812,8 +824,8 @@ export function getAutomation(id: number): Automation | null {
 export function createAutomation(automation: Omit<Automation, 'id' | 'created_at'>): Automation {
   const database = getDb();
   const result = database.run(
-    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes, active_time_start, active_time_end)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       automation.name,
       automation.enabled ?? 1,
@@ -823,6 +835,8 @@ export function createAutomation(automation: Omit<Automation, 'id' | 'created_at
       automation.actions,
       automation.telegram_prompt,
       automation.telegram_action_yes,
+      automation.active_time_start,
+      automation.active_time_end,
     ]
   );
   return getAutomation(Number(result.lastInsertRowid))!;
@@ -841,6 +855,8 @@ export function updateAutomation(id: number, updates: Partial<Omit<Automation, '
   if (updates.actions !== undefined) { fields.push('actions = ?'); values.push(updates.actions); }
   if (updates.telegram_prompt !== undefined) { fields.push('telegram_prompt = ?'); values.push(updates.telegram_prompt); }
   if (updates.telegram_action_yes !== undefined) { fields.push('telegram_action_yes = ?'); values.push(updates.telegram_action_yes); }
+  if (updates.active_time_start !== undefined) { fields.push('active_time_start = ?'); values.push(updates.active_time_start); }
+  if (updates.active_time_end !== undefined) { fields.push('active_time_end = ?'); values.push(updates.active_time_end); }
 
   if (fields.length === 0) return getAutomation(id);
 

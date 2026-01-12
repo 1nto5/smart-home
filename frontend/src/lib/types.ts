@@ -205,6 +205,8 @@ export interface Automation {
   actions: string; // JSON array of AutomationAction
   telegram_prompt: string | null;
   telegram_action_yes: string | null;
+  active_time_start: string | null; // HH:MM format
+  active_time_end: string | null;   // HH:MM format
   created_at: string;
 }
 
