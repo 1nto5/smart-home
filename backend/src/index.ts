@@ -28,6 +28,7 @@ import {
 import { sendTestSms } from './notifications/sms-service';
 import { sendTestTelegram } from './notifications/telegram-service';
 import { startTelegramBot } from './telegram/telegram-bot';
+import { startAlarmNotificationLoop } from './notifications/alarm-service';
 import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from './tuya/tuya-api';
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus, connectDevice, disconnectAll } from './tuya/tuya-local';
 import {
@@ -126,6 +127,9 @@ startPoller();
 
 // Start Telegram bot
 startTelegramBot();
+
+// Start alarm notification loop (persistent notifications)
+startAlarmNotificationLoop();
 
 // Health check
 app.get('/api/health', (c) => {

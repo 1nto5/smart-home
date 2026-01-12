@@ -15,7 +15,14 @@ import {
   soundbarKeyboard,
   weatherKeyboard,
 } from './telegram-keyboards';
-import { setAlarmArmed, getAlarmConfig, getDb, getHomeStatus } from '../db/database';
+import {
+  setAlarmArmed,
+  getAlarmConfig,
+  getDb,
+  getHomeStatus,
+  acknowledgeAlarm,
+  acknowledgeAllAlarms,
+} from '../db/database';
 import { getLampPresets, getHeaterPresets } from '../scheduling';
 import {
   applyPresetToAllLamps,
@@ -90,6 +97,15 @@ export async function handleCallbackQuery(
         break;
       case 'alarm':
         await handleAlarmAction(args[0], chatId, messageId);
+        break;
+      case 'alarm_ack':
+        if (args[0]) await handleAlarmAcknowledge(args[0], chatId, messageId);
+        break;
+      case 'alarm_ack_all':
+        await handleAlarmAcknowledgeAll(chatId, messageId);
+        break;
+      case 'alarm_disarm_ack':
+        await handleAlarmDisarmAndAcknowledge(chatId, messageId);
         break;
       case 'lamp':
         await handleLampAction(args, chatId, messageId);
@@ -182,6 +198,72 @@ async function handleAlarmAction(
 
   const result = alarmKeyboard();
   await editMessage(chatId, messageId, result.text, result.keyboard);
+}
+
+/**
+ * Handle acknowledge single alarm
+ */
+async function handleAlarmAcknowledge(
+  alarmIdStr: string,
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  const alarmId = parseInt(alarmIdStr);
+  if (isNaN(alarmId)) {
+    await editMessage(chatId, messageId, '❌ Invalid alarm ID', backToMenuKeyboard());
+    return;
+  }
+
+  acknowledgeAlarm(alarmId, 'telegram');
+  console.log(`Telegram: Alarm ${alarmId} acknowledged`);
+
+  await editMessage(chatId, messageId, '✅ <b>Alarm acknowledged</b>\n\nNotifications stopped.', backToMenuKeyboard());
+}
+
+/**
+ * Handle acknowledge all alarms
+ */
+async function handleAlarmAcknowledgeAll(
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  const count = acknowledgeAllAlarms(undefined, 'telegram');
+  console.log(`Telegram: ${count} alarm(s) acknowledged`);
+
+  await editMessage(
+    chatId,
+    messageId,
+    `✅ <b>${count} alarm(s) acknowledged</b>\n\nAll notifications stopped.`,
+    backToMenuKeyboard()
+  );
+}
+
+/**
+ * Handle disarm + acknowledge all alarms
+ */
+async function handleAlarmDisarmAndAcknowledge(
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  setAlarmArmed(false);
+  const count = acknowledgeAllAlarms(undefined, 'telegram');
+  console.log(`Telegram: Alarm DISARMED + ${count} alarm(s) acknowledged`);
+
+  await editMessage(
+    chatId,
+    messageId,
+    `✅ <b>Alarm disarmed + ${count} alarm(s) acknowledged</b>\n\nSystem disarmed, all notifications stopped.`,
+    backToMenuKeyboard()
+  );
+}
+
+/**
+ * Simple back to menu keyboard
+ */
+function backToMenuKeyboard() {
+  return {
+    inline_keyboard: [[{ text: '« Back to Menu', callback_data: 'menu:main' }]],
+  };
 }
 
 /**

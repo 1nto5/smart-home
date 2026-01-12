@@ -463,6 +463,22 @@ export function initDatabase(): Database {
     )
   `);
 
+  // Active alarms - for persistent notifications until acknowledged
+  db.run(`
+    CREATE TABLE IF NOT EXISTS active_alarms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      alarm_type TEXT NOT NULL,
+      device_id TEXT NOT NULL,
+      device_name TEXT NOT NULL,
+      triggered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      acknowledged_at DATETIME,
+      acknowledged_by TEXT
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_active_alarms_unack
+          ON active_alarms(acknowledged_at) WHERE acknowledged_at IS NULL`);
+
   // Home status - tracking current presets (singleton table)
   db.run(`
     CREATE TABLE IF NOT EXISTS home_status (
@@ -967,4 +983,68 @@ export function setLampPreset(presetId: string | null): void {
 export function setHeaterPreset(presetId: string | null): void {
   const database = getDb();
   database.run('UPDATE home_status SET heater_preset = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1', [presetId]);
+}
+
+// === ACTIVE ALARMS (Persistent notifications) ===
+
+export type AlarmType = 'flood' | 'door';
+
+export interface ActiveAlarm {
+  id: number;
+  alarm_type: AlarmType;
+  device_id: string;
+  device_name: string;
+  triggered_at: string;
+  acknowledged_at: string | null;
+  acknowledged_by: string | null;
+}
+
+export function createActiveAlarm(
+  alarmType: AlarmType,
+  deviceId: string,
+  deviceName: string
+): number {
+  const database = getDb();
+  const result = database.run(
+    `INSERT INTO active_alarms (alarm_type, device_id, device_name) VALUES (?, ?, ?)`,
+    [alarmType, deviceId, deviceName]
+  );
+  return Number(result.lastInsertRowid);
+}
+
+export function getActiveAlarms(): ActiveAlarm[] {
+  const database = getDb();
+  return database.query(
+    `SELECT * FROM active_alarms WHERE acknowledged_at IS NULL ORDER BY triggered_at DESC`
+  ).all() as ActiveAlarm[];
+}
+
+export function acknowledgeAlarm(alarmId: number, by: string = 'telegram'): void {
+  const database = getDb();
+  database.run(
+    `UPDATE active_alarms SET acknowledged_at = CURRENT_TIMESTAMP, acknowledged_by = ? WHERE id = ?`,
+    [by, alarmId]
+  );
+}
+
+export function acknowledgeAllAlarms(alarmType?: AlarmType, by: string = 'telegram'): number {
+  const database = getDb();
+  let query = `UPDATE active_alarms SET acknowledged_at = CURRENT_TIMESTAMP, acknowledged_by = ? WHERE acknowledged_at IS NULL`;
+  const params: any[] = [by];
+
+  if (alarmType) {
+    query += ` AND alarm_type = ?`;
+    params.push(alarmType);
+  }
+
+  const result = database.run(query, params);
+  return result.changes;
+}
+
+export function hasActiveAlarmForDevice(deviceId: string): boolean {
+  const database = getDb();
+  const result = database.query(
+    `SELECT 1 FROM active_alarms WHERE device_id = ? AND acknowledged_at IS NULL LIMIT 1`
+  ).get(deviceId);
+  return result !== null;
 }
