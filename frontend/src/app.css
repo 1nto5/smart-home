@@ -382,6 +382,7 @@ input[type="text"],
 input[type="number"],
 input[type="time"],
 select {
+  font-size: 16px; /* prevents iOS zoom on focus */
   background: var(--color-bg-recessed);
   border: 1px solid var(--color-border-default);
   border-radius: 8px;

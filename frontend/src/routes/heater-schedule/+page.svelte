@@ -4,6 +4,7 @@
   import { Thermometer, Clock, Trash2, Plus, Play, X, ChevronDown, ChevronUp, RotateCcw, AlertCircle, Flame } from 'lucide-svelte';
   import type { HeaterPreset, HeaterPresetDevice, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
+  import { getSimplifiedName } from '$lib/translations';
 
   let newName = $state('');
   let newPresetId = $state('night');
@@ -334,7 +335,7 @@
                   {#each trvDevices as device (device.id)}
                     {@const tempInfo = getDeviceTemp(device.id, preset.target_temp)}
                     <div class="flex items-center justify-between bg-surface-elevated rounded-lg p-3 border border-stroke-subtle">
-                      <span class="text-sm text-content-primary">{device.name || device.id}</span>
+                      <span class="text-sm text-content-primary">{getSimplifiedName(device.name, 'wkf') || device.id}</span>
                       <div class="flex items-center gap-2">
                         {#if editingDeviceTemp === device.id}
                           <input
