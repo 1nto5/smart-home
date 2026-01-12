@@ -226,12 +226,12 @@ export async function telegramScheduleNotification(
   }
 
   const icon = scheduleType === 'lamp' ? '💡' : '🔥';
-  const typeLabel = scheduleType === 'lamp' ? 'Lampy' : 'Grzejniki';
+  const typeLabel = scheduleType === 'lamp' ? 'Lights' : 'Radiators';
 
   const message = `${icon} <b>${typeLabel}: ${scheduleName}</b>
 
 Preset: <b>${presetName}</b>
-Czas: ${new Date().toLocaleString('pl-PL')}`;
+Time: ${new Date().toLocaleString('en-GB')}`;
 
   const result = await sendTelegramMessage(
     config.bot_token,

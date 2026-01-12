@@ -17,15 +17,11 @@ import {
   getDb,
   getAlarmConfig,
   setAlarmArmed,
-  getSmsConfig,
-  updateSmsConfig,
-  getSmsLog,
   getTelegramConfig,
   updateTelegramConfig,
   getTelegramLog,
   getHomeStatus,
 } from './db/database';
-import { sendTestSms } from './notifications/sms-service';
 import { sendTestTelegram } from './notifications/telegram-service';
 import { startTelegramBot } from './telegram/telegram-bot';
 import { startAlarmNotificationLoop } from './notifications/alarm-service';
@@ -1196,45 +1192,6 @@ app.post('/api/alarm/disarm', (c) => {
   const alarm = setAlarmArmed(false);
   console.log('Alarm DISARMED');
   return c.json(alarm);
-});
-
-// === SMS NOTIFICATIONS ===
-
-// Get SMS config
-app.get('/api/sms/config', (c) => {
-  const config = getSmsConfig();
-  // Hide API token in response
-  return c.json({
-    ...config,
-    api_token: config.api_token ? '********' : null,
-  });
-});
-
-// Update SMS config
-app.patch('/api/sms/config', async (c) => {
-  const body = await c.req.json();
-  const config = updateSmsConfig(body);
-  return c.json({
-    ...config,
-    api_token: config.api_token ? '********' : null,
-  });
-});
-
-// Get SMS log
-app.get('/api/sms/log', (c) => {
-  const limit = parseInt(c.req.query('limit') || '50');
-  const log = getSmsLog(limit);
-  return c.json(log);
-});
-
-// Send test SMS
-app.post('/api/sms/test', async (c) => {
-  const result = await sendTestSms();
-  if (result.success) {
-    return c.json({ success: true, message: 'Test SMS sent' });
-  } else {
-    return c.json({ success: false, error: result.error }, 500);
-  }
 });
 
 // === TELEGRAM NOTIFICATIONS ===

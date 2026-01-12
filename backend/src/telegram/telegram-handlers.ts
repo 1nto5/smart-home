@@ -13,6 +13,8 @@ import {
   roborockRoomsKeyboard,
   purifierKeyboard,
   soundbarKeyboard,
+  soundbarProgramsKeyboard,
+  soundbarAudioKeyboard,
   weatherKeyboard,
 } from './telegram-keyboards';
 import {
@@ -51,6 +53,11 @@ import {
   setSoundbarPower,
   setSoundbarVolume,
   setSoundbarMute,
+  setSoundbarInput,
+  setSoundbarSoundProgram,
+  setSoundbarClearVoice,
+  setSoundbarBassExtension,
+  setSoundbarSubwooferVolume,
 } from '../yamaha/yamaha-soundbar';
 
 /**
@@ -562,13 +569,16 @@ async function handleSoundbarAction(
   let success = false;
   let actionName = '';
 
+  // Power controls
   if (subAction === 'on') {
     success = await setSoundbarPower(soundbar.id, true);
     actionName = 'Power On';
   } else if (subAction === 'off') {
     success = await setSoundbarPower(soundbar.id, false);
     actionName = 'Power Off';
-  } else if (subAction === 'vol') {
+  }
+  // Volume controls
+  else if (subAction === 'vol') {
     const status = await getSoundbarStatus(soundbar.id);
     if (status) {
       const currentVol = status.volume ?? 50;
@@ -582,11 +592,119 @@ async function handleSoundbarAction(
   } else if (subAction === 'unmute') {
     success = await setSoundbarMute(soundbar.id, false);
     actionName = 'Unmute';
-  } else if (subAction === 'status') {
+  }
+  // Input selection
+  else if (subAction === 'input' && param) {
+    success = await setSoundbarInput(soundbar.id, param);
+    actionName = `Input: ${param === 'tv' ? 'TV' : 'Bluetooth'}`;
+  }
+  // Sound programs submenu
+  else if (subAction === 'programs') {
+    const menu = soundbarProgramsKeyboard();
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+  // Sound program selection
+  else if (subAction === 'program' && param) {
+    success = await setSoundbarSoundProgram(soundbar.id, param);
+    const programNames: Record<string, string> = {
+      movie: 'Movie',
+      music: 'Music',
+      sports: 'Sports',
+      game: 'Game',
+      tv_program: 'TV',
+      stereo: 'Stereo',
+    };
+    actionName = `Sound: ${programNames[param] || param}`;
+  }
+  // Audio settings submenu
+  else if (subAction === 'audio') {
+    const status = await getSoundbarStatus(soundbar.id);
+    const menu = soundbarAudioKeyboard(
+      status?.clear_voice ?? false,
+      status?.bass_extension ?? false,
+      status?.subwoofer_volume ?? 0
+    );
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+  // Clear voice toggle
+  else if (subAction === 'clearvoice') {
+    const status = await getSoundbarStatus(soundbar.id);
+    const newVal = !(status?.clear_voice ?? false);
+    success = await setSoundbarClearVoice(soundbar.id, newVal);
+    actionName = `Clear Voice: ${newVal ? 'On' : 'Off'}`;
+    // Stay in audio menu
+    if (success) {
+      const newStatus = await getSoundbarStatus(soundbar.id);
+      const menu = soundbarAudioKeyboard(
+        newStatus?.clear_voice ?? false,
+        newStatus?.bass_extension ?? false,
+        newStatus?.subwoofer_volume ?? 0
+      );
+      await editMessage(chatId, messageId, `${menu.text}\n\n✅ ${actionName}`, menu.keyboard);
+      return;
+    }
+  }
+  // Bass extension toggle
+  else if (subAction === 'bass') {
+    const status = await getSoundbarStatus(soundbar.id);
+    const newVal = !(status?.bass_extension ?? false);
+    success = await setSoundbarBassExtension(soundbar.id, newVal);
+    actionName = `Bass Extension: ${newVal ? 'On' : 'Off'}`;
+    // Stay in audio menu
+    if (success) {
+      const newStatus = await getSoundbarStatus(soundbar.id);
+      const menu = soundbarAudioKeyboard(
+        newStatus?.clear_voice ?? false,
+        newStatus?.bass_extension ?? false,
+        newStatus?.subwoofer_volume ?? 0
+      );
+      await editMessage(chatId, messageId, `${menu.text}\n\n✅ ${actionName}`, menu.keyboard);
+      return;
+    }
+  }
+  // Subwoofer volume
+  else if (subAction === 'subvol') {
+    const status = await getSoundbarStatus(soundbar.id);
+    const currentVol = status?.subwoofer_volume ?? 0;
+    const newVol = param === 'up' ? Math.min(4, currentVol + 1) : Math.max(-4, currentVol - 1);
+    success = await setSoundbarSubwooferVolume(soundbar.id, newVol);
+    actionName = `Subwoofer: ${newVol > 0 ? '+' : ''}${newVol}`;
+    // Stay in audio menu
+    if (success) {
+      const newStatus = await getSoundbarStatus(soundbar.id);
+      const menu = soundbarAudioKeyboard(
+        newStatus?.clear_voice ?? false,
+        newStatus?.bass_extension ?? false,
+        newStatus?.subwoofer_volume ?? 0
+      );
+      await editMessage(chatId, messageId, `${menu.text}\n\n✅ ${actionName}`, menu.keyboard);
+      return;
+    }
+  }
+  // Noop for display-only buttons
+  else if (subAction === 'noop') {
+    return;
+  }
+  // Status
+  else if (subAction === 'status') {
     const status = await getSoundbarStatus(soundbar.id);
     const menu = soundbarKeyboard();
     if (status) {
-      const text = `${menu.text}\n\n📊 <b>Status:</b>\nPower: ${status.power}\nVolume: ${status.volume}\nMuted: ${status.mute ? 'Yes' : 'No'}\nInput: ${status.input}`;
+      const programNames: Record<string, string> = {
+        movie: 'Movie', music: 'Music', sports: 'Sports',
+        game: 'Game', tv_program: 'TV', stereo: 'Stereo',
+      };
+      const text = `${menu.text}\n\n📊 <b>Status:</b>
+Power: ${status.power}
+Volume: ${status.volume}
+Muted: ${status.mute ? 'Yes' : 'No'}
+Input: ${status.input}
+Sound: ${programNames[status.sound_program || ''] || status.sound_program || 'Unknown'}
+Clear Voice: ${status.clear_voice ? 'On' : 'Off'}
+Bass Ext: ${status.bass_extension ? 'On' : 'Off'}
+Subwoofer: ${(status.subwoofer_volume ?? 0) > 0 ? '+' : ''}${status.subwoofer_volume ?? 0}`;
       await editMessage(chatId, messageId, text, menu.keyboard);
     } else {
       await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);

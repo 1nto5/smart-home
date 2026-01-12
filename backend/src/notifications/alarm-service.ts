@@ -6,6 +6,7 @@ import {
   hasActiveAlarmForDevice,
   getAlarmConfig,
 } from '../db/database';
+import { translateDeviceName } from '../utils/translations';
 import type { ActiveAlarm, AlarmType } from '../db/database';
 
 const NOTIFICATION_INTERVAL_MS = 30_000; // 30 seconds
@@ -30,7 +31,7 @@ function acknowledgeKeyboard(alarmId: number) {
  */
 function formatTime(timestamp: string): string {
   const date = new Date(timestamp + 'Z'); // UTC
-  return date.toLocaleString('pl-PL', {
+  return date.toLocaleString('en-GB', {
     timeZone: 'Europe/Warsaw',
     hour: '2-digit',
     minute: '2-digit',
@@ -53,7 +54,7 @@ async function sendAlarmNotification(alarm: ActiveAlarm): Promise<boolean> {
 
   const message = `${emoji} <b>${title}</b>
 
-Sensor: <b>${alarm.device_name}</b>
+Sensor: <b>${translateDeviceName(alarm.device_name)}</b>
 Triggered: ${formatTime(alarm.triggered_at)}
 
 ⚠️ <b>RESPOND TO STOP NOTIFICATIONS</b>`;
