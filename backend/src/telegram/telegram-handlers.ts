@@ -6,6 +6,8 @@ import {
   lampsListKeyboard,
   heatersKeyboard,
   roborockKeyboard,
+  roborockFanKeyboard,
+  roborockMopKeyboard,
   purifierKeyboard,
   soundbarKeyboard,
   weatherKeyboard,
@@ -25,6 +27,8 @@ import {
   goHome,
   findMe,
   getStatus as getRoborockStatus,
+  setFanSpeed,
+  setMopMode,
 } from '../roborock/roborock';
 import {
   getPurifierStatus,
@@ -90,7 +94,7 @@ export async function handleCallbackQuery(
         await handleHeaterAction(args, chatId, messageId);
         break;
       case 'roborock':
-        await handleRoborockAction(args[0], chatId, messageId);
+        await handleRoborockAction(args, chatId, messageId);
         break;
       case 'purifier':
         await handlePurifierAction(args, chatId, messageId);
@@ -274,12 +278,51 @@ async function handleHeaterAction(
  * Handle roborock actions
  */
 async function handleRoborockAction(
-  action: string,
+  args: string[],
   chatId: number,
   messageId: number
 ): Promise<void> {
+  const [action, param] = args;
   let actionResult = false;
   let actionName = '';
+
+  // Fan speed submenu
+  if (action === 'fan_menu') {
+    const menu = roborockFanKeyboard();
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+
+  // Mop mode submenu
+  if (action === 'mop_menu') {
+    const menu = roborockMopKeyboard();
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+
+  // Set fan speed
+  if (action === 'fan' && param) {
+    const mode = parseInt(param);
+    actionResult = await setFanSpeed(mode);
+    const fanNames: Record<number, string> = { 101: 'Quiet', 102: 'Balanced', 103: 'Turbo', 104: 'Max' };
+    actionName = `Fan: ${fanNames[mode] || mode}`;
+    const menu = roborockFanKeyboard();
+    const statusText = actionResult ? `✅ ${actionName}` : `❌ ${actionName} failed`;
+    await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
+    return;
+  }
+
+  // Set mop mode
+  if (action === 'mop' && param) {
+    const mode = parseInt(param);
+    actionResult = await setMopMode(mode);
+    const mopNames: Record<number, string> = { 200: 'Off', 201: 'Low', 202: 'Medium', 203: 'High' };
+    actionName = `Mop: ${mopNames[mode] || mode}`;
+    const menu = roborockMopKeyboard();
+    const statusText = actionResult ? `✅ ${actionName}` : `❌ ${actionName} failed`;
+    await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
+    return;
+  }
 
   switch (action) {
     case 'start':
@@ -327,9 +370,10 @@ async function handleRoborockAction(
           18: 'Segment cleaning',
           100: 'Full',
         };
+        const fanNames: Record<number, string> = { 101: 'Quiet', 102: 'Balanced', 103: 'Turbo', 104: 'Max' };
         const stateName = stateMap[status.state] || `Unknown (${status.state})`;
-        const fanPower = status.fan_power !== undefined ? `${status.fan_power}%` : 'N/A';
-        const text = `${menu.text}\n\n📊 <b>Status:</b>\nState: ${stateName}\nBattery: ${status.battery}%\nFan: ${fanPower}`;
+        const fanName = status.fan_power !== undefined ? (fanNames[status.fan_power] || `${status.fan_power}`) : 'N/A';
+        const text = `${menu.text}\n\n📊 <b>Status:</b>\nState: ${stateName}\nBattery: ${status.battery}%\nFan: ${fanName}`;
         await editMessage(chatId, messageId, text, menu.keyboard);
       } else {
         await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);

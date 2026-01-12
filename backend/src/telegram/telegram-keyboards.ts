@@ -192,8 +192,62 @@ Select an action:`;
           { text: '🏠 Home', callback_data: 'roborock:home' },
         ],
         [{ text: '📍 Find', callback_data: 'roborock:find' }],
+        [{ text: '💨 Fan Speed', callback_data: 'roborock:fan_menu' }],
+        [{ text: '💧 Mop Mode', callback_data: 'roborock:mop_menu' }],
         [{ text: '📊 Status', callback_data: 'roborock:status' }],
         [{ text: '« Back to Menu', callback_data: 'menu:main' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Roborock fan speed menu
+ */
+export function roborockFanKeyboard(): { text: string; keyboard: InlineKeyboard } {
+  const text = `🤖 <b>Vacuum - Fan Speed</b>
+
+Select suction power:`;
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        [
+          { text: '🔈 Quiet', callback_data: 'roborock:fan:101' },
+          { text: '⚖️ Balanced', callback_data: 'roborock:fan:102' },
+        ],
+        [
+          { text: '💨 Turbo', callback_data: 'roborock:fan:103' },
+          { text: '🌀 Max', callback_data: 'roborock:fan:104' },
+        ],
+        [{ text: '« Back to Vacuum', callback_data: 'menu:roborock' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Roborock mop mode menu
+ */
+export function roborockMopKeyboard(): { text: string; keyboard: InlineKeyboard } {
+  const text = `🤖 <b>Vacuum - Mop Intensity</b>
+
+Select water flow:`;
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        [
+          { text: '🚫 Off', callback_data: 'roborock:mop:200' },
+          { text: '💧 Low', callback_data: 'roborock:mop:201' },
+        ],
+        [
+          { text: '💧💧 Medium', callback_data: 'roborock:mop:202' },
+          { text: '💧💧💧 High', callback_data: 'roborock:mop:203' },
+        ],
+        [{ text: '« Back to Vacuum', callback_data: 'menu:roborock' }],
       ],
     },
   };
