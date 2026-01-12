@@ -82,7 +82,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
       { siid: 2, piid: 5 },  // fan level (1-3)
       { siid: 3, piid: 4 },  // pm2.5
-      { siid: 4, piid: 3 },  // filter life/hours (works for this device)
+      { siid: 4, piid: 1 },  // filter life %
     ]);
 
     const getValue = (siid: number, piid: number) => {
@@ -96,7 +96,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       power: getValue(2, 1) ?? false,
       mode: MODE_MAP[modeValue] ?? 'unknown',
       aqi: getValue(3, 4) ?? 0,
-      filter_life: getValue(4, 3) ?? 0,
+      filter_life: getValue(4, 1) ?? 0,
       fan_level: getValue(2, 5),
     };
   } catch (error: any) {

@@ -394,37 +394,14 @@ Select an action:`;
         ],
         [
           { text: '🅰️ Auto', callback_data: 'purifier:mode:auto' },
-          { text: '😴 Night', callback_data: 'purifier:mode:silent' },
+          { text: '😴 Silent', callback_data: 'purifier:mode:silent' },
         ],
         [
-          { text: '⚡ Manual', callback_data: 'purifier:mode:favorite' },
-          { text: '🌀 Fan Speed', callback_data: 'purifier:fan' },
+          { text: '💨 Favorite', callback_data: 'purifier:mode:favorite' },
+          { text: '🌀 Fan', callback_data: 'purifier:mode:fan' },
         ],
         [{ text: '📊 Status', callback_data: 'purifier:status' }],
         [{ text: '« Back to Menu', callback_data: 'menu:main' }],
-      ],
-    },
-  };
-}
-
-/**
- * Air purifier fan speed keyboard
- */
-export function purifierFanSpeedKeyboard(): { text: string; keyboard: InlineKeyboard } {
-  const text = `🌀 <b>Fan Speed</b>
-
-Select fan speed (Manual mode):`;
-
-  return {
-    text,
-    keyboard: {
-      inline_keyboard: [
-        [
-          { text: '🌀 Low', callback_data: 'purifier:speed:1' },
-          { text: '🌀🌀 Medium', callback_data: 'purifier:speed:2' },
-          { text: '🌀🌀🌀 High', callback_data: 'purifier:speed:3' },
-        ],
-        [{ text: '« Back', callback_data: 'menu:purifier' }],
       ],
     },
   };
