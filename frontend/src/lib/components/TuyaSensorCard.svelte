@@ -105,18 +105,20 @@
 <!-- Detail Dialog -->
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
   <div class="space-y-5">
-    <!-- Status Display -->
-    <div class="rounded-xl p-6 text-center {statusInfo.alert ? 'bg-error/10 border border-error/30' : 'bg-surface-recessed border border-stroke-subtle'}">
-      <div class="flex justify-center {statusInfo.alert ? 'text-error' : 'text-device-sensors-text'}">
-        {#if statusInfo.alert}
-          <AlertTriangle class="w-12 h-12 animate-glow" />
-        {:else}
-          <svelte:component this={config.icon} class="w-12 h-12" />
-        {/if}
+    <!-- Status Display (not for climate sensors - they have separate temp/humidity boxes) -->
+    {#if device.category !== 'wsdcg'}
+      <div class="rounded-xl p-6 text-center {statusInfo.alert ? 'bg-error/10 border border-error/30' : 'bg-surface-recessed border border-stroke-subtle'}">
+        <div class="flex justify-center {statusInfo.alert ? 'text-error' : 'text-device-sensors-text'}">
+          {#if statusInfo.alert}
+            <AlertTriangle class="w-12 h-12 animate-glow" />
+          {:else}
+            <svelte:component this={config.icon} class="w-12 h-12" />
+          {/if}
+        </div>
+        <p class="font-display text-2xl mt-3 {statusInfo.color} {statusInfo.alert ? 'neon-text' : ''}">{statusInfo.text}</p>
+        <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">{config.label} Sensor</p>
       </div>
-      <p class="font-display text-2xl mt-3 {statusInfo.color} {statusInfo.alert ? 'neon-text' : ''}">{statusInfo.text}</p>
-      <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">{config.label} Sensor</p>
-    </div>
+    {/if}
 
     <!-- Climate sensor details -->
     {#if device.category === 'wsdcg'}

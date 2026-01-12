@@ -2170,17 +2170,24 @@ function TuyaSensorCard($$renderer, $$props) {
       onclose: () => dialogOpen = false,
       title: displayName,
       children: ($$renderer3) => {
-        $$renderer3.push(`<div class="space-y-5"><div${attr_class(`rounded-xl p-6 text-center ${stringify(statusInfo.alert ? "bg-error/10 border border-error/30" : "bg-surface-recessed border border-stroke-subtle")}`)}><div${attr_class(`flex justify-center ${stringify(statusInfo.alert ? "text-error" : "text-device-sensors-text")}`)}>`);
-        if (statusInfo.alert) {
+        $$renderer3.push(`<div class="space-y-5">`);
+        if (device.category !== "wsdcg") {
           $$renderer3.push("<!--[-->");
-          Triangle_alert($$renderer3, { class: "w-12 h-12 animate-glow" });
+          $$renderer3.push(`<div${attr_class(`rounded-xl p-6 text-center ${stringify(statusInfo.alert ? "bg-error/10 border border-error/30" : "bg-surface-recessed border border-stroke-subtle")}`)}><div${attr_class(`flex justify-center ${stringify(statusInfo.alert ? "text-error" : "text-device-sensors-text")}`)}>`);
+          if (statusInfo.alert) {
+            $$renderer3.push("<!--[-->");
+            Triangle_alert($$renderer3, { class: "w-12 h-12 animate-glow" });
+          } else {
+            $$renderer3.push("<!--[!-->");
+            $$renderer3.push(`<!---->`);
+            config.icon?.($$renderer3, { class: "w-12 h-12" });
+            $$renderer3.push(`<!---->`);
+          }
+          $$renderer3.push(`<!--]--></div> <p${attr_class(`font-display text-2xl mt-3 ${stringify(statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text" : "")}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">${escape_html(config.label)} Sensor</p></div>`);
         } else {
           $$renderer3.push("<!--[!-->");
-          $$renderer3.push(`<!---->`);
-          config.icon?.($$renderer3, { class: "w-12 h-12" });
-          $$renderer3.push(`<!---->`);
         }
-        $$renderer3.push(`<!--]--></div> <p${attr_class(`font-display text-2xl mt-3 ${stringify(statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text" : "")}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">${escape_html(config.label)} Sensor</p></div> `);
+        $$renderer3.push(`<!--]--> `);
         if (device.category === "wsdcg") {
           $$renderer3.push("<!--[-->");
           const status = parsedStatus();
