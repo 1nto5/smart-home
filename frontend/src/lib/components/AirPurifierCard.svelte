@@ -53,11 +53,11 @@
     try {
       await controlAirPurifier({ fan_speed: level });
       store.refreshAirPurifier();
+      // Keep optimisticFanSpeed since device can't report current fan speed
     } catch (e) {
       console.error(e);
       optimisticFanSpeed = oldLevel;
     }
-    optimisticFanSpeed = null;
   }
 
   const fanSpeedLabels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
