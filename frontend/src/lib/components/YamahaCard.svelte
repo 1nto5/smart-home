@@ -4,7 +4,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Volume2, VolumeX, Power, Tv, Bluetooth, Music, Gamepad2, Mic, Radio, Minus, Plus } from 'lucide-svelte';
+  import { Volume2, VolumeX, Power, Tv, Bluetooth, Mic, Radio, Minus, Plus } from 'lucide-svelte';
 
   let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));

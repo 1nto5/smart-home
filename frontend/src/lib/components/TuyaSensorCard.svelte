@@ -2,7 +2,7 @@
   import type { TuyaDevice } from '$lib/types';
   import { translateDeviceName, getSimplifiedName } from '$lib/translations';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Droplet, DoorOpen, DoorClosed, Thermometer, Radio, Tv, Smartphone, AlertTriangle, Battery, Square } from 'lucide-svelte';
+  import { Droplet, DoorOpen, Thermometer, Radio, Tv, Smartphone, AlertTriangle, Battery, Square } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();

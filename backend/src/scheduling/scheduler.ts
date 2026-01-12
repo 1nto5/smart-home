@@ -55,21 +55,3 @@ export function startScheduler(): void {
     }
   }, 60_000); // Check every minute
 }
-
-/**
- * Stop the scheduler
- */
-export function stopScheduler(): void {
-  if (schedulerInterval) {
-    clearInterval(schedulerInterval);
-    schedulerInterval = null;
-    console.log('Scheduler stopped');
-  }
-}
-
-/**
- * Check if scheduler is running
- */
-export function isSchedulerRunning(): boolean {
-  return schedulerInterval !== null;
-}

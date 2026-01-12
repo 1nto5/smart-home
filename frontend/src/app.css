@@ -522,16 +522,6 @@ input[type="range"].slider-audio::-moz-range-thumb {
   --category-bg: var(--color-climate-heat-bg);
 }
 
-.category-climate-cool {
-  --category-color: var(--color-climate-cool);
-  --category-bg: var(--color-climate-cool-bg);
-}
-
-.category-sensors {
-  --category-color: var(--color-sensors);
-  --category-bg: var(--color-sensors-bg);
-}
-
 .category-audio {
   --category-color: var(--color-audio);
   --category-bg: var(--color-audio-bg);
@@ -563,16 +553,6 @@ input[type="range"].slider-audio::-moz-range-thumb {
 .badge-climate-heat {
   background: var(--color-climate-heat-bg);
   color: var(--color-climate-heat);
-}
-
-.badge-climate-cool {
-  background: var(--color-climate-cool-bg);
-  color: var(--color-climate-cool);
-}
-
-.badge-sensors {
-  background: var(--color-sensors-bg);
-  color: var(--color-sensors);
 }
 
 .badge-audio {
@@ -688,13 +668,6 @@ input[type="range"].slider-audio::-moz-range-thumb {
   --category-bg: var(--color-climate-heat-bg);
   --glow-color: var(--color-climate-heat);
   --glow-bg: var(--color-climate-heat-bg);
-}
-
-.glow-climate-cool {
-  --category-color: var(--color-climate-cool);
-  --category-bg: var(--color-climate-cool-bg);
-  --glow-color: var(--color-climate-cool);
-  --glow-bg: var(--color-climate-cool-bg);
 }
 
 .glow-sensors {

@@ -37,8 +37,8 @@ export {
   type PendingAction,
 } from './pending-service';
 
-export { startScheduler, stopScheduler, isSchedulerRunning } from './scheduler';
-export { startPoller, stopPoller, isPollerRunning, pollNow } from './poller';
+export { startScheduler } from './scheduler';
+export { startPoller } from './poller';
 
 export { getCurrentTimeWindow, getPresetForTimeWindow, type TimeWindow } from './time-windows';
 export { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';

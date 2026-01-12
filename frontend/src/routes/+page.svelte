@@ -232,16 +232,6 @@
     background: linear-gradient(90deg, color-mix(in srgb, var(--color-climate-heat-text) 40%, transparent) 0%, transparent 100%);
   }
 
-  .section-header-sensors .section-icon {
-    background: color-mix(in srgb, var(--color-sensors-text) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-sensors-text) 30%, transparent);
-    color: var(--color-sensors-text);
-  }
-  .section-header-sensors .section-title { color: var(--color-sensors-text); }
-  .section-header-sensors .section-line {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--color-sensors-text) 40%, transparent) 0%, transparent 100%);
-  }
-
   /* Door/Window sensors - using warning color */
   .section-header-doors .section-icon {
     background: color-mix(in srgb, var(--color-warning) 15%, transparent);
@@ -268,26 +258,6 @@
   }
   .glow-flood {
     box-shadow: 0 0 15px -3px color-mix(in srgb, var(--color-accent) 40%, transparent);
-  }
-
-  .section-header-audio .section-icon {
-    background: color-mix(in srgb, var(--color-audio-text) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-audio-text) 30%, transparent);
-    color: var(--color-audio-text);
-  }
-  .section-header-audio .section-title { color: var(--color-audio-text); }
-  .section-header-audio .section-line {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--color-audio-text) 40%, transparent) 0%, transparent 100%);
-  }
-
-  .section-header-robot .section-icon {
-    background: color-mix(in srgb, var(--color-robot-text) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-robot-text) 30%, transparent);
-    color: var(--color-robot-text);
-  }
-  .section-header-robot .section-title { color: var(--color-robot-text); }
-  .section-header-robot .section-line {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--color-robot-text) 40%, transparent) 0%, transparent 100%);
   }
 
   .section-header-quick .section-icon {

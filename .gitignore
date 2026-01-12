@@ -5,8 +5,8 @@ __pycache__/
 
 # Build outputs
 build/
-# Allow frontend dist for deployment
-!frontend/dist/
+frontend/dist/
+frontend/.svelte-kit/
 *.pyc
 
 # Data & databases
