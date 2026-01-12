@@ -436,6 +436,16 @@ input[type="range"]::-moz-range-thumb {
   border: none;
 }
 
+/* Audio slider - purple thumb */
+input[type="range"].slider-audio::-webkit-slider-thumb {
+  background: var(--color-audio-text);
+  box-shadow: 0 0 8px var(--color-audio-glow);
+}
+input[type="range"].slider-audio::-moz-range-thumb {
+  background: var(--color-audio-text);
+  box-shadow: 0 0 8px var(--color-audio-glow);
+}
+
 /* Checkbox toggle */
 .toggle {
   position: relative;

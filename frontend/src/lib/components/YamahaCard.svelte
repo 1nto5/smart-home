@@ -235,8 +235,7 @@
               max="100"
               value={displayVolume}
               oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
-              class="flex-1"
-              style="--color-accent: var(--color-audio-text); --color-accent-glow: var(--color-audio-glow);"
+              class="flex-1 slider-audio"
             />
             <button
               onclick={toggleMute}
