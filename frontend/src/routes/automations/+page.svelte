@@ -376,10 +376,10 @@
           </div>
 
           {#if formTriggerType === 'sensor_state'}
-            <div class="flex gap-3">
+            <div class="flex flex-col sm:flex-row gap-2">
               <select
                 bind:value={formTriggerDeviceId}
-                class="flex-1 bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+                class="flex-1 bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary text-sm"
               >
                 <option value={null}>Any contact sensor</option>
                 {#each contactSensors as sensor (sensor.id)}
@@ -388,7 +388,7 @@
               </select>
               <select
                 bind:value={formTriggerCondition}
-                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary text-sm"
               >
                 <option value="open">Opens</option>
                 <option value="closed">Closes</option>
@@ -435,45 +435,51 @@
             {#if formActions.length === 0}
               <p class="text-sm text-content-tertiary">No actions configured</p>
             {:else}
-              <div class="space-y-2">
+              <div class="space-y-3">
                 {#each formActions as action, i}
-                  <div class="flex gap-2 items-center">
-                    <select bind:value={action.type} class="flex-1 bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                      <option value="set_heater_temp">Set heater temp</option>
-                      <option value="set_heater_preset">Set heater preset</option>
-                      <option value="purifier_off">Purifier OFF</option>
-                      <option value="purifier_on">Purifier ON</option>
-                      <option value="purifier_mode">Purifier mode</option>
-                      <option value="soundbar_off">Soundbar OFF</option>
-                      <option value="soundbar_on">Soundbar ON</option>
-                    </select>
+                  <div class="flex flex-col gap-2 p-2 rounded-lg bg-surface-base border border-stroke-subtle">
+                    <div class="flex gap-2 items-center">
+                      <select bind:value={action.type} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                        <option value="set_heater_temp">Set heater temp</option>
+                        <option value="set_heater_preset">Set heater preset</option>
+                        <option value="purifier_off">Purifier OFF</option>
+                        <option value="purifier_on">Purifier ON</option>
+                        <option value="purifier_mode">Purifier mode</option>
+                        <option value="soundbar_off">Soundbar OFF</option>
+                        <option value="soundbar_on">Soundbar ON</option>
+                      </select>
+                      <button onclick={() => removeAction(i)} class="p-1 text-content-tertiary hover:text-error shrink-0">
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
                     {#if action.type === 'set_heater_temp'}
-                      <select bind:value={action.target} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                        <option value="room">Same room</option>
-                        <option value="all">All</option>
-                      </select>
-                      <input type="number" bind:value={action.value} min="5" max="30" class="w-16 bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary text-center" />
-                      <span class="text-sm text-content-tertiary">°C</span>
+                      <div class="flex gap-2 items-center">
+                        <select bind:value={action.target} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                          <option value="room">Same room</option>
+                          <option value="all">All</option>
+                        </select>
+                        <input type="number" bind:value={action.value} min="5" max="30" class="w-16 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary text-center" />
+                        <span class="text-sm text-content-tertiary">°C</span>
+                      </div>
                     {:else if action.type === 'set_heater_preset'}
-                      <select bind:value={action.target} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                        <option value="room">Same room</option>
-                        <option value="all">All</option>
-                      </select>
-                      <select bind:value={action.value} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                        {#each heaterPresets as preset (preset.id)}
-                          <option value={preset.id}>{preset.name}</option>
-                        {/each}
-                      </select>
+                      <div class="flex flex-col sm:flex-row gap-2">
+                        <select bind:value={action.target} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                          <option value="room">Same room</option>
+                          <option value="all">All</option>
+                        </select>
+                        <select bind:value={action.value} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                          {#each heaterPresets as preset (preset.id)}
+                            <option value={preset.id}>{preset.name}</option>
+                          {/each}
+                        </select>
+                      </div>
                     {:else if action.type === 'purifier_mode'}
-                      <select bind:value={action.value} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                      <select bind:value={action.value} class="bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
                         <option value="auto">Auto</option>
                         <option value="silent">Silent</option>
                         <option value="favorite">Favorite (manual)</option>
                       </select>
                     {/if}
-                    <button onclick={() => removeAction(i)} class="p-1 text-content-tertiary hover:text-error">
-                      <X class="w-4 h-4" />
-                    </button>
                   </div>
                 {/each}
               </div>
@@ -499,45 +505,51 @@
             {#if formTelegramActionYes.length === 0}
               <p class="text-sm text-content-tertiary">No actions configured</p>
             {:else}
-              <div class="space-y-2">
+              <div class="space-y-3">
                 {#each formTelegramActionYes as action, i}
-                  <div class="flex gap-2 items-center">
-                    <select bind:value={action.type} class="flex-1 bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                      <option value="set_heater_temp">Set heater temp</option>
-                      <option value="set_heater_preset">Set heater preset</option>
-                      <option value="purifier_off">Purifier OFF</option>
-                      <option value="purifier_on">Purifier ON</option>
-                      <option value="purifier_mode">Purifier mode</option>
-                      <option value="soundbar_off">Soundbar OFF</option>
-                      <option value="soundbar_on">Soundbar ON</option>
-                    </select>
+                  <div class="flex flex-col gap-2 p-2 rounded-lg bg-surface-base border border-stroke-subtle">
+                    <div class="flex gap-2 items-center">
+                      <select bind:value={action.type} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                        <option value="set_heater_temp">Set heater temp</option>
+                        <option value="set_heater_preset">Set heater preset</option>
+                        <option value="purifier_off">Purifier OFF</option>
+                        <option value="purifier_on">Purifier ON</option>
+                        <option value="purifier_mode">Purifier mode</option>
+                        <option value="soundbar_off">Soundbar OFF</option>
+                        <option value="soundbar_on">Soundbar ON</option>
+                      </select>
+                      <button onclick={() => removeTelegramAction(i)} class="p-1 text-content-tertiary hover:text-error shrink-0">
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
                     {#if action.type === 'set_heater_temp'}
-                      <select bind:value={action.target} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                        <option value="room">Same room</option>
-                        <option value="all">All</option>
-                      </select>
-                      <input type="number" bind:value={action.value} min="5" max="30" class="w-16 bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary text-center" />
-                      <span class="text-sm text-content-tertiary">°C</span>
+                      <div class="flex gap-2 items-center">
+                        <select bind:value={action.target} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                          <option value="room">Same room</option>
+                          <option value="all">All</option>
+                        </select>
+                        <input type="number" bind:value={action.value} min="5" max="30" class="w-16 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary text-center" />
+                        <span class="text-sm text-content-tertiary">°C</span>
+                      </div>
                     {:else if action.type === 'set_heater_preset'}
-                      <select bind:value={action.target} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                        <option value="room">Same room</option>
-                        <option value="all">All</option>
-                      </select>
-                      <select bind:value={action.value} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
-                        {#each heaterPresets as preset (preset.id)}
-                          <option value={preset.id}>{preset.name}</option>
-                        {/each}
-                      </select>
+                      <div class="flex flex-col sm:flex-row gap-2">
+                        <select bind:value={action.target} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                          <option value="room">Same room</option>
+                          <option value="all">All</option>
+                        </select>
+                        <select bind:value={action.value} class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                          {#each heaterPresets as preset (preset.id)}
+                            <option value={preset.id}>{preset.name}</option>
+                          {/each}
+                        </select>
+                      </div>
                     {:else if action.type === 'purifier_mode'}
-                      <select bind:value={action.value} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                      <select bind:value={action.value} class="bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
                         <option value="auto">Auto</option>
                         <option value="silent">Silent</option>
                         <option value="favorite">Favorite (manual)</option>
                       </select>
                     {/if}
-                    <button onclick={() => removeTelegramAction(i)} class="p-1 text-content-tertiary hover:text-error">
-                      <X class="w-4 h-4" />
-                    </button>
                   </div>
                 {/each}
               </div>
