@@ -78,11 +78,11 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     // siid 3 = environment
     // siid 4 = filter
     const result = await purifierConnection.call('get_properties', [
-      { siid: 2, piid: 2 },  // power (bool)
-      { siid: 2, piid: 5 },  // mode (0=auto, 1=silent, 2=favorite)
-      { siid: 2, piid: 4 },  // fan level (1-3)
-      { siid: 3, piid: 6 },  // pm2.5
-      { siid: 4, piid: 3 },  // filter life %
+      { siid: 2, piid: 1 },  // power (bool)
+      { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
+      { siid: 2, piid: 5 },  // fan level (1-3)
+      { siid: 3, piid: 4 },  // pm2.5
+      { siid: 4, piid: 3 },  // filter life/hours (works for this device)
     ]);
 
     const getValue = (siid: number, piid: number) => {
@@ -90,14 +90,14 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       return prop?.code === 0 ? prop.value : undefined;
     };
 
-    const modeValue = getValue(2, 5);
+    const modeValue = getValue(2, 4);
 
     return {
-      power: getValue(2, 2) ?? false,
+      power: getValue(2, 1) ?? false,
       mode: MODE_MAP[modeValue] ?? 'unknown',
-      aqi: getValue(3, 6) ?? 0,
+      aqi: getValue(3, 4) ?? 0,
       filter_life: getValue(4, 3) ?? 0,
-      fan_level: getValue(2, 4),
+      fan_level: getValue(2, 5),
     };
   } catch (error: any) {
     console.error('Failed to get purifier status:', error.message);
@@ -116,7 +116,7 @@ export async function setPurifierPower(on: boolean): Promise<boolean> {
 
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 2, piid: 2, value: on }
+      { siid: 2, piid: 1, value: on }
     ]);
     console.log(`Air Purifier: Power ${on ? 'on' : 'off'}`);
     return true;
@@ -140,7 +140,7 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
 
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 2, piid: 5, value: modeValue }
+      { siid: 2, piid: 4, value: modeValue }
     ]);
     console.log(`Air Purifier: Mode set to ${mode}`);
     return true;
@@ -161,7 +161,7 @@ export async function setPurifierFanSpeed(level: number): Promise<boolean> {
 
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 2, piid: 4, value: Math.max(1, Math.min(3, level)) }
+      { siid: 2, piid: 5, value: Math.max(1, Math.min(3, level)) }
     ]);
     console.log(`Air Purifier: Fan level set to ${level}`);
     return true;
