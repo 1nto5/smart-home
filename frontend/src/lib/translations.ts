@@ -30,8 +30,8 @@ export const deviceNameTranslations: Record<string, string> = {
   'pralnia': 'Laundry',
 
   // Sensors
-  'Czujnik zalania kuchnia': 'Water Sensor Kitchen',
-  'Czujnik zalania łazienka': 'Water Sensor Bathroom',
+  'Czujnik zalania kuchnia': 'Kitchen Sensor',
+  'Czujnik zalania łazienka': 'Bathroom Sensor',
   'Czujnik zalania': 'Water Sensor',
   'Stacja meteo': 'Weather Station',
   'Drzwi': 'Door Sensor',
