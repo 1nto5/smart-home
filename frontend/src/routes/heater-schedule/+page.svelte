@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset, setHeaterOverride, createHeaterPreset, deleteHeaterPreset, getTuyaDevices, getPresetDeviceTemps, setPresetDeviceTemp, deletePresetDeviceTemp } from '$lib/api';
-  import { Thermometer, Clock, Trash2, Plus, Play, PauseCircle, X, ChevronDown, ChevronUp, RotateCcw, AlertCircle, Flame } from 'lucide-svelte';
+  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices, getPresetDeviceTemps, setPresetDeviceTemp, deletePresetDeviceTemp } from '$lib/api';
+  import { Thermometer, Clock, Trash2, Plus, Play, X, ChevronDown, ChevronUp, RotateCcw, AlertCircle, Flame } from 'lucide-svelte';
   import type { HeaterPreset, HeaterPresetDevice, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
 
@@ -12,24 +12,12 @@
   let editingPreset = $state<string | null>(null);
   let editTemp = $state(21);
 
-  // Override mode state
-  let selectedOverrideMode = $state<'pause' | 'fixed'>('pause');
-  let overrideTemp = $state(18);
-
   // Per-device temps state
   let expandedPreset = $state<string | null>(null);
   let trvDevices = $state<TuyaDevice[]>([]);
   let presetDeviceTemps = $state<HeaterPresetDevice[]>([]);
   let editingDeviceTemp = $state<string | null>(null);
   let deviceTempValue = $state(21);
-
-  // Sync local state with store
-  $effect(() => {
-    if (store.heaterOverride) {
-      selectedOverrideMode = store.heaterOverride.mode;
-      overrideTemp = store.heaterOverride.fixed_temp;
-    }
-  });
 
   // Load TRV devices on mount
   $effect(() => {
@@ -80,31 +68,6 @@
     try {
       await deletePresetDeviceTemp(presetId, deviceId);
       presetDeviceTemps = await getPresetDeviceTemps(presetId);
-    } catch (e) {
-      console.error(e);
-    }
-    loading = false;
-  }
-
-  async function handleOverrideToggle() {
-    loading = true;
-    const newEnabled = !store.heaterOverride?.enabled;
-    try {
-      await setHeaterOverride(newEnabled, selectedOverrideMode, overrideTemp);
-      await store.refreshHeaterOverride();
-    } catch (e) {
-      console.error(e);
-    }
-    loading = false;
-  }
-
-  async function handleOverrideUpdate(mode?: 'pause' | 'fixed') {
-    if (!store.heaterOverride?.enabled) return;
-    loading = true;
-    const useMode = mode ?? selectedOverrideMode;
-    try {
-      await setHeaterOverride(true, useMode, overrideTemp);
-      await store.refreshHeaterOverride();
     } catch (e) {
       console.error(e);
     }
@@ -219,85 +182,6 @@
 </svelte:head>
 
 <div class="space-y-8 pb-24">
-  <!-- Override Mode -->
-  <section class="card {store.heaterOverride?.enabled ? 'card-active border-warning/50' : ''}">
-    <div class="p-4">
-      <div class="section-header section-header-warning mb-4">
-        <div class="section-icon" style="background: color-mix(in srgb, var(--color-warning) 15%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); color: var(--color-warning);">
-          <PauseCircle class="w-4 h-4" />
-        </div>
-        <h2 class="section-title" style="color: var(--color-warning);">Override Mode</h2>
-        <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning) 40%, transparent) 0%, transparent 100%);"></div>
-        <button
-          onclick={handleOverrideToggle}
-          disabled={loading}
-          class="ml-3 px-4 py-2 rounded-lg font-semibold uppercase tracking-wider text-sm transition-all disabled:opacity-50
-                 {store.heaterOverride?.enabled
-                   ? 'bg-warning/20 text-warning border border-warning/50 shadow-[0_0_15px_-3px] shadow-warning/40'
-                   : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
-        >
-          {store.heaterOverride?.enabled ? 'Active' : 'Off'}
-        </button>
-      </div>
-
-      {#if store.heaterOverride?.enabled}
-        <div class="rounded-lg p-3 mb-4 bg-warning/10 border border-warning/30 flex items-center gap-2">
-          <AlertCircle class="w-4 h-4 text-warning shrink-0" />
-          <p class="text-sm text-warning">Schedules paused while override active</p>
-        </div>
-      {/if}
-
-      <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div class="flex items-center gap-4">
-          <label class="flex items-center gap-2 cursor-pointer group">
-            <input
-              type="radio"
-              name="overrideMode"
-              value="pause"
-              checked={selectedOverrideMode === 'pause'}
-              onchange={() => { selectedOverrideMode = 'pause'; handleOverrideUpdate('pause'); }}
-              class="sr-only peer"
-            />
-            <div class="w-4 h-4 rounded-full border-2 border-stroke-default peer-checked:border-warning peer-checked:bg-warning/20 transition-colors flex items-center justify-center">
-              <div class="w-2 h-2 rounded-full bg-warning scale-0 peer-checked:scale-100 transition-transform"></div>
-            </div>
-            <span class="text-content-primary text-sm group-hover:text-warning transition-colors">Pause schedules</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer group">
-            <input
-              type="radio"
-              name="overrideMode"
-              value="fixed"
-              checked={selectedOverrideMode === 'fixed'}
-              onchange={() => { selectedOverrideMode = 'fixed'; handleOverrideUpdate('fixed'); }}
-              class="sr-only peer"
-            />
-            <div class="w-4 h-4 rounded-full border-2 border-stroke-default peer-checked:border-warning peer-checked:bg-warning/20 transition-colors flex items-center justify-center">
-              <div class="w-2 h-2 rounded-full bg-warning scale-0 peer-checked:scale-100 transition-transform"></div>
-            </div>
-            <span class="text-content-primary text-sm group-hover:text-warning transition-colors">Fixed temperature</span>
-          </label>
-        </div>
-
-        {#if selectedOverrideMode === 'fixed'}
-          <div class="flex items-center gap-3 p-2 rounded-lg bg-surface-recessed border border-stroke-subtle">
-            <input
-              type="range"
-              min="5"
-              max="25"
-              step="0.5"
-              bind:value={overrideTemp}
-              onchange={() => handleOverrideUpdate()}
-              class="w-32"
-              style="--color-accent: var(--color-warning); --color-accent-glow: color-mix(in srgb, var(--color-warning) 50%, transparent);"
-            />
-            <span class="font-display text-xl text-warning neon-text-subtle w-16">{overrideTemp}°C</span>
-          </div>
-        {/if}
-      </div>
-    </div>
-  </section>
-
   <!-- Presets -->
   <section>
     <div class="section-header section-header-climate">
