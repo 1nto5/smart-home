@@ -79,6 +79,92 @@ function Flame($$renderer, $$props) {
     }
   ]));
 }
+const deviceNameTranslations = {
+  // Exact device name mappings (case-insensitive matching)
+  "korytarz 1": "Hallway 1",
+  "korytarz 2": "Hallway 2",
+  "kuchnia": "Kitchen",
+  "salon": "Living Room",
+  "sypialnia": "Bedroom",
+  "łazienka": "Bathroom",
+  "pokój dzieci": "Kids Room",
+  "jadalnia": "Dining Room",
+  "gabinet": "Study",
+  "pralnia": "Laundry",
+  // Sensors
+  "Czujnik zalania kuchnia": "Kitchen Sensor",
+  "Czujnik zalania łazienka": "Bathroom Sensor",
+  "Czujnik zalania": "Water Sensor",
+  "Stacja meteo": "Weather Station",
+  "Drzwi": "Door Sensor",
+  // Thermostats
+  "Grzejnik salon": "Radiator Living Room",
+  "Grzejnik sypialnia": "Radiator Bedroom",
+  "Grzejnik kuchnia": "Radiator Kitchen",
+  "Grzejnik łazienka": "Radiator Bathroom",
+  "Grzejnik korytarz": "Radiator Hallway",
+  "Grzejnik pokój dzieci": "Radiator Kids Room",
+  "Grzejnik": "Radiator"
+};
+const wordReplacements = {
+  "korytarz": "Hallway",
+  "kuchnia": "Kitchen",
+  "salon": "Living Room",
+  "sypialnia": "Bedroom",
+  "łazienka": "Bathroom",
+  "pokój dzieci": "Kids Room",
+  "pokój": "Room",
+  "dzieci": "Kids",
+  "Czujnik zalania": "Water Sensor",
+  "Stacja meteo": "Weather Station",
+  "Grzejnik": "Radiator",
+  "Drzwi": "Door",
+  "Lampa": "Light",
+  "duży": "Large",
+  "mały": "Small",
+  "główny": "Main",
+  "górny": "Upper",
+  "dolny": "Lower"
+};
+function translateDeviceName(name) {
+  if (!name) return name;
+  const lowerName = name.toLowerCase();
+  for (const [polish, english] of Object.entries(deviceNameTranslations)) {
+    if (lowerName === polish.toLowerCase()) {
+      return english;
+    }
+  }
+  let translated = name;
+  const sortedReplacements = Object.entries(wordReplacements).sort((a, b) => b[0].length - a[0].length);
+  for (const [polish, english] of sortedReplacements) {
+    const regex = new RegExp(polish, "gi");
+    translated = translated.replace(regex, english);
+  }
+  return translated;
+}
+function getSimplifiedName(name, category) {
+  const translated = translateDeviceName(name);
+  if (category === "wkf") {
+    return translated.replace(/^(Radiator|Heater|Grzejnik)\s+/i, "").replace(/\s+(Radiator|Heater|Grzejnik)$/i, "");
+  }
+  if (category === "sj") {
+    const match = translated.match(/^(.+?)\s*Sensor$/i);
+    if (match) return match[1];
+    const roomMatch = translated.match(/(Kitchen|Bathroom|Living Room|Bedroom|Hallway)/i);
+    if (roomMatch) return roomMatch[1];
+    return translated;
+  }
+  if (category === "mcs") {
+    const lower = translated.toLowerCase();
+    if (lower.includes("kitchen") || lower.includes("kuchnia")) return "Kitchen";
+    if (lower.includes("door") || lower.includes("drzwi")) return "Door";
+    if (lower.includes("bathroom") || lower.includes("łazienka")) return "Bathroom";
+    return translated.replace(/\s*Sensor$/i, "");
+  }
+  return translated;
+}
 export {
-  Flame as F
+  Flame as F,
+  getSimplifiedName as g,
+  translateDeviceName as t
 };

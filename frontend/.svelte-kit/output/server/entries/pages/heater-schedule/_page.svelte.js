@@ -1,7 +1,7 @@
 import { U as sanitize_props, V as spread_props, W as slot, a2 as head, X as ensure_array_like, Z as attr, _ as attr_class, a0 as stringify } from "../../../chunks/index2.js";
 import { P as Plus, a as Play, s as store } from "../../../chunks/plus.js";
+import { F as Flame, g as getSimplifiedName } from "../../../chunks/translations.js";
 import { T as Thermometer } from "../../../chunks/thermometer.js";
-import { F as Flame } from "../../../chunks/flame.js";
 import { I as Icon } from "../../../chunks/Icon.js";
 import { T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
 import { e as escape_html } from "../../../chunks/context.js";
@@ -305,7 +305,7 @@ function _page($$renderer, $$props) {
           for (let $$index = 0, $$length2 = each_array_1.length; $$index < $$length2; $$index++) {
             let device = each_array_1[$$index];
             const tempInfo = getDeviceTemp(device.id, preset.target_temp);
-            $$renderer2.push(`<div class="flex items-center justify-between bg-surface-elevated rounded-lg p-3 border border-stroke-subtle"><span class="text-sm text-content-primary">${escape_html(device.name || device.id)}</span> <div class="flex items-center gap-2">`);
+            $$renderer2.push(`<div class="flex items-center justify-between bg-surface-elevated rounded-lg p-3 border border-stroke-subtle"><span class="text-sm text-content-primary">${escape_html(getSimplifiedName(device.name, "wkf") || device.id)}</span> <div class="flex items-center gap-2">`);
             if (editingDeviceTemp === device.id) {
               $$renderer2.push("<!--[-->");
               $$renderer2.push(`<input type="number" min="5" max="30" step="0.5"${attr("value", deviceTempValue)} class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center text-sm font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&amp;::-webkit-outer-spin-button]:appearance-none [&amp;::-webkit-inner-spin-button]:appearance-none"/> <button${attr("disabled", loading, true)} class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded disabled:opacity-50 hover:bg-success/30 transition-colors">Save</button> <button class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors">Cancel</button>`);
