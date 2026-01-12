@@ -4,7 +4,7 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw } from 'lucide-svelte';
+  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw, Workflow } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
   import { getAlarmStatus, armAlarm, disarmAlarm } from '$lib/api';
 
@@ -62,6 +62,7 @@
     { href: '/', label: 'Dashboard', icon: Home },
     { href: '/lighting', label: 'Lighting', icon: Lightbulb },
     { href: '/heater-schedule', label: 'Climate', icon: Thermometer },
+    { href: '/automations', label: 'Automations', icon: Zap },
   ];
 </script>
 

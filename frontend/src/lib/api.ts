@@ -1,4 +1,4 @@
-import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterPresetDevice, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData } from './types';
+import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterPresetDevice, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData, Automation, AutomationLog } from './types';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
@@ -354,4 +354,42 @@ export async function disarmAlarm(): Promise<AlarmStatus> {
 // Home status
 export async function getHomeStatus(): Promise<HomeStatusData> {
   return fetcher('/home-status');
+}
+
+// Automations
+export async function getAutomations(): Promise<Automation[]> {
+  return fetcher('/automations');
+}
+
+export async function getAutomation(id: number): Promise<Automation> {
+  return fetcher(`/automations/${id}`);
+}
+
+export async function createAutomation(automation: Omit<Automation, 'id' | 'created_at'>): Promise<Automation> {
+  return fetcher('/automations', {
+    method: 'POST',
+    body: JSON.stringify(automation),
+  });
+}
+
+export async function updateAutomation(
+  id: number,
+  updates: Partial<Omit<Automation, 'id' | 'created_at'>>
+): Promise<Automation> {
+  return fetcher(`/automations/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deleteAutomation(id: number): Promise<{ success: boolean }> {
+  return fetcher(`/automations/${id}`, { method: 'DELETE' });
+}
+
+export async function toggleAutomation(id: number): Promise<Automation> {
+  return fetcher(`/automations/${id}/toggle`, { method: 'PATCH' });
+}
+
+export async function getAutomationLog(limit?: number): Promise<AutomationLog[]> {
+  return fetcher(`/automations/log${limit ? `?limit=${limit}` : ''}`);
 }

@@ -415,6 +415,51 @@ export function initDatabase(): Database {
     db.run('INSERT INTO home_status (id, lamp_preset, heater_preset) VALUES (1, NULL, NULL)');
   }
 
+  // Automations (IF-THEN rules)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS automations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      enabled INTEGER DEFAULT 1,
+      trigger_type TEXT NOT NULL,
+      trigger_device_id TEXT,
+      trigger_condition TEXT NOT NULL,
+      actions TEXT NOT NULL,
+      telegram_prompt TEXT,
+      telegram_action_yes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Automation pending confirmations (Telegram prompts awaiting response)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS automation_pending (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      automation_id INTEGER NOT NULL,
+      trigger_device_name TEXT,
+      room TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (automation_id) REFERENCES automations(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_automation_pending_status ON automation_pending(status)`);
+
+  // Automation execution log
+  db.run(`
+    CREATE TABLE IF NOT EXISTS automation_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      automation_name TEXT,
+      trigger_device_name TEXT,
+      action_executed TEXT,
+      result TEXT,
+      executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`CREATE INDEX IF NOT EXISTS idx_automation_log_time ON automation_log(executed_at DESC)`);
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
@@ -719,4 +764,158 @@ export function hasActiveAlarmForDevice(deviceId: string): boolean {
     `SELECT 1 FROM active_alarms WHERE device_id = ? AND acknowledged_at IS NULL LIMIT 1`
   ).get(deviceId);
   return result !== null;
+}
+
+// === AUTOMATIONS ===
+
+export interface Automation {
+  id: number;
+  name: string;
+  enabled: number;
+  trigger_type: string;
+  trigger_device_id: string | null;
+  trigger_condition: string;
+  actions: string; // JSON array
+  telegram_prompt: string | null;
+  telegram_action_yes: string | null;
+  created_at: string;
+}
+
+export interface AutomationPending {
+  id: number;
+  automation_id: number;
+  trigger_device_name: string | null;
+  room: string | null;
+  status: 'pending' | 'confirmed' | 'declined' | 'expired';
+  created_at: string;
+}
+
+export interface AutomationLog {
+  id: number;
+  automation_name: string;
+  trigger_device_name: string | null;
+  action_executed: string;
+  result: string;
+  executed_at: string;
+}
+
+export function getAutomations(): Automation[] {
+  const database = getDb();
+  return database.query('SELECT * FROM automations ORDER BY name').all() as Automation[];
+}
+
+export function getAutomation(id: number): Automation | null {
+  const database = getDb();
+  return database.query('SELECT * FROM automations WHERE id = ?').get(id) as Automation | null;
+}
+
+export function createAutomation(automation: Omit<Automation, 'id' | 'created_at'>): Automation {
+  const database = getDb();
+  const result = database.run(
+    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      automation.name,
+      automation.enabled ?? 1,
+      automation.trigger_type,
+      automation.trigger_device_id,
+      automation.trigger_condition,
+      automation.actions,
+      automation.telegram_prompt,
+      automation.telegram_action_yes,
+    ]
+  );
+  return getAutomation(Number(result.lastInsertRowid))!;
+}
+
+export function updateAutomation(id: number, updates: Partial<Omit<Automation, 'id' | 'created_at'>>): Automation | null {
+  const database = getDb();
+  const fields: string[] = [];
+  const values: any[] = [];
+
+  if (updates.name !== undefined) { fields.push('name = ?'); values.push(updates.name); }
+  if (updates.enabled !== undefined) { fields.push('enabled = ?'); values.push(updates.enabled); }
+  if (updates.trigger_type !== undefined) { fields.push('trigger_type = ?'); values.push(updates.trigger_type); }
+  if (updates.trigger_device_id !== undefined) { fields.push('trigger_device_id = ?'); values.push(updates.trigger_device_id); }
+  if (updates.trigger_condition !== undefined) { fields.push('trigger_condition = ?'); values.push(updates.trigger_condition); }
+  if (updates.actions !== undefined) { fields.push('actions = ?'); values.push(updates.actions); }
+  if (updates.telegram_prompt !== undefined) { fields.push('telegram_prompt = ?'); values.push(updates.telegram_prompt); }
+  if (updates.telegram_action_yes !== undefined) { fields.push('telegram_action_yes = ?'); values.push(updates.telegram_action_yes); }
+
+  if (fields.length === 0) return getAutomation(id);
+
+  values.push(id);
+  database.run(`UPDATE automations SET ${fields.join(', ')} WHERE id = ?`, values);
+  return getAutomation(id);
+}
+
+export function deleteAutomation(id: number): boolean {
+  const database = getDb();
+  const result = database.run('DELETE FROM automations WHERE id = ?', [id]);
+  return result.changes > 0;
+}
+
+export function toggleAutomation(id: number): Automation | null {
+  const database = getDb();
+  database.run('UPDATE automations SET enabled = CASE WHEN enabled = 1 THEN 0 ELSE 1 END WHERE id = ?', [id]);
+  return getAutomation(id);
+}
+
+export function getEnabledAutomationsForTrigger(triggerType: string, condition: string, deviceId?: string): Automation[] {
+  const database = getDb();
+  return database.query(`
+    SELECT * FROM automations
+    WHERE enabled = 1
+    AND trigger_type = ?
+    AND trigger_condition = ?
+    AND (trigger_device_id IS NULL OR trigger_device_id = ?)
+  `).all(triggerType, condition, deviceId || null) as Automation[];
+}
+
+// Automation pending confirmations
+export function createAutomationPending(automationId: number, triggerDeviceName: string | null, room: string | null): number {
+  const database = getDb();
+  const result = database.run(
+    `INSERT INTO automation_pending (automation_id, trigger_device_name, room) VALUES (?, ?, ?)`,
+    [automationId, triggerDeviceName, room]
+  );
+  return Number(result.lastInsertRowid);
+}
+
+export function getAutomationPending(id: number): (AutomationPending & Automation) | null {
+  const database = getDb();
+  return database.query(`
+    SELECT ap.*, a.name, a.actions, a.telegram_prompt, a.telegram_action_yes
+    FROM automation_pending ap
+    JOIN automations a ON ap.automation_id = a.id
+    WHERE ap.id = ? AND ap.status = 'pending'
+  `).get(id) as (AutomationPending & Automation) | null;
+}
+
+export function updateAutomationPendingStatus(id: number, status: 'confirmed' | 'declined' | 'expired'): void {
+  const database = getDb();
+  database.run('UPDATE automation_pending SET status = ? WHERE id = ?', [status, id]);
+}
+
+export function expireOldPendingAutomations(minutesOld: number = 5): number {
+  const database = getDb();
+  const result = database.run(
+    `UPDATE automation_pending SET status = 'expired' WHERE status = 'pending' AND created_at < datetime('now', '-' || ? || ' minutes')`,
+    [minutesOld]
+  );
+  return result.changes;
+}
+
+// Automation log
+export function logAutomation(automationName: string, triggerDeviceName: string | null, actionExecuted: string, result: string): void {
+  const database = getDb();
+  database.run(
+    `INSERT INTO automation_log (automation_name, trigger_device_name, action_executed, result) VALUES (?, ?, ?, ?)`,
+    [automationName, triggerDeviceName, actionExecuted, result]
+  );
+}
+
+export function getAutomationLog(limit: number = 50): AutomationLog[] {
+  const database = getDb();
+  return database.query('SELECT * FROM automation_log ORDER BY executed_at DESC LIMIT ?').all(limit) as AutomationLog[];
 }

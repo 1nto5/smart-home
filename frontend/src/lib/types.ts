@@ -186,3 +186,32 @@ export interface HomeStatusData {
     override: HeaterOverride | null;
   };
 }
+
+// Automations
+export interface AutomationAction {
+  type: string;
+  target?: string;
+  value?: string;
+}
+
+export interface Automation {
+  id: number;
+  name: string;
+  enabled: number;
+  trigger_type: string;
+  trigger_device_id: string | null;
+  trigger_condition: string;
+  actions: string; // JSON array of AutomationAction
+  telegram_prompt: string | null;
+  telegram_action_yes: string | null;
+  created_at: string;
+}
+
+export interface AutomationLog {
+  id: number;
+  automation_name: string;
+  trigger_device_name: string | null;
+  action_executed: string;
+  result: string;
+  executed_at: string;
+}

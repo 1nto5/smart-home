@@ -24,7 +24,10 @@ import {
   getHomeStatus,
   acknowledgeAlarm,
   acknowledgeAllAlarms,
+  getAutomationPending,
+  updateAutomationPendingStatus,
 } from '../db/database';
+import { executeConfirmedActions, type TriggerContext } from '../automations/automation-actions';
 import { getLampPresets, getHeaterPresets } from '../scheduling';
 import {
   applyPresetToAllLamps,
@@ -134,6 +137,9 @@ export async function handleCallbackQuery(
         break;
       case 'status':
         await sendStatusMessage(chatId, messageId);
+        break;
+      case 'auto':
+        await handleAutomationCallback(args, chatId, messageId);
         break;
     }
   } catch (error: any) {
@@ -729,6 +735,64 @@ async function handleWeatherAction(
   // For refresh or any action, just show updated weather data
   const result = weatherKeyboard();
   await editMessage(chatId, messageId, result.text, result.keyboard);
+}
+
+/**
+ * Handle automation confirmation callbacks (auto:yes:123 or auto:no:123)
+ */
+async function handleAutomationCallback(
+  args: string[],
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  const [response, pendingIdStr] = args;
+  const pendingId = parseInt(pendingIdStr);
+
+  if (isNaN(pendingId)) {
+    await editMessage(chatId, messageId, '❌ Invalid automation ID', backToMenuKeyboard());
+    return;
+  }
+
+  const pending = getAutomationPending(pendingId);
+  if (!pending) {
+    await editMessage(chatId, messageId, '⏰ This automation prompt has expired.', backToMenuKeyboard());
+    return;
+  }
+
+  if (response === 'yes') {
+    updateAutomationPendingStatus(pendingId, 'confirmed');
+
+    // Build context from pending data
+    const context: TriggerContext = {
+      deviceId: '',
+      deviceName: pending.trigger_device_name || 'Unknown',
+      room: pending.room,
+      condition: 'confirmed',
+    };
+
+    // Execute the yes actions
+    if (pending.telegram_action_yes) {
+      const results = await executeConfirmedActions(
+        pending.telegram_action_yes,
+        context,
+        pending.name
+      );
+      await editMessage(
+        chatId,
+        messageId,
+        `✅ <b>Automation executed:</b>\n${results.join('\n')}`,
+        backToMenuKeyboard()
+      );
+    } else {
+      await editMessage(chatId, messageId, '✅ Confirmed (no actions defined)', backToMenuKeyboard());
+    }
+
+    console.log(`Telegram: Automation "${pending.name}" confirmed`);
+  } else {
+    updateAutomationPendingStatus(pendingId, 'declined');
+    await editMessage(chatId, messageId, '❌ Automation cancelled', backToMenuKeyboard());
+    console.log(`Telegram: Automation "${pending.name}" declined`);
+  }
 }
 
 /**
