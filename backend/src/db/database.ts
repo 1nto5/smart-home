@@ -463,6 +463,22 @@ export function initDatabase(): Database {
     )
   `);
 
+  // Home status - tracking current presets (singleton table)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS home_status (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      lamp_preset TEXT,
+      heater_preset TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert default home status if not exists
+  const homeStatusCount = db.query('SELECT COUNT(*) as count FROM home_status').get() as { count: number };
+  if (homeStatusCount.count === 0) {
+    db.run('INSERT INTO home_status (id, lamp_preset, heater_preset) VALUES (1, NULL, NULL)');
+  }
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
@@ -927,4 +943,28 @@ export function getUpdateOffset(): number {
 export function setUpdateOffset(offset: number): void {
   const database = getDb();
   database.run('INSERT OR REPLACE INTO telegram_updates_offset (id, offset) VALUES (1, ?)', [offset]);
+}
+
+// === HOME STATUS ===
+
+export interface HomeStatus {
+  lamp_preset: string | null;
+  heater_preset: string | null;
+  updated_at: string;
+}
+
+export function getHomeStatus(): HomeStatus {
+  const database = getDb();
+  const result = database.query('SELECT lamp_preset, heater_preset, updated_at FROM home_status WHERE id = 1').get() as HomeStatus;
+  return result;
+}
+
+export function setLampPreset(presetId: string | null): void {
+  const database = getDb();
+  database.run('UPDATE home_status SET lamp_preset = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1', [presetId]);
+}
+
+export function setHeaterPreset(presetId: string | null): void {
+  const database = getDb();
+  database.run('UPDATE home_status SET heater_preset = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1', [presetId]);
 }

@@ -5,6 +5,7 @@
   import TRVCard from '$lib/components/TRVCard.svelte';
   import YamahaCard from '$lib/components/YamahaCard.svelte';
   import AirPurifierCard from '$lib/components/AirPurifierCard.svelte';
+  import HomeStatusCard from '$lib/components/HomeStatusCard.svelte';
   import { store } from '$lib/stores.svelte';
   import { Lightbulb, Thermometer, Radio, Volume2, Bot } from 'lucide-svelte';
 
@@ -57,6 +58,9 @@
       {/each}
     </div>
   {:else}
+    <!-- Home Status -->
+    <HomeStatusCard />
+
     <!-- Lights -->
     {#if lamps.length > 0}
       <section>

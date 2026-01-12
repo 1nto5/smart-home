@@ -4,6 +4,7 @@ import {
   getLastTelegramTime,
   getAlarmConfig,
 } from '../db/database';
+import { translateDeviceName } from '../utils/translations';
 
 export type AlertType = 'flood' | 'door_open';
 
@@ -93,10 +94,11 @@ export async function telegramFloodAlert(deviceId: string, deviceName: string): 
     return false;
   }
 
+  const translatedName = translateDeviceName(deviceName);
   const message = `🚨 <b>ALARM: FLOOD DETECTED!</b>
 
 Water detected!
-Sensor: <b>${deviceName}</b>
+Sensor: <b>${translatedName}</b>
 Time: ${new Date().toLocaleString('en-GB')}
 
 Check immediately!`;
@@ -166,10 +168,11 @@ export async function telegramDoorOpenAlert(deviceId: string, deviceName: string
     return false;
   }
 
+  const translatedName = translateDeviceName(deviceName);
   const message = `🚪 <b>ALARM: DOOR OPENED!</b>
 
 Alarm is ARMED!
-Sensor: <b>${deviceName}</b>
+Sensor: <b>${translatedName}</b>
 Time: ${new Date().toLocaleString('en-GB')}
 
 Possible intrusion!`;

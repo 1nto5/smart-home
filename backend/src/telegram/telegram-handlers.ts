@@ -13,7 +13,8 @@ import {
   soundbarKeyboard,
   weatherKeyboard,
 } from './telegram-keyboards';
-import { setAlarmArmed, getAlarmConfig, getDb } from '../db/database';
+import { setAlarmArmed, getAlarmConfig, getDb, getHomeStatus } from '../db/database';
+import { getLampPresets, getHeaterPresets } from '../scheduling';
 import {
   applyPresetToAllLamps,
   applyPresetToAllHeaters,
@@ -529,11 +530,43 @@ async function handleWeatherAction(
 async function sendStatusMessage(chatId: number, messageId?: number): Promise<void> {
   const alarm = getAlarmConfig();
   const override = getHeaterOverride();
+  const homeStatus = getHomeStatus();
 
   // Get device counts
   const db = getDb();
   const lampCount = (db.query("SELECT COUNT(*) as c FROM xiaomi_devices WHERE category LIKE 'yeelink%'").get() as { c: number }).c;
   const heaterCount = (db.query("SELECT COUNT(*) as c FROM devices WHERE category = 'wkf'").get() as { c: number }).c;
+
+  // Get weather station data
+  let weatherText = 'N/A';
+  const weatherDevice = db.query(`SELECT last_status FROM devices WHERE category = 'wsdcg' LIMIT 1`).get() as { last_status: string | null } | null;
+  if (weatherDevice?.last_status) {
+    try {
+      const ws = JSON.parse(weatherDevice.last_status);
+      const temp = ws['103'] !== undefined ? `${(ws['103'] / 100).toFixed(1)}°C` : 'N/A';
+      const hum = ws['101'] !== undefined ? `${(ws['101'] / 100).toFixed(0)}%` : 'N/A';
+      weatherText = `${temp} / ${hum}`;
+    } catch {}
+  }
+
+  // Get current presets
+  const lampPresets = getLampPresets();
+  const heaterPresets = getHeaterPresets();
+  const currentLampPreset = homeStatus.lamp_preset ? lampPresets.find(p => p.id === homeStatus.lamp_preset)?.name : 'N/A';
+  const currentHeaterPreset = homeStatus.heater_preset ? heaterPresets.find(p => p.id === homeStatus.heater_preset)?.name : 'N/A';
+
+  // Get average heater temp
+  const heaters = db.query(`SELECT last_status FROM devices WHERE category = 'wkf' AND online = 1`).all() as { last_status: string | null }[];
+  const temps: number[] = [];
+  for (const h of heaters) {
+    if (h.last_status) {
+      try {
+        const parsed = JSON.parse(h.last_status);
+        if (parsed['3'] !== undefined) temps.push(parsed['3'] / 10);
+      } catch {}
+    }
+  }
+  const avgTemp = temps.length > 0 ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) : 'N/A';
 
   // Get roborock status
   let roborockState = 'Unknown';
@@ -559,9 +592,10 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
 
   const text = `📊 <b>Smart Home Status</b>
 
+🌡️ Weather: <b>${weatherText}</b>
 🛡️ Alarm: <b>${alarm.armed ? '🔴 ARMED' : '🟢 Disarmed'}</b>
-💡 Lamps: ${lampCount} devices
-🔥 Heaters: ${heaterCount} devices (${overrideStatus})
+💡 Lights: <b>${currentLampPreset}</b> (${lampCount})
+🔥 Heating: <b>${override.enabled ? overrideStatus : currentHeaterPreset}</b> (avg ${avgTemp}°C)
 🤖 Vacuum: ${roborockState}${roborockStatus ? ` (${roborockStatus.battery}%)` : ''}
 🌬️ Purifier: ${purifierState}`;
 

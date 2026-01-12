@@ -48,6 +48,9 @@ async function getPendingHeaterActions() {
 async function getHeaterOverride() {
   return fetcher("/heater-override");
 }
+async function getHomeStatus() {
+  return fetcher("/home-status");
+}
 let ws = null;
 let wsReconnectDelay = 1e3;
 function createStore() {
@@ -63,6 +66,7 @@ function createStore() {
   let heaterSchedules = [];
   let pendingHeaterActions = [];
   let heaterOverride = null;
+  let homeStatus = null;
   let loading = false;
   let error = null;
   let wsConnected = false;
@@ -138,6 +142,9 @@ function createStore() {
     },
     get heaterOverride() {
       return heaterOverride;
+    },
+    get homeStatus() {
+      return homeStatus;
     },
     get loading() {
       return loading;
@@ -243,6 +250,13 @@ function createStore() {
         console.error("Failed to fetch heater override:", e);
       }
     },
+    async refreshHomeStatus() {
+      try {
+        homeStatus = await getHomeStatus();
+      } catch (e) {
+        console.error("Failed to fetch home status:", e);
+      }
+    },
     async refreshAll() {
       loading = true;
       await Promise.all([
@@ -256,7 +270,8 @@ function createStore() {
         this.refreshHeaterPresets(),
         this.refreshHeaterSchedules(),
         this.refreshPendingHeater(),
-        this.refreshHeaterOverride()
+        this.refreshHeaterOverride(),
+        this.refreshHomeStatus()
       ]);
       loading = false;
     }

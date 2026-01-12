@@ -167,3 +167,22 @@ export interface HeaterOverride {
   fixed_temp: number;
   updated_at: string;
 }
+
+// Home status summary
+export interface HomeStatusData {
+  weather: {
+    temperature: number | null;
+    humidity: number | null;
+    battery: number | null;
+  } | null;
+  lamp: {
+    preset_id: string | null;
+    preset_name: string | null;
+  };
+  heater: {
+    preset_id: string | null;
+    preset_name: string | null;
+    avg_temp: number | null;
+    override: HeaterOverride | null;
+  };
+}

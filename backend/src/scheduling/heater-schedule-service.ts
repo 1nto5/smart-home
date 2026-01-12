@@ -3,7 +3,7 @@
  * Manages heater schedules and applies presets to TRVs
  */
 
-import { getDb } from '../db/database';
+import { getDb, setHeaterPreset } from '../db/database';
 import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp, type HeaterPreset } from './heater-presets';
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
@@ -193,6 +193,9 @@ export async function applyPresetToAllHeaters(
       result.pending.push(trvId);
     }
   }
+
+  // Track current heater preset
+  setHeaterPreset(presetId);
 
   console.log(`Applied heater preset "${preset.name}": ${result.success.length} ok, ${result.pending.length} pending`);
   return result;
