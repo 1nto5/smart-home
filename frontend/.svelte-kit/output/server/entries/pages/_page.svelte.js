@@ -1925,13 +1925,13 @@ function RoborockCard($$renderer, $$props) {
     $$renderer2.push(`<!--]--></div> `);
     if (compact && status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="flex items-center gap-1.5 text-xs shrink-0 px-2 py-1 rounded bg-surface-recessed">`);
+      $$renderer2.push(`<div class="flex items-center gap-1 text-[10px] shrink-0 px-1.5 py-0.5 rounded bg-surface-recessed">`);
       if (status.battery > 20) {
         $$renderer2.push("<!--[-->");
-        Battery($$renderer2, { class: "w-3.5 h-3.5 text-success" });
+        Battery($$renderer2, { class: "w-3 h-3 text-success" });
       } else {
         $$renderer2.push("<!--[!-->");
-        Battery_low($$renderer2, { class: "w-3.5 h-3.5 text-error" });
+        Battery_low($$renderer2, { class: "w-3 h-3 text-error" });
       }
       $$renderer2.push(`<!--]--> <span${attr_class(status.battery > 20 ? "text-content-secondary" : "text-error")}>${escape_html(status.battery)}%</span></div>`);
     } else {
@@ -2127,13 +2127,17 @@ function TuyaSensorCard($$renderer, $$props) {
         }
         case "wsdcg": {
           const temp = status["103"];
-          const humidity = status["102"];
+          const humidity = status["101"];
+          const battery = status["102"];
+          const lowBattery = battery !== void 0 && battery <= LOW_BATTERY_THRESHOLD;
           if (temp !== void 0 && humidity !== void 0) {
+            const humidityVal = (humidity / 100).toFixed(1);
             return {
-              text: `${(temp / 100).toFixed(1)}°C · ${humidity}%`,
+              text: `${(temp / 100).toFixed(1)}°C · ${humidityVal}%`,
               alert: false,
               color: "text-device-sensors-text",
-              lowBattery: false
+              lowBattery,
+              batteryPercent: battery
             };
           }
           return {
@@ -2510,7 +2514,7 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-sensors svelte-1uha8ag"><div class="section-icon glow-sensors svelte-1uha8ag">`);
         Radio($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Sensors</h2> <span class="section-count svelte-1uha8ag">${escape_html(sensors.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Sensors</h2> <span class="section-count svelte-1uha8ag">${escape_html(sensors.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_4 = ensure_array_like(sensors);
         for (let $$index_4 = 0, $$length = each_array_4.length; $$index_4 < $$length; $$index_4++) {
           let device = each_array_4[$$index_4];
@@ -2525,7 +2529,7 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-audio svelte-1uha8ag"><div class="section-icon glow-audio svelte-1uha8ag">`);
         Volume_2($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Audio</h2> <span class="section-count svelte-1uha8ag">${escape_html(store.yamahaDevices.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Audio</h2> <span class="section-count svelte-1uha8ag">${escape_html(store.yamahaDevices.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_5 = ensure_array_like(store.yamahaDevices);
         for (let $$index_5 = 0, $$length = each_array_5.length; $$index_5 < $$length; $$index_5++) {
           let device = each_array_5[$$index_5];
@@ -2537,7 +2541,7 @@ function _page($$renderer, $$props) {
       }
       $$renderer2.push(`<!--]--> <section class="svelte-1uha8ag"><div class="section-header section-header-robot svelte-1uha8ag"><div class="section-icon glow-robot svelte-1uha8ag">`);
       Bot($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Robot</h2> <span class="section-count svelte-1uha8ag">1</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag">`);
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Robot</h2> <span class="section-count svelte-1uha8ag">1</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 svelte-1uha8ag">`);
       RoborockCard($$renderer2, { status: store.roborock, compact: true });
       $$renderer2.push(`<!----></div></section>`);
     }
