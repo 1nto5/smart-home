@@ -18,7 +18,7 @@
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
-  let displayFanSpeed = $derived(optimisticFanSpeed ?? status?.fan_speed ?? 1);
+  let displayFanSpeed = $derived(optimisticFanSpeed ?? status?.fan_speed ?? 300);
 
   async function togglePower() {
     const newPower = !displayPower;
@@ -58,16 +58,14 @@
     }
   }, 300);
 
-  function handleFanSpeedInput(level: number) {
-    const clamped = Math.max(1, Math.min(3, level));
+  function handleFanSpeedInput(rpm: number) {
+    const clamped = Math.max(300, Math.min(2200, Math.round(rpm)));
     optimisticFanSpeed = clamped;
     sendFanSpeedDebounced(clamped);
   }
 
-  const fanSpeedLabels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
-
-  // Calculate slider position (1=0%, 2=50%, 3=100%)
-  let sliderPercent = $derived(((displayFanSpeed - 1) / 2) * 100);
+  // Calculate slider position (300=0%, 2200=100%)
+  let sliderPercent = $derived(((displayFanSpeed - 300) / 1900) * 100);
 
   function aqiColor(aqi: number): string {
     if (aqi <= 50) return 'text-success';
@@ -200,12 +198,12 @@
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-xs text-content-tertiary uppercase tracking-wider">Fan Speed</span>
-              <span class="font-display text-lg text-device-air-text neon-text-subtle">{fanSpeedLabels[displayFanSpeed]}</span>
+              <span class="font-display text-lg text-device-air-text neon-text-subtle">{displayFanSpeed} RPM</span>
             </div>
             <div class="flex gap-2 items-center">
               <button
-                onclick={() => handleFanSpeedInput(displayFanSpeed - 1)}
-                disabled={displayFanSpeed <= 1}
+                onclick={() => handleFanSpeedInput(displayFanSpeed - 100)}
+                disabled={displayFanSpeed <= 300}
                 class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Minus class="w-5 h-5" />
@@ -221,17 +219,17 @@
                 ></div>
                 <input
                   type="range"
-                  min="1"
-                  max="3"
-                  step="1"
+                  min="300"
+                  max="2200"
+                  step="50"
                   value={displayFanSpeed}
                   oninput={(e) => handleFanSpeedInput(parseInt(e.currentTarget.value))}
                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
               </div>
               <button
-                onclick={() => handleFanSpeedInput(displayFanSpeed + 1)}
-                disabled={displayFanSpeed >= 3}
+                onclick={() => handleFanSpeedInput(displayFanSpeed + 100)}
+                disabled={displayFanSpeed >= 2200}
                 class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Plus class="w-5 h-5" />
