@@ -109,7 +109,7 @@
           <span class="section-count">{sensors.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {#each sensors as device (device.id)}
             <TuyaSensorCard {device} compact />
           {/each}
@@ -128,7 +128,7 @@
           <span class="section-count">{store.yamahaDevices.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {#each store.yamahaDevices as device (device.id)}
             <YamahaCard {device} compact />
           {/each}
@@ -146,7 +146,7 @@
         <span class="section-count">1</span>
         <div class="section-line"></div>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         <RoborockCard status={store.roborock} compact />
       </div>
     </section>

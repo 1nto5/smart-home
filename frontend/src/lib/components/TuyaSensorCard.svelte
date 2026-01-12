@@ -55,9 +55,12 @@
       }
       case 'wsdcg': {
         const temp = status['103'];
-        const humidity = status['102'];
+        const humidity = status['101'];
+        const battery = status['102'];
+        const lowBattery = battery !== undefined && battery <= LOW_BATTERY_THRESHOLD;
         if (temp !== undefined && humidity !== undefined) {
-          return { text: `${(temp / 100).toFixed(1)}°C · ${humidity}%`, alert: false, color: 'text-device-sensors-text', lowBattery: false };
+          const humidityVal = (humidity / 100).toFixed(1);
+          return { text: `${(temp / 100).toFixed(1)}°C · ${humidityVal}%`, alert: false, color: 'text-device-sensors-text', lowBattery, batteryPercent: battery };
         }
         return { text: 'N/A', alert: false, color: 'text-content-tertiary', lowBattery: false };
       }

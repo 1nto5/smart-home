@@ -228,11 +228,11 @@
 
     <!-- Battery -->
     {#if compact && status}
-      <div class="flex items-center gap-1.5 text-xs shrink-0 px-2 py-1 rounded bg-surface-recessed">
+      <div class="flex items-center gap-1 text-[10px] shrink-0 px-1.5 py-0.5 rounded bg-surface-recessed">
         {#if status.battery > 20}
-          <Battery class="w-3.5 h-3.5 text-success" />
+          <Battery class="w-3 h-3 text-success" />
         {:else}
-          <BatteryLow class="w-3.5 h-3.5 text-error" />
+          <BatteryLow class="w-3 h-3 text-error" />
         {/if}
         <span class="{status.battery > 20 ? 'text-content-secondary' : 'text-error'}">{status.battery}%</span>
       </div>
