@@ -42,7 +42,7 @@
             <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent"></div>
           </div>
           <!-- Card grid skeleton -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {#each Array(4) as _, j}
               <div class="card p-3 relative overflow-hidden" style="animation-delay: {(i * 4 + j) * 50}ms">
                 <div class="flex items-center gap-3">
@@ -73,7 +73,7 @@
         <h2 class="section-title">Quick Access</h2>
         <div class="section-line"></div>
       </div>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3">
         {#each store.yamahaDevices as device (device.id)}
           <YamahaCard {device} compact />
         {/each}
@@ -98,7 +98,7 @@
           <span class="section-count">{lamps.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each lamps as lamp (lamp.id)}
             <LampCard {lamp} compact />
           {/each}
@@ -117,7 +117,7 @@
           <span class="section-count">{thermostats.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each thermostats as device (device.id)}
             <TRVCard {device} compact />
           {/each}
