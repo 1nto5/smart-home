@@ -1,10 +1,10 @@
-import { U as sanitize_props, V as spread_props, W as slot, X as attr_class, _ as attr, a0 as stringify, Y as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
-import { I as Icon, s as store } from "../../chunks/Icon.js";
+import { U as sanitize_props, V as spread_props, W as slot, _ as attr_class, Z as attr, a0 as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
+import { s as store, P as Play } from "../../chunks/play.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
+import { I as Icon } from "../../chunks/Icon.js";
 import { P as Power, M as Moon } from "../../chunks/power.js";
 import { S as Sun, L as Lightbulb } from "../../chunks/sun.js";
-import { P as Play } from "../../chunks/play.js";
 import { H as House, Z as Zap } from "../../chunks/zap.js";
 import { F as Flame } from "../../chunks/flame.js";
 import { T as Thermometer } from "../../chunks/thermometer.js";

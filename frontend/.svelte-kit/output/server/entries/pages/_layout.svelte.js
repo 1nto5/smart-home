@@ -1,5 +1,4 @@
-import { U as sanitize_props, V as spread_props, W as slot, X as attr_class, Y as ensure_array_like, Z as store_get, _ as attr, $ as unsubscribe_stores, a0 as stringify } from "../../chunks/index2.js";
-import { I as Icon, s as store } from "../../chunks/Icon.js";
+import { U as sanitize_props, V as spread_props, W as slot, X as ensure_array_like, Y as store_get, Z as attr, _ as attr_class, $ as unsubscribe_stores, a0 as stringify } from "../../chunks/index2.js";
 import "clsx";
 import { g as getContext, e as escape_html } from "../../chunks/context.js";
 import "@sveltejs/kit/internal";
@@ -8,6 +7,7 @@ import "../../chunks/utils.js";
 import "@sveltejs/kit/internal/server";
 import "../../chunks/state.svelte.js";
 import { Z as Zap, H as House } from "../../chunks/zap.js";
+import { I as Icon } from "../../chunks/Icon.js";
 import { L as Lightbulb, S as Sun } from "../../chunks/sun.js";
 import { T as Thermometer } from "../../chunks/thermometer.js";
 function createThemeStore() {
@@ -58,8 +58,8 @@ const getStores = () => {
 };
 const page = {
   subscribe(fn) {
-    const store2 = getStores().page;
-    return store2.subscribe(fn);
+    const store = getStores().page;
+    return store.subscribe(fn);
   }
 };
 function Monitor($$renderer, $$props) {
@@ -241,19 +241,7 @@ function _layout($$renderer, $$props) {
         icon: Thermometer
       }
     ];
-    if (!store.initialLoadComplete) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="fixed inset-0 bg-surface-base z-50 flex items-center justify-center"><div class="flex flex-col items-center gap-4"><div class="w-12 h-12 rounded-xl bg-[var(--color-accent-subtle)] border border-[var(--color-accent)] flex items-center justify-center animate-pulse">`);
-      Zap($$renderer2, { class: "w-6 h-6 text-accent" });
-      $$renderer2.push(`<!----></div> <div class="flex gap-1"><div class="w-2 h-2 rounded-full bg-accent animate-bounce" style="animation-delay: 0ms;"></div> <div class="w-2 h-2 rounded-full bg-accent animate-bounce" style="animation-delay: 150ms;"></div> <div class="w-2 h-2 rounded-full bg-accent animate-bounce" style="animation-delay: 300ms;"></div></div></div></div>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> <div${attr_class("min-h-screen bg-surface-base", void 0, {
-      "opacity-0": !store.initialLoadComplete,
-      "transition-opacity": store.initialLoadComplete,
-      "duration-300": store.initialLoadComplete
-    })}><header class="sticky top-0 z-40 app-header"><nav class="flex items-center justify-between max-w-6xl mx-auto px-4 py-3"><a href="/" class="flex items-center gap-3 group"><div class="w-10 h-10 rounded-xl bg-[var(--color-accent-subtle)] border border-[var(--color-accent)] flex items-center justify-center transition-all duration-200">`);
+    $$renderer2.push(`<div class="min-h-screen bg-surface-base"><header class="sticky top-0 z-40 app-header"><nav class="flex items-center justify-between max-w-6xl mx-auto px-4 py-3"><a href="/" class="flex items-center gap-3 group"><div class="w-10 h-10 rounded-xl bg-[var(--color-accent-subtle)] border border-[var(--color-accent)] flex items-center justify-center transition-all duration-200">`);
     Zap($$renderer2, { class: "w-5 h-5 text-accent" });
     $$renderer2.push(`<!----></div> <div class="hidden sm:block"><h1 class="font-display text-sm text-content-primary">Smart Home</h1> <p class="text-xs text-content-tertiary">Control Center</p></div></a> <div class="flex items-center gap-1"><!--[-->`);
     const each_array = ensure_array_like(navItems);
