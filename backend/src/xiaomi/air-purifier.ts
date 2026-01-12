@@ -94,20 +94,12 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     const modeValue = getValue(2, 4);
     const favoriteRpm = getValue(9, 3);
 
-    // Convert RPM to level: 300-800=1, 801-1500=2, 1501+=3
-    let fanSpeed = 1;
-    if (favoriteRpm !== undefined) {
-      if (favoriteRpm > 1500) fanSpeed = 3;
-      else if (favoriteRpm > 800) fanSpeed = 2;
-      else fanSpeed = 1;
-    }
-
     return {
       power: getValue(2, 1) ?? false,
       mode: MODE_MAP[modeValue] ?? 'unknown',
       aqi: getValue(3, 4) ?? 0,
       filter_life: getValue(4, 3) ?? 0,
-      fan_speed: fanSpeed,
+      fan_speed: favoriteRpm ?? 300,  // RPM value (300-2200)
       motor_rpm: getValue(9, 1),  // actual current RPM
     };
   } catch (error: any) {
@@ -163,23 +155,22 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
 
 /**
  * Set fan speed via favorite_rpm (siid=9, piid=3) for mb4 model
- * Level 1=Low(300), 2=Medium(1200), 3=High(2200) RPM
+ * Accepts RPM value directly (range: 300-2200)
  */
-export async function setPurifierFanSpeed(level: number): Promise<boolean> {
+export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
   if (!purifierConnection) {
     await connectPurifier();
   }
   if (!purifierConnection) return false;
 
-  // Map levels 1-3 to RPM values (300-2300 range)
-  const rpmMap: Record<number, number> = { 1: 300, 2: 1200, 3: 2200 };
-  const rpm = rpmMap[Math.max(1, Math.min(3, level))] ?? 1200;
+  // Clamp to valid range
+  const clampedRpm = Math.max(300, Math.min(2200, Math.round(rpm)));
 
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 9, piid: 3, value: rpm }
+      { siid: 9, piid: 3, value: clampedRpm }
     ]);
-    console.log(`Air Purifier: Fan speed set to level ${level} (${rpm} RPM)`);
+    console.log(`Air Purifier: Fan speed set to ${clampedRpm} RPM`);
     return true;
   } catch (error: any) {
     console.error('Failed to set purifier fan speed:', error.message);
