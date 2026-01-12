@@ -151,7 +151,8 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
 }
 
 /**
- * Set fan level (1-3 in favorite mode)
+ * Set fan speed via favorite_rpm (siid=9, piid=3) for mb4 model
+ * Level 1=Low(300), 2=Medium(1200), 3=High(2200) RPM
  */
 export async function setPurifierFanSpeed(level: number): Promise<boolean> {
   if (!purifierConnection) {
@@ -159,11 +160,15 @@ export async function setPurifierFanSpeed(level: number): Promise<boolean> {
   }
   if (!purifierConnection) return false;
 
+  // Map levels 1-3 to RPM values (300-2300 range)
+  const rpmMap: Record<number, number> = { 1: 300, 2: 1200, 3: 2200 };
+  const rpm = rpmMap[Math.max(1, Math.min(3, level))] ?? 1200;
+
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 2, piid: 5, value: Math.max(1, Math.min(3, level)) }
+      { siid: 9, piid: 3, value: rpm }
     ]);
-    console.log(`Air Purifier: Fan level set to ${level}`);
+    console.log(`Air Purifier: Fan speed set to level ${level} (${rpm} RPM)`);
     return true;
   } catch (error: any) {
     console.error('Failed to set purifier fan speed:', error.message);
