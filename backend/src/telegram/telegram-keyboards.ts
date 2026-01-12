@@ -396,12 +396,47 @@ Select an action:`;
           { text: '🅰️ Auto', callback_data: 'purifier:mode:auto' },
           { text: '😴 Silent', callback_data: 'purifier:mode:silent' },
         ],
-        [
-          { text: '💨 Favorite', callback_data: 'purifier:mode:favorite' },
-          { text: '🌀 Fan', callback_data: 'purifier:mode:fan' },
-        ],
+        [{ text: '⚙️ Manual', callback_data: 'purifier:mode:favorite' }],
+        [{ text: '🌀 Fan Speed', callback_data: 'purifier:rpm_menu' }],
         [{ text: '📊 Status', callback_data: 'purifier:status' }],
         [{ text: '« Back to Menu', callback_data: 'menu:main' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Air purifier RPM control keyboard
+ */
+export function purifierRpmKeyboard(currentRpm: number): { text: string; keyboard: InlineKeyboard } {
+  const text = `🌬️ <b>Air Purifier - Fan Speed</b>
+
+Current: <b>${currentRpm} RPM</b>
+Range: 300 - 2200 RPM
+
+Select speed:`;
+
+  // RPM presets in 2 rows
+  const presets1 = [300, 600, 900, 1200];
+  const presets2 = [1500, 1800, 2000, 2200];
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        presets1.map(rpm => ({
+          text: rpm === currentRpm ? `[${rpm}]` : `${rpm}`,
+          callback_data: `purifier:rpm:${rpm}`,
+        })),
+        presets2.map(rpm => ({
+          text: rpm === currentRpm ? `[${rpm}]` : `${rpm}`,
+          callback_data: `purifier:rpm:${rpm}`,
+        })),
+        [
+          { text: '➖ 100', callback_data: 'purifier:rpm_adj:-100' },
+          { text: '➕ 100', callback_data: 'purifier:rpm_adj:100' },
+        ],
+        [{ text: '« Back to Purifier', callback_data: 'menu:purifier' }],
       ],
     },
   };
