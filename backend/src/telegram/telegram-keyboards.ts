@@ -26,11 +26,11 @@ Select a category:`;
     keyboard: {
       inline_keyboard: [
         [{ text: `🛡️ Alarm: ${alarmStatus}`, callback_data: 'menu:alarm' }],
+        [{ text: '🤖 Vacuum', callback_data: 'menu:roborock' }],
+        [{ text: '🔊 Soundbar', callback_data: 'menu:soundbar' }],
         [{ text: '💡 Lights', callback_data: 'menu:lamps' }],
         [{ text: '🔥 Heating', callback_data: 'menu:heaters' }],
-        [{ text: '🤖 Vacuum', callback_data: 'menu:roborock' }],
         [{ text: '🌬️ Air Purifier', callback_data: 'menu:purifier' }],
-        [{ text: '🔊 Soundbar', callback_data: 'menu:soundbar' }],
         [{ text: '🌡️ Weather Station', callback_data: 'menu:weather' }],
         [{ text: '📊 Status', callback_data: 'status' }],
       ],

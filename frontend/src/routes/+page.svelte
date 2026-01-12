@@ -61,6 +61,40 @@
     <!-- Home Status -->
     <HomeStatusCard />
 
+    <!-- Robot -->
+    <section>
+      <div class="section-header section-header-robot">
+        <div class="section-icon glow-robot">
+          <Bot class="w-4 h-4" />
+        </div>
+        <h2 class="section-title">Robot</h2>
+        <span class="section-count">1</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <RoborockCard status={store.roborock} compact />
+      </div>
+    </section>
+
+    <!-- Audio -->
+    {#if store.yamahaDevices.length > 0}
+      <section>
+        <div class="section-header section-header-audio">
+          <div class="section-icon glow-audio">
+            <Volume2 class="w-4 h-4" />
+          </div>
+          <h2 class="section-title">Audio</h2>
+          <span class="section-count">{store.yamahaDevices.length}</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {#each store.yamahaDevices as device (device.id)}
+            <YamahaCard {device} compact />
+          {/each}
+        </div>
+      </section>
+    {/if}
+
     <!-- Lights -->
     {#if lamps.length > 0}
       <section>
@@ -120,40 +154,6 @@
         </div>
       </section>
     {/if}
-
-    <!-- Audio -->
-    {#if store.yamahaDevices.length > 0}
-      <section>
-        <div class="section-header section-header-audio">
-          <div class="section-icon glow-audio">
-            <Volume2 class="w-4 h-4" />
-          </div>
-          <h2 class="section-title">Audio</h2>
-          <span class="section-count">{store.yamahaDevices.length}</span>
-          <div class="section-line"></div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {#each store.yamahaDevices as device (device.id)}
-            <YamahaCard {device} compact />
-          {/each}
-        </div>
-      </section>
-    {/if}
-
-    <!-- Robot -->
-    <section>
-      <div class="section-header section-header-robot">
-        <div class="section-icon glow-robot">
-          <Bot class="w-4 h-4" />
-        </div>
-        <h2 class="section-title">Robot</h2>
-        <span class="section-count">1</span>
-        <div class="section-line"></div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        <RoborockCard status={store.roborock} compact />
-      </div>
-    </section>
   {/if}
 </div>
 

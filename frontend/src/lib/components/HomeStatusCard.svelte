@@ -15,32 +15,27 @@
   </div>
 
   {#if status}
-    <div class="grid grid-cols-3 gap-3">
-      <!-- Weather Station Temperature -->
-      <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Thermometer class="w-5 h-5 text-device-sensors-text mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Station</span>
-        <span class="font-display text-lg text-content-primary">
+    <div class="grid grid-cols-2 gap-3">
+      <!-- Weather Station -->
+      <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
+        <Thermometer class="w-6 h-6 text-device-sensors-text mb-2" />
+        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Weather Station</span>
+        <span class="font-display text-xl text-content-primary">
           {status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : 'N/A'}
         </span>
+        <span class="text-sm text-accent">
+          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}% humidity` : ''}
+        </span>
       </div>
 
-      <!-- Heater Average Temperature -->
-      <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Flame class="w-5 h-5 text-device-climate-heat-text mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Heaters</span>
-        <span class="font-display text-lg text-content-primary">
+      <!-- Radiator Average -->
+      <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
+        <Flame class="w-6 h-6 text-device-climate-heat-text mb-2" />
+        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators Avg</span>
+        <span class="font-display text-xl text-content-primary">
           {status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : 'N/A'}
         </span>
-      </div>
-
-      <!-- Humidity -->
-      <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Droplet class="w-5 h-5 text-accent mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span>
-        <span class="font-display text-lg text-content-primary">
-          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : 'N/A'}
-        </span>
+        <span class="text-sm text-content-tertiary">from 5 thermostats</span>
       </div>
     </div>
   {:else}
