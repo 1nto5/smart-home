@@ -2524,27 +2524,27 @@ function _page($$renderer, $$props) {
     } else {
       $$renderer2.push("<!--[!-->");
       HomeStatusCard($$renderer2);
-      $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-quick svelte-1uha8ag"><div class="section-icon glow-accent svelte-1uha8ag">`);
+      $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-devices svelte-1uha8ag"><div class="section-icon glow-accent svelte-1uha8ag">`);
       Zap($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag">`);
-      RoborockCard($$renderer2, { status: store.roborock, compact: true });
-      $$renderer2.push(`<!----> <!--[-->`);
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Devices</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
       const each_array_2 = ensure_array_like(store.yamahaDevices);
       for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
         let device = each_array_2[$$index_2];
         YamahaCard($$renderer2, { device, compact: true });
       }
       $$renderer2.push(`<!--]--> `);
-      if (weatherStation) {
+      RoborockCard($$renderer2, { status: store.roborock, compact: true });
+      $$renderer2.push(`<!----> `);
+      if (store.airPurifier) {
         $$renderer2.push("<!--[-->");
-        TuyaSensorCard($$renderer2, { device: weatherStation, compact: true });
+        AirPurifierCard($$renderer2, { compact: true });
       } else {
         $$renderer2.push("<!--[!-->");
       }
       $$renderer2.push(`<!--]--> `);
-      if (store.airPurifier) {
+      if (weatherStation) {
         $$renderer2.push("<!--[-->");
-        AirPurifierCard($$renderer2, { compact: true });
+        TuyaSensorCard($$renderer2, { device: weatherStation, compact: true });
       } else {
         $$renderer2.push("<!--[!-->");
       }

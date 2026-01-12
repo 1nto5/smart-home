@@ -64,25 +64,25 @@
     <!-- Home Status -->
     <HomeStatusCard />
 
-    <!-- Quick Access: Roborock, Soundbar, Weather Station, Air Purifier -->
+    <!-- Devices: Soundbar, Roborock, Air Purifier, Weather Station -->
     <section>
-      <div class="section-header section-header-quick">
+      <div class="section-header section-header-devices">
         <div class="section-icon glow-accent">
           <Zap class="w-4 h-4" />
         </div>
-        <h2 class="section-title">Quick Access</h2>
+        <h2 class="section-title">Devices</h2>
         <div class="section-line"></div>
       </div>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <RoborockCard status={store.roborock} compact />
         {#each store.yamahaDevices as device (device.id)}
           <YamahaCard {device} compact />
         {/each}
-        {#if weatherStation}
-          <TuyaSensorCard device={weatherStation} compact />
-        {/if}
+        <RoborockCard status={store.roborock} compact />
         {#if store.airPurifier}
           <AirPurifierCard compact />
+        {/if}
+        {#if weatherStation}
+          <TuyaSensorCard device={weatherStation} compact />
         {/if}
       </div>
     </section>
@@ -241,13 +241,13 @@
     background: linear-gradient(90deg, color-mix(in srgb, var(--color-robot-text) 40%, transparent) 0%, transparent 100%);
   }
 
-  .section-header-quick .section-icon {
+  .section-header-devices .section-icon {
     background: color-mix(in srgb, var(--color-accent) 15%, transparent);
     border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
     color: var(--color-accent);
   }
-  .section-header-quick .section-title { color: var(--color-accent); }
-  .section-header-quick .section-line {
+  .section-header-devices .section-title { color: var(--color-accent); }
+  .section-header-devices .section-line {
     background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);
   }
 
