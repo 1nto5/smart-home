@@ -5,6 +5,8 @@ import {
   lampsKeyboard,
   lampsListKeyboard,
   heatersKeyboard,
+  heatersListKeyboard,
+  heaterDeviceKeyboard,
   roborockKeyboard,
   roborockFanKeyboard,
   roborockMopKeyboard,
@@ -18,8 +20,7 @@ import { getLampPresets, getHeaterPresets } from '../scheduling';
 import {
   applyPresetToAllLamps,
   applyPresetToAllHeaters,
-  setHeaterOverride,
-  getHeaterOverride,
+  applyTempToHeater,
 } from '../scheduling';
 import { toggleLamp, getLampStatus } from '../xiaomi/xiaomi-lamp';
 import {
@@ -243,7 +244,7 @@ async function handleHeaterAction(
   chatId: number,
   messageId: number
 ): Promise<void> {
-  const [subAction, param] = args;
+  const [subAction, param, param2] = args;
 
   if (subAction === 'preset' && param) {
     console.log(`Telegram: Applying heater preset ${param}`);
@@ -255,20 +256,26 @@ async function handleHeaterAction(
     return;
   }
 
-  if (subAction === 'override') {
-    if (param === 'off') {
-      setHeaterOverride(false, 'pause', 18);
-      console.log('Telegram: Heater override disabled');
-    } else if (param === 'pause') {
-      setHeaterOverride(true, 'pause', 18);
-      console.log('Telegram: Heater override set to pause');
-    } else if (param === 'fixed') {
-      setHeaterOverride(true, 'fixed', 18);
-      console.log('Telegram: Heater override set to fixed 18°C');
-    }
+  if (subAction === 'list') {
+    const result = heatersListKeyboard();
+    await editMessage(chatId, messageId, result.text, result.keyboard);
+    return;
+  }
 
-    const menu = heatersKeyboard();
-    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+  if (subAction === 'device' && param) {
+    const result = heaterDeviceKeyboard(param);
+    await editMessage(chatId, messageId, result.text, result.keyboard);
+    return;
+  }
+
+  if (subAction === 'set' && param && param2) {
+    const deviceId = param;
+    const temp = parseFloat(param2);
+    console.log(`Telegram: Setting heater ${deviceId} to ${temp}°C`);
+    const success = await applyTempToHeater(deviceId, temp);
+    const result = heaterDeviceKeyboard(deviceId);
+    const statusText = success ? `✅ Set to ${temp}°C` : `❌ Failed to set temperature`;
+    await editMessage(chatId, messageId, `${result.text}\n\n${statusText}`, result.keyboard);
     return;
   }
 
@@ -529,7 +536,6 @@ async function handleWeatherAction(
  */
 async function sendStatusMessage(chatId: number, messageId?: number): Promise<void> {
   const alarm = getAlarmConfig();
-  const override = getHeaterOverride();
   const homeStatus = getHomeStatus();
 
   // Get device counts
