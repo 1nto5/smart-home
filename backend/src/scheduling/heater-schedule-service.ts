@@ -100,7 +100,7 @@ function getAllTrvIds(): string[] {
 /**
  * Apply a specific temperature to a single TRV
  */
-async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<boolean> {
+export async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<boolean> {
   try {
     const status = await getDeviceStatus(deviceId);
     if (!status) {

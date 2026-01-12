@@ -68,6 +68,7 @@ export {
   applyPresetToHeater,
   applyPresetToAllHeaters,
   applyFixedTempToAllHeaters,
+  applyTempToHeater,
   type HeaterSchedule,
 } from './heater-schedule-service';
 

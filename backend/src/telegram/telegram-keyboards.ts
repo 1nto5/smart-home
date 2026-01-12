@@ -1,5 +1,5 @@
 import { getAlarmConfig, getDb } from '../db/database';
-import { getLampPresets, getHeaterPresets, getHeaterOverride } from '../scheduling';
+import { getLampPresets, getHeaterPresets } from '../scheduling';
 
 type SensorReading = {
   temperature: number | null;
@@ -131,18 +131,10 @@ Toggle individual lamp power:`;
  */
 export function heatersKeyboard(): { text: string; keyboard: InlineKeyboard } {
   const presets = getHeaterPresets();
-  const override = getHeaterOverride();
-
-  let overrideStatus = '✅ Normal';
-  if (override.enabled) {
-    overrideStatus = override.mode === 'pause' ? '⏸️ Paused' : `🌡️ Fixed ${override.fixed_temp}°C`;
-  }
 
   const text = `🔥 <b>Heating Control</b>
 
-Override: <b>${overrideStatus}</b>
-
-Select a preset or control override:`;
+Select a preset to apply to all heaters:`;
 
   const buttons: Array<Array<{ text: string; callback_data: string }>> = [];
 
@@ -156,17 +148,109 @@ Select a preset or control override:`;
     buttons.push(presetButtons.slice(i, i + 2));
   }
 
-  // Override controls
-  if (override.enabled) {
-    buttons.push([{ text: '▶️ Disable Override', callback_data: 'heater:override:off' }]);
-  } else {
-    buttons.push([
-      { text: '⏸️ Pause', callback_data: 'heater:override:pause' },
-      { text: '🌡️ Fixed 18°C', callback_data: 'heater:override:fixed' },
-    ]);
+  // Individual heater control
+  buttons.push([{ text: '🌡️ Individual Heaters', callback_data: 'heater:list' }]);
+  buttons.push([{ text: '« Back to Menu', callback_data: 'menu:main' }]);
+
+  return { text, keyboard: { inline_keyboard: buttons } };
+}
+
+/**
+ * Individual heaters list
+ */
+export function heatersListKeyboard(): { text: string; keyboard: InlineKeyboard } {
+  const db = getDb();
+  const heaters = db.query(`
+    SELECT id, name, last_status, online
+    FROM devices
+    WHERE category = 'wkf'
+    ORDER BY name
+  `).all() as Array<{ id: string; name: string; last_status: string | null; online: number }>;
+
+  const text = `🌡️ <b>Individual Heaters</b>
+
+Select a heater to adjust:`;
+
+  const buttons: Array<Array<{ text: string; callback_data: string }>> = [];
+
+  for (const heater of heaters) {
+    let temp = '?';
+    let targetTemp = '?';
+    if (heater.last_status) {
+      try {
+        const status = JSON.parse(heater.last_status);
+        // DPS 5 = current temp (scaled by 10), DPS 4 = target temp (scaled by 10)
+        if (status['5'] !== undefined) temp = `${(status['5'] / 10).toFixed(1)}`;
+        if (status['4'] !== undefined) targetTemp = `${(status['4'] / 10).toFixed(0)}`;
+      } catch {}
+    }
+    const icon = heater.online ? '🟢' : '⚫';
+    const shortName = heater.name.replace(' Heater', '').replace(' TRV', '');
+    buttons.push([{
+      text: `${icon} ${shortName}: ${temp}°C → ${targetTemp}°C`,
+      callback_data: `heater:device:${heater.id}`,
+    }]);
   }
 
-  buttons.push([{ text: '« Back to Menu', callback_data: 'menu:main' }]);
+  buttons.push([{ text: '« Back to Heating', callback_data: 'menu:heaters' }]);
+
+  return { text, keyboard: { inline_keyboard: buttons } };
+}
+
+/**
+ * Individual heater control keyboard
+ */
+export function heaterDeviceKeyboard(deviceId: string): { text: string; keyboard: InlineKeyboard } {
+  const db = getDb();
+  const heater = db.query(`
+    SELECT id, name, last_status, online
+    FROM devices
+    WHERE id = ?
+  `).get(deviceId) as { id: string; name: string; last_status: string | null; online: number } | null;
+
+  if (!heater) {
+    return {
+      text: '❌ Heater not found',
+      keyboard: { inline_keyboard: [[{ text: '« Back', callback_data: 'heater:list' }]] },
+    };
+  }
+
+  let currentTemp = 'N/A';
+  let targetTemp = 20;
+  if (heater.last_status) {
+    try {
+      const status = JSON.parse(heater.last_status);
+      if (status['5'] !== undefined) currentTemp = `${(status['5'] / 10).toFixed(1)}°C`;
+      if (status['4'] !== undefined) targetTemp = status['4'] / 10;
+    } catch {}
+  }
+
+  const shortName = heater.name.replace(' Heater', '').replace(' TRV', '');
+  const text = `🌡️ <b>${shortName}</b>
+
+Current: <b>${currentTemp}</b>
+Target: <b>${targetTemp}°C</b>
+Status: ${heater.online ? '🟢 Online' : '⚫ Offline'}
+
+Set target temperature:`;
+
+  const buttons: Array<Array<{ text: string; callback_data: string }>> = [];
+
+  // Temperature buttons (5°C to 25°C in 2 rows)
+  const temps1 = [5, 10, 15, 18, 20];
+  const temps2 = [21, 22, 23, 24, 25];
+
+  buttons.push(temps1.map(t => ({
+    text: t === targetTemp ? `[${t}°C]` : `${t}°C`,
+    callback_data: `heater:set:${deviceId}:${t}`,
+  })));
+
+  buttons.push(temps2.map(t => ({
+    text: t === targetTemp ? `[${t}°C]` : `${t}°C`,
+    callback_data: `heater:set:${deviceId}:${t}`,
+  })));
+
+  buttons.push([{ text: '« Back to Heaters', callback_data: 'heater:list' }]);
 
   return { text, keyboard: { inline_keyboard: buttons } };
 }
