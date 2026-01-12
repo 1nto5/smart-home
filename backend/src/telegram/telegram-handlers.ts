@@ -8,6 +8,7 @@ import {
   roborockKeyboard,
   roborockFanKeyboard,
   roborockMopKeyboard,
+  roborockRoomsKeyboard,
   purifierKeyboard,
   soundbarKeyboard,
   weatherKeyboard,
@@ -29,6 +30,7 @@ import {
   getStatus as getRoborockStatus,
   setFanSpeed,
   setMopMode,
+  cleanSegments,
 } from '../roborock/roborock';
 import {
   getPurifierStatus,
@@ -297,6 +299,29 @@ async function handleRoborockAction(
   if (action === 'mop_menu') {
     const menu = roborockMopKeyboard();
     await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+
+  // Rooms submenu
+  if (action === 'rooms_menu') {
+    const menu = roborockRoomsKeyboard();
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+
+  // Clean specific room
+  if (action === 'room' && param) {
+    const segmentId = parseInt(param);
+    const roomNames: Record<number, string> = {
+      16: 'Living Room', 17: 'Kitchen', 18: 'Hallway', 19: 'Bathroom',
+      20: 'Bedroom', 21: 'Office', 22: 'Kids Room',
+    };
+    const roomName = roomNames[segmentId] || `Room ${segmentId}`;
+    console.log(`Telegram: Starting room cleaning for ${roomName} (segment ${segmentId})`);
+    const actionResult = await cleanSegments([segmentId]);
+    const menu = roborockRoomsKeyboard();
+    const statusText = actionResult ? `✅ Cleaning ${roomName}` : `❌ Failed to start`;
+    await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
     return;
   }
 

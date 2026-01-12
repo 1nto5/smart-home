@@ -93,13 +93,13 @@ export async function telegramFloodAlert(deviceId: string, deviceName: string): 
     return false;
   }
 
-  const message = `🚨 <b>ALARM: ZALANIE!</b>
+  const message = `🚨 <b>ALARM: FLOOD DETECTED!</b>
 
-Wykryto wodę!
-Czujnik: <b>${deviceName}</b>
-Czas: ${new Date().toLocaleString('pl-PL')}
+Water detected!
+Sensor: <b>${deviceName}</b>
+Time: ${new Date().toLocaleString('en-GB')}
 
-Sprawdź natychmiast!`;
+Check immediately!`;
 
   console.log(`Sending flood alert to Telegram chat ${config.chat_id}`);
 
@@ -166,13 +166,13 @@ export async function telegramDoorOpenAlert(deviceId: string, deviceName: string
     return false;
   }
 
-  const message = `🚪 <b>ALARM: OTWARCIE DRZWI!</b>
+  const message = `🚪 <b>ALARM: DOOR OPENED!</b>
 
-Alarm jest UZBROJONY!
-Czujnik: <b>${deviceName}</b>
-Czas: ${new Date().toLocaleString('pl-PL')}
+Alarm is ARMED!
+Sensor: <b>${deviceName}</b>
+Time: ${new Date().toLocaleString('en-GB')}
 
-Możliwe włamanie!`;
+Possible intrusion!`;
 
   console.log(`Sending door alert to Telegram chat ${config.chat_id}`);
 
@@ -262,8 +262,8 @@ export async function sendTestTelegram(): Promise<{ success: boolean; error?: st
 
   const message = `✅ <b>Test Smart Home</b>
 
-Konfiguracja Telegram działa poprawnie.
-Czas: ${new Date().toLocaleString('pl-PL')}`;
+Telegram configuration working correctly.
+Time: ${new Date().toLocaleString('en-GB')}`;
 
   const result = await sendTelegramMessage(
     config.bot_token,

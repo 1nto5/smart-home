@@ -192,6 +192,7 @@ Select an action:`;
           { text: '🏠 Home', callback_data: 'roborock:home' },
         ],
         [{ text: '📍 Find', callback_data: 'roborock:find' }],
+        [{ text: '🏠 Clean Rooms', callback_data: 'roborock:rooms_menu' }],
         [{ text: '💨 Fan Speed', callback_data: 'roborock:fan_menu' }],
         [{ text: '💧 Mop Mode', callback_data: 'roborock:mop_menu' }],
         [{ text: '📊 Status', callback_data: 'roborock:status' }],
@@ -250,6 +251,44 @@ Select water flow:`;
         [{ text: '« Back to Vacuum', callback_data: 'menu:roborock' }],
       ],
     },
+  };
+}
+
+/**
+ * Roborock rooms menu - hardcoded room list
+ */
+export function roborockRoomsKeyboard(): { text: string; keyboard: InlineKeyboard } {
+  const text = `🤖 <b>Vacuum - Clean Rooms</b>
+
+Select a room to clean:`;
+
+  // Rooms from Roborock API (segmentId -> name)
+  const rooms = [
+    { id: 16, name: 'Living Room' },
+    { id: 17, name: 'Kitchen' },
+    { id: 18, name: 'Hallway' },
+    { id: 19, name: 'Bathroom' },
+    { id: 20, name: 'Bedroom' },
+    { id: 21, name: 'Office' },
+    { id: 22, name: 'Kids Room' },
+  ];
+
+  const buttons: Array<Array<{ text: string; callback_data: string }>> = [];
+
+  // 2 rooms per row
+  for (let i = 0; i < rooms.length; i += 2) {
+    const row = rooms.slice(i, i + 2).map((r) => ({
+      text: `🧹 ${r.name}`,
+      callback_data: `roborock:room:${r.id}`,
+    }));
+    buttons.push(row);
+  }
+
+  buttons.push([{ text: '« Back to Vacuum', callback_data: 'menu:roborock' }]);
+
+  return {
+    text,
+    keyboard: { inline_keyboard: buttons },
   };
 }
 
