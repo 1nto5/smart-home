@@ -45,11 +45,11 @@ function _page($$renderer, $$props) {
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"><!--[-->`);
+    $$renderer2.push(`<!--]--> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><!--[-->`);
     const each_array = ensure_array_like(Object.entries(presets));
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
       let [name, preset] = each_array[$$index];
-      $$renderer2.push(`<div class="card group hover:border-device-lights-text/30 transition-colors"><div class="p-4"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg glow-lights power-btn-on flex items-center justify-center"><!---->`);
+      $$renderer2.push(`<div class="card group hover:border-device-lights-text/30 transition-colors"><div class="p-4"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg glow-lights power-btn-on flex items-center justify-center"><!---->`);
       getIcon(name)?.($$renderer2, { class: "w-4 h-4" });
       $$renderer2.push(`<!----></div> <span class="font-display text-sm uppercase tracking-wider text-content-primary">${escape_html(preset.name)}</span></div> <div class="flex items-center gap-1.5"><button${attr("disabled", applyingPreset !== null, true)}${attr_class("p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-lights-text hover:glow-lights hover:power-btn-on transition-all disabled:opacity-50", void 0, { "pulse-ring": applyingPreset === name })} title="Apply to all lamps">`);
       Play($$renderer2, { class: "w-4 h-4" });
