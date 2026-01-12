@@ -4,7 +4,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Volume2, VolumeX, Power, Tv, Bluetooth, Music, Gamepad2, Mic, Radio } from 'lucide-svelte';
+  import { Volume2, VolumeX, Power, Tv, Bluetooth, Music, Gamepad2, Mic, Radio, Minus, Plus } from 'lucide-svelte';
 
   let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -229,18 +229,40 @@
             <span class="font-display text-lg {status.mute ? 'text-error' : 'text-device-audio-text neon-text-subtle'}">{status.mute ? 'Muted' : `${displayVolume}%`}</span>
           </div>
           <div class="flex gap-2 items-center">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={displayVolume}
-              oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
-              class="flex-1 slider-audio"
-            />
+            <button
+              onclick={() => handleVolumeInput(Math.max(0, displayVolume - 5))}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+            >
+              <Minus class="w-5 h-5" />
+            </button>
+            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+              <div
+                class="absolute inset-y-0 left-0 bg-device-audio-text/30 transition-all duration-150"
+                style="width: {displayVolume}%"
+              ></div>
+              <div
+                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-audio-text shadow-[0_0_10px_var(--color-audio-glow)] transition-all duration-150"
+                style="left: calc({displayVolume}% - 8px)"
+              ></div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={displayVolume}
+                oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <button
+              onclick={() => handleVolumeInput(Math.min(100, displayVolume + 5))}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+            >
+              <Plus class="w-5 h-5" />
+            </button>
             <button
               onclick={toggleMute}
               class="w-10 h-10 rounded-lg transition-all flex items-center justify-center
-                     {status.mute ? 'bg-error/20 text-error border border-error/50' : 'bg-surface-recessed border border-stroke-default text-content-secondary'}
+                     {status.mute ? 'bg-error/20 text-error border border-error/50' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}
                      hover:scale-105"
             >
               {#if status.mute}
