@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background (full coverage for maskable) -->
+  <rect width="512" height="512" fill="#0a0a0b"/>
+
+  <!-- Lightning bolt (scaled down to fit in safe zone - 80% center) -->
+  <g transform="translate(154, 110) scale(0.8)">
+    <polygon
+      points="140,0 40,180 110,180 90,352 220,140 140,140 160,0"
+      fill="#eab308"
+    />
+  </g>
+</svg>

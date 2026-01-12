@@ -38,6 +38,6 @@ declare module "$app/types" {
 		};
 		Pathname(): "/" | "/heater-schedule" | "/heater-schedule/" | "/lighting" | "/lighting/";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): string & {};
+		Asset(): "/favicon.png" | "/icon-180.png" | "/icon-192.png" | "/icon-512.png" | "/icon-maskable-512.png" | "/icon-maskable.svg" | "/icon.svg" | "/manifest.json" | "/splash-1170x2532.png" | "/splash-1179x2556.png" | "/splash-1284x2778.png" | "/splash-1290x2796.png" | string & {};
 	}
 }
