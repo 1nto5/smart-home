@@ -65,9 +65,9 @@
       "_environment.js"
     ]
   },
-  "_play.js": {
-    "file": "chunks/play.js",
-    "name": "play",
+  "_plus.js": {
+    "file": "chunks/plus.js",
+    "name": "plus",
     "imports": [
       "_index2.js",
       "_Icon.js"
@@ -187,7 +187,7 @@
       "_thermometer.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.C3PN1SdD.css"
+      "_app/immutable/assets/_layout.BQgFCQRl.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -203,7 +203,7 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_play.js",
+      "_plus.js",
       "_context.js",
       "_Icon.js",
       "_power.js",
@@ -223,11 +223,11 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_play.js",
+      "_plus.js",
       "_thermometer.js",
-      "_trash-2.js",
       "_flame.js",
       "_Icon.js",
+      "_trash-2.js",
       "_context.js"
     ],
     "css": [
@@ -241,7 +241,7 @@
     "isEntry": true,
     "imports": [
       "_index2.js",
-      "_play.js",
+      "_plus.js",
       "_sun.js",
       "_trash-2.js",
       "_power.js",

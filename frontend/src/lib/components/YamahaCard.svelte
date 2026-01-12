@@ -278,17 +278,41 @@
         <div>
           <div class="flex justify-between items-center mb-3">
             <span class="text-xs text-content-tertiary uppercase tracking-wider">Subwoofer</span>
-            <span class="font-display text-lg text-content-primary">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
+            <span class="font-display text-lg text-device-audio-text neon-text-subtle">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
           </div>
-          <input
-            type="range"
-            min="-4"
-            max="4"
-            step="1"
-            value={displaySubwooferVol}
-            oninput={(e) => handleSubwooferInput(parseInt(e.currentTarget.value))}
-            class="w-full"
-          />
+          <div class="flex gap-2 items-center">
+            <button
+              onclick={() => handleSubwooferInput(Math.max(-4, displaySubwooferVol - 1))}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+            >
+              <Minus class="w-5 h-5" />
+            </button>
+            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+              <div
+                class="absolute inset-y-0 left-0 bg-device-audio-text/30 transition-all duration-150"
+                style="width: {((displaySubwooferVol + 4) / 8) * 100}%"
+              ></div>
+              <div
+                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-audio-text shadow-[0_0_10px_var(--color-audio-glow)] transition-all duration-150"
+                style="left: calc({((displaySubwooferVol + 4) / 8) * 100}% - 8px)"
+              ></div>
+              <input
+                type="range"
+                min="-4"
+                max="4"
+                step="1"
+                value={displaySubwooferVol}
+                oninput={(e) => handleSubwooferInput(parseInt(e.currentTarget.value))}
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <button
+              onclick={() => handleSubwooferInput(Math.min(4, displaySubwooferVol + 1))}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+            >
+              <Plus class="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <!-- Input Selection -->
