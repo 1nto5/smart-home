@@ -129,9 +129,27 @@
           </div>
           <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle">
             <span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span>
-            <p class="font-display text-2xl mt-2 text-accent neon-text-subtle">{status['102']}%</p>
+            <p class="font-display text-2xl mt-2 text-accent neon-text-subtle">{(status['101'] / 100).toFixed(1)}%</p>
           </div>
         </div>
+        <!-- Battery for weather station -->
+        {#if status['102'] !== undefined}
+          <div class="rounded-xl p-4 bg-surface-recessed border border-stroke-subtle">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs text-content-tertiary uppercase tracking-wider flex items-center gap-2">
+                <Battery class="w-4 h-4" />
+                Battery
+              </span>
+              <span class="font-display text-lg {status['102'] > 20 ? 'text-success' : 'text-error'}">{status['102']}%</span>
+            </div>
+            <div class="h-2 bg-[var(--color-bg-base)] rounded-full overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all {status['102'] > 20 ? 'bg-success' : 'bg-error'}"
+                style="width: {status['102']}%"
+              ></div>
+            </div>
+          </div>
+        {/if}
       {/if}
     {/if}
 

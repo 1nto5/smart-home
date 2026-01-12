@@ -537,36 +537,35 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
   const lampCount = (db.query("SELECT COUNT(*) as c FROM xiaomi_devices WHERE category LIKE 'yeelink%'").get() as { c: number }).c;
   const heaterCount = (db.query("SELECT COUNT(*) as c FROM devices WHERE category = 'wkf'").get() as { c: number }).c;
 
-  // Get weather station data
-  let weatherText = 'N/A';
+  // Get weather station data (indoor)
+  let weatherTemp: number | null = null;
+  let humidity = 'N/A';
   const weatherDevice = db.query(`SELECT last_status FROM devices WHERE category = 'wsdcg' LIMIT 1`).get() as { last_status: string | null } | null;
   if (weatherDevice?.last_status) {
     try {
       const ws = JSON.parse(weatherDevice.last_status);
-      const temp = ws['103'] !== undefined ? `${(ws['103'] / 100).toFixed(1)}°C` : 'N/A';
-      const hum = ws['101'] !== undefined ? `${(ws['101'] / 100).toFixed(0)}%` : 'N/A';
-      weatherText = `${temp} / ${hum}`;
+      if (ws['103'] !== undefined) weatherTemp = ws['103'] / 100;
+      if (ws['101'] !== undefined) humidity = `${(ws['101'] / 100).toFixed(0)}%`;
     } catch {}
   }
 
-  // Get current presets
-  const lampPresets = getLampPresets();
-  const heaterPresets = getHeaterPresets();
-  const currentLampPreset = homeStatus.lamp_preset ? lampPresets.find(p => p.id === homeStatus.lamp_preset)?.name : 'N/A';
-  const currentHeaterPreset = homeStatus.heater_preset ? heaterPresets.find(p => p.id === homeStatus.heater_preset)?.name : 'N/A';
-
-  // Get average heater temp
+  // Get heater temps
   const heaters = db.query(`SELECT last_status FROM devices WHERE category = 'wkf' AND online = 1`).all() as { last_status: string | null }[];
-  const temps: number[] = [];
+  const heaterTemps: number[] = [];
   for (const h of heaters) {
     if (h.last_status) {
       try {
         const parsed = JSON.parse(h.last_status);
-        if (parsed['3'] !== undefined) temps.push(parsed['3'] / 10);
+        if (parsed['3'] !== undefined) heaterTemps.push(parsed['3'] / 10);
       } catch {}
     }
   }
-  const avgTemp = temps.length > 0 ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) : 'N/A';
+
+  // Calculate average indoor temp (weather station + heaters)
+  const allTemps: number[] = [];
+  if (weatherTemp !== null) allTemps.push(weatherTemp);
+  allTemps.push(...heaterTemps);
+  const avgIndoorTemp = allTemps.length > 0 ? (allTemps.reduce((a, b) => a + b, 0) / allTemps.length).toFixed(1) : 'N/A';
 
   // Get roborock status
   let roborockState = 'Unknown';
@@ -592,7 +591,7 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
 
   const text = `📊 <b>Smart Home Status</b>
 
-🌡️ Indoor: <b>${weatherText}</b> · <b>${avgTemp}°C</b> avg
+🌡️ Indoor: <b>${avgIndoorTemp}°C</b> · ${humidity}
 🛡️ Alarm: <b>${alarm.armed ? '🔴 ARMED' : '🟢 Disarmed'}</b>
 🤖 Vacuum: ${roborockState}${roborockStatus ? ` (${roborockStatus.battery}%)` : ''}
 🌬️ Purifier: ${purifierState}`;

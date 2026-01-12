@@ -2186,7 +2186,16 @@ function TuyaSensorCard($$renderer, $$props) {
           const status = parsedStatus();
           if (status) {
             $$renderer3.push("<!--[-->");
-            $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span> <p class="font-display text-2xl mt-2 text-device-sensors-text neon-text-subtle">${escape_html((status["103"] / 100).toFixed(1))}°C</p></div> <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span> <p class="font-display text-2xl mt-2 text-accent neon-text-subtle">${escape_html(status["102"])}%</p></div></div>`);
+            $$renderer3.push(`<div class="grid grid-cols-2 gap-3"><div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span> <p class="font-display text-2xl mt-2 text-device-sensors-text neon-text-subtle">${escape_html((status["103"] / 100).toFixed(1))}°C</p></div> <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle"><span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span> <p class="font-display text-2xl mt-2 text-accent neon-text-subtle">${escape_html((status["101"] / 100).toFixed(1))}%</p></div></div> `);
+            if (status["102"] !== void 0) {
+              $$renderer3.push("<!--[-->");
+              $$renderer3.push(`<div class="rounded-xl p-4 bg-surface-recessed border border-stroke-subtle"><div class="flex items-center justify-between mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider flex items-center gap-2">`);
+              Battery($$renderer3, { class: "w-4 h-4" });
+              $$renderer3.push(`<!----> Battery</span> <span${attr_class(`font-display text-lg ${stringify(status["102"] > 20 ? "text-success" : "text-error")}`)}>${escape_html(status["102"])}%</span></div> <div class="h-2 bg-[var(--color-bg-base)] rounded-full overflow-hidden"><div${attr_class(`h-full rounded-full transition-all ${stringify(status["102"] > 20 ? "bg-success" : "bg-error")}`)}${attr_style(`width: ${stringify(status["102"])}%`)}></div></div></div>`);
+            } else {
+              $$renderer3.push("<!--[!-->");
+            }
+            $$renderer3.push(`<!--]-->`);
           } else {
             $$renderer3.push("<!--[!-->");
           }
@@ -2447,18 +2456,24 @@ function AirPurifierCard($$renderer, $$props) {
 function HomeStatusCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let status = store.homeStatus;
+    let avgIndoorTemp = () => {
+      if (!status) return null;
+      const temps = [];
+      if (status.weather?.temperature !== null) temps.push(status.weather.temperature);
+      if (status.heater.avg_temp !== null) temps.push(status.heater.avg_temp);
+      if (temps.length === 0) return null;
+      return (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1);
+    };
     $$renderer2.push(`<div class="card p-4 mb-6"><div class="flex items-center gap-3 mb-4"><div class="section-icon glow-accent svelte-cnjzzp">`);
     House($$renderer2, { class: "w-4 h-4" });
     $$renderer2.push(`<!----></div> <h2 class="section-title text-accent svelte-cnjzzp">Home Status</h2></div> `);
     if (status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="grid grid-cols-3 gap-3"><div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      $$renderer2.push(`<div class="grid grid-cols-2 gap-3"><div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
       Thermometer($$renderer2, { class: "w-5 h-5 text-device-sensors-text mb-1" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Outdoor</span> <span class="font-display text-lg text-content-primary">${escape_html(status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : "N/A")}</span></div> <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Indoor</span> <span class="font-display text-lg text-content-primary">${escape_html(avgIndoorTemp() !== null ? `${avgIndoorTemp()}°C` : "N/A")}</span></div> <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
       Droplet($$renderer2, { class: "w-5 h-5 text-accent mb-1" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span> <span class="font-display text-lg text-content-primary">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : "N/A")}</span></div> <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
-      Flame($$renderer2, { class: "w-5 h-5 text-device-climate-heat-text mb-1" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Indoor</span> <span class="font-display text-lg text-content-primary">${escape_html(status.heater.avg_temp !== null ? `${status.heater.avg_temp}°C` : "N/A")}</span></div></div>`);
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span> <span class="font-display text-lg text-content-primary">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : "N/A")}</span></div></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<div class="text-center text-content-tertiary py-4">Loading...</div>`);
