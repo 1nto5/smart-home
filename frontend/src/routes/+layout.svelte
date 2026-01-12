@@ -86,19 +86,8 @@
         </div>
       </a>
 
-      <!-- Navigation + Theme Toggle -->
+      <!-- Utility Buttons -->
       <div class="flex items-center gap-1">
-        {#each navItems as item (item.href)}
-          {@const isActive = $page.url.pathname === item.href}
-          <a
-            href={item.href}
-            class="nav-pill flex items-center gap-2 {isActive ? 'nav-pill-active' : 'text-content-secondary hover:text-content-primary hover:bg-surface-recessed'}"
-          >
-            <svelte:component this={item.icon} class="w-4 h-4" />
-            <span class="hidden sm:inline text-sm">{item.label}</span>
-          </a>
-        {/each}
-
         <!-- Refresh Button -->
         <button
           onclick={handleRefresh}
@@ -144,7 +133,24 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-6xl mx-auto px-4 py-6">
+  <main class="max-w-6xl mx-auto px-4 py-6 pb-24">
     {@render children()}
   </main>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface-elevated border-t border-stroke-subtle pb-safe">
+    <div class="flex justify-around max-w-lg mx-auto px-2 py-1.5">
+      {#each navItems as item (item.href)}
+        {@const isActive = $page.url.pathname === item.href}
+        <a
+          href={item.href}
+          class="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-colors
+                 {isActive ? 'text-accent' : 'text-content-tertiary hover:text-content-secondary'}"
+        >
+          <svelte:component this={item.icon} class="w-5 h-5" />
+          <span class="text-[10px] font-medium">{item.label}</span>
+        </a>
+      {/each}
+    </div>
+  </nav>
 </div>
