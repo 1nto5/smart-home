@@ -12,7 +12,6 @@ import {
   roborockMopKeyboard,
   roborockRoomsKeyboard,
   purifierKeyboard,
-  purifierFanSpeedKeyboard,
   soundbarKeyboard,
   soundbarProgramsKeyboard,
   soundbarAudioKeyboard,
@@ -51,7 +50,6 @@ import {
   getPurifierStatus,
   setPurifierPower,
   setPurifierMode,
-  setPurifierFanSpeed,
 } from '../xiaomi/air-purifier';
 import {
   getSoundbarStatus,
@@ -536,30 +534,13 @@ async function handlePurifierAction(
     success = await setPurifierPower(false);
     actionName = 'Power Off';
   } else if (subAction === 'mode' && param) {
-    success = await setPurifierMode(param as 'auto' | 'silent' | 'favorite');
-    const modeLabels: Record<string, string> = { auto: 'Auto', silent: 'Night', favorite: 'Manual' };
-    actionName = `Mode: ${modeLabels[param] || param}`;
-  } else if (subAction === 'fan') {
-    // Show fan speed submenu
-    const menu = purifierFanSpeedKeyboard();
-    await editMessage(chatId, messageId, menu.text, menu.keyboard);
-    return;
-  } else if (subAction === 'speed' && param) {
-    const level = parseInt(param, 10);
-    success = await setPurifierFanSpeed(level);
-    const speedLabels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
-    actionName = `Fan Speed: ${speedLabels[level] || level}`;
+    success = await setPurifierMode(param);
+    actionName = `Mode: ${param}`;
   } else if (subAction === 'status') {
     const status = await getPurifierStatus();
     const menu = purifierKeyboard();
     if (status) {
-      const modeLabels: Record<string, string> = { auto: 'Auto', silent: 'Night', favorite: 'Manual' };
-      const speedLabels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
-      let statusLines = `Power: ${status.power ? 'On' : 'Off'}\nMode: ${modeLabels[status.mode] || status.mode}\nAQI: ${status.aqi}\nFilter: ${status.filter_life}%`;
-      if (status.mode === 'favorite' && status.fan_level) {
-        statusLines += `\nFan: ${speedLabels[status.fan_level] || status.fan_level}`;
-      }
-      const text = `${menu.text}\n\n📊 <b>Status:</b>\n${statusLines}`;
+      const text = `${menu.text}\n\n📊 <b>Status:</b>\nPower: ${status.power ? 'On' : 'Off'}\nMode: ${status.mode}\nAQI: ${status.aqi}\nFilter: ${status.filter_life}%`;
       await editMessage(chatId, messageId, text, menu.keyboard);
     } else {
       await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);
