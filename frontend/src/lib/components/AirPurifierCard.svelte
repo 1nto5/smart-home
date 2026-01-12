@@ -2,7 +2,8 @@
   import { controlAirPurifier } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter } from 'lucide-svelte';
+  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus } from 'lucide-svelte';
+  import { debounce } from '$lib/debounce';
 
   let { compact = false }: { compact?: boolean } = $props();
   let status = $derived(store.airPurifier);
@@ -39,28 +40,34 @@
     optimisticMode = mode;
     try {
       await controlAirPurifier({ mode });
-      store.refreshAirPurifier();
+      await store.refreshAirPurifier();
+      // Keep optimisticMode to prevent flicker
     } catch (e) {
       console.error(e);
       optimisticMode = oldMode;
     }
-    optimisticMode = null;
   }
 
-  async function setFanSpeed(level: number) {
-    const oldLevel = displayFanSpeed;
-    optimisticFanSpeed = level;
+  // Debounced fan speed control
+  const [sendFanSpeedDebounced] = debounce(async (level: number) => {
     try {
       await controlAirPurifier({ fan_speed: level });
       store.refreshAirPurifier();
-      // Keep optimisticFanSpeed since device can't report current fan speed
     } catch (e) {
       console.error(e);
-      optimisticFanSpeed = oldLevel;
     }
+  }, 300);
+
+  function handleFanSpeedInput(level: number) {
+    const clamped = Math.max(1, Math.min(3, level));
+    optimisticFanSpeed = clamped;
+    sendFanSpeedDebounced(clamped);
   }
 
   const fanSpeedLabels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
+
+  // Calculate slider position (1=0%, 2=50%, 3=100%)
+  let sliderPercent = $derived(((displayFanSpeed - 1) / 2) * 100);
 
   function aqiColor(aqi: number): string {
     if (aqi <= 50) return 'text-success';
@@ -191,17 +198,44 @@
         <!-- Fan Speed (Manual mode only) -->
         {#if displayMode === 'favorite'}
           <div>
-            <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Fan Speed</p>
-            <div class="grid grid-cols-3 gap-2">
-              {#each [1, 2, 3] as level}
-                <button
-                  onclick={() => setFanSpeed(level)}
-                  class="py-3 rounded-lg transition-all font-medium
-                         {displayFanSpeed === level ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
-                >
-                  {fanSpeedLabels[level]}
-                </button>
-              {/each}
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs text-content-tertiary uppercase tracking-wider">Fan Speed</span>
+              <span class="font-display text-lg text-device-air-text neon-text-subtle">{fanSpeedLabels[displayFanSpeed]}</span>
+            </div>
+            <div class="flex gap-2 items-center">
+              <button
+                onclick={() => handleFanSpeedInput(displayFanSpeed - 1)}
+                disabled={displayFanSpeed <= 1}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Minus class="w-5 h-5" />
+              </button>
+              <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+                <div
+                  class="absolute inset-y-0 left-0 bg-device-air-text/30 transition-all duration-150"
+                  style="width: {sliderPercent}%"
+                ></div>
+                <div
+                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-air-text shadow-[0_0_10px_var(--color-air-glow)] transition-all duration-150"
+                  style="left: clamp(8px, calc({sliderPercent}% - 8px + 8px), calc(100% - 8px))"
+                ></div>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="1"
+                  value={displayFanSpeed}
+                  oninput={(e) => handleFanSpeedInput(parseInt(e.currentTarget.value))}
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <button
+                onclick={() => handleFanSpeedInput(displayFanSpeed + 1)}
+                disabled={displayFanSpeed >= 3}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Plus class="w-5 h-5" />
+              </button>
             </div>
           </div>
         {/if}
