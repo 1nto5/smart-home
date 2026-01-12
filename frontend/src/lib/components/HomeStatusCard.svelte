@@ -3,16 +3,6 @@
   import { Thermometer, Droplet, Flame, Home } from 'lucide-svelte';
 
   let status = $derived(store.homeStatus);
-
-  // Calculate average indoor temp from weather station + heaters
-  let avgIndoorTemp = $derived(() => {
-    if (!status) return null;
-    const temps: number[] = [];
-    if (status.weather?.temperature !== null) temps.push(status.weather.temperature);
-    if (status.heater.avg_temp !== null) temps.push(status.heater.avg_temp);
-    if (temps.length === 0) return null;
-    return (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1);
-  });
 </script>
 
 <!-- Home Status Card - Shows at top of dashboard -->
@@ -25,13 +15,22 @@
   </div>
 
   {#if status}
-    <div class="grid grid-cols-2 gap-3">
-      <!-- Indoor Temperature (avg of weather station + heaters) -->
+    <div class="grid grid-cols-3 gap-3">
+      <!-- Weather Station Temperature -->
       <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
         <Thermometer class="w-5 h-5 text-device-sensors-text mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Indoor</span>
+        <span class="text-xs text-content-tertiary uppercase tracking-wider">Station</span>
         <span class="font-display text-lg text-content-primary">
-          {avgIndoorTemp() !== null ? `${avgIndoorTemp()}°C` : 'N/A'}
+          {status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : 'N/A'}
+        </span>
+      </div>
+
+      <!-- Heater Average Temperature -->
+      <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+        <Flame class="w-5 h-5 text-device-climate-heat-text mb-1" />
+        <span class="text-xs text-content-tertiary uppercase tracking-wider">Heaters</span>
+        <span class="font-display text-lg text-content-primary">
+          {status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : 'N/A'}
         </span>
       </div>
 

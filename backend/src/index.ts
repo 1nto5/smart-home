@@ -1142,9 +1142,9 @@ app.get('/api/home-status', (c) => {
     if (h.last_status) {
       try {
         const parsed = JSON.parse(h.last_status);
-        // current_temp is DPS 3, scaled by 10
-        if (parsed['3'] !== undefined) {
-          temps.push(parsed['3'] / 10);
+        // current_temp is DPS 5, scaled by 10
+        if (parsed['5'] !== undefined) {
+          temps.push(parsed['5'] / 10);
         }
       } catch {}
     }

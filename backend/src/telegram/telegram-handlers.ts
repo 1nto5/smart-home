@@ -556,16 +556,16 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
     if (h.last_status) {
       try {
         const parsed = JSON.parse(h.last_status);
-        if (parsed['3'] !== undefined) heaterTemps.push(parsed['3'] / 10);
+        if (parsed['5'] !== undefined) heaterTemps.push(parsed['5'] / 10);
       } catch {}
     }
   }
 
-  // Calculate average indoor temp (weather station + heaters)
-  const allTemps: number[] = [];
-  if (weatherTemp !== null) allTemps.push(weatherTemp);
-  allTemps.push(...heaterTemps);
-  const avgIndoorTemp = allTemps.length > 0 ? (allTemps.reduce((a, b) => a + b, 0) / allTemps.length).toFixed(1) : 'N/A';
+  // Weather station temp and heater avg temp as separate values
+  const stationTemp = weatherTemp !== null ? `${weatherTemp.toFixed(1)}°C` : 'N/A';
+  const heaterAvgTemp = heaterTemps.length > 0
+    ? `${(heaterTemps.reduce((a, b) => a + b, 0) / heaterTemps.length).toFixed(1)}°C`
+    : 'N/A';
 
   // Get roborock status
   let roborockState = 'Unknown';
@@ -591,7 +591,8 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
 
   const text = `📊 <b>Smart Home Status</b>
 
-🌡️ Indoor: <b>${avgIndoorTemp}°C</b> · ${humidity}
+🌡️ Station: <b>${stationTemp}</b> · ${humidity}
+🔥 Heaters: <b>${heaterAvgTemp}</b> avg
 🛡️ Alarm: <b>${alarm.armed ? '🔴 ARMED' : '🟢 Disarmed'}</b>
 🤖 Vacuum: ${roborockState}${roborockStatus ? ` (${roborockStatus.battery}%)` : ''}
 🌬️ Purifier: ${purifierState}`;
