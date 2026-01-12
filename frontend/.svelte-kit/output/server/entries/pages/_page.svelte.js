@@ -1900,6 +1900,27 @@ function translateDeviceName(name) {
   }
   return translated;
 }
+function getSimplifiedName(name, category) {
+  const translated = translateDeviceName(name);
+  if (category === "wkf") {
+    return translated.replace(/^Radiator\s+/i, "");
+  }
+  if (category === "sj") {
+    const match = translated.match(/^(.+?)\s*Sensor$/i);
+    if (match) return match[1];
+    const roomMatch = translated.match(/(Kitchen|Bathroom|Living Room|Bedroom|Hallway)/i);
+    if (roomMatch) return roomMatch[1];
+    return translated;
+  }
+  if (category === "mcs") {
+    const lower = translated.toLowerCase();
+    if (lower.includes("kitchen") || lower.includes("kuchnia")) return "Kitchen";
+    if (lower.includes("door") || lower.includes("drzwi")) return "Door";
+    if (lower.includes("bathroom") || lower.includes("łazienka")) return "Bathroom";
+    return translated.replace(/\s*Sensor$/i, "");
+  }
+  return translated;
+}
 function DeviceDialog($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { open = false, onclose, title, children } = $$props;
@@ -2290,7 +2311,8 @@ function RoborockCard($$renderer, $$props) {
 function TuyaSensorCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { device, compact = false } = $$props;
-    let displayName = translateDeviceName(device.name);
+    let fullName = translateDeviceName(device.name);
+    let displayName = compact ? getSimplifiedName(device.name, device.category) : fullName;
     let dialogOpen = false;
     let parsedStatus = () => {
       if (!device.last_status) return null;
@@ -2406,7 +2428,7 @@ function TuyaSensorCard($$renderer, $$props) {
     DeviceDialog($$renderer2, {
       open: dialogOpen,
       onclose: () => dialogOpen = false,
-      title: displayName,
+      title: fullName,
       children: ($$renderer3) => {
         $$renderer3.push(`<div class="space-y-5">`);
         if (device.category !== "wsdcg") {
@@ -2480,7 +2502,8 @@ function TuyaSensorCard($$renderer, $$props) {
 function TRVCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { device, compact = false } = $$props;
-    let displayName = translateDeviceName(device.name);
+    let fullName = translateDeviceName(device.name);
+    let displayName = compact ? getSimplifiedName(device.name, device.category) : fullName;
     let dialogOpen = false;
     let status = () => {
       if (!device.last_status) return null;
@@ -2514,7 +2537,7 @@ function TRVCard($$renderer, $$props) {
     DeviceDialog($$renderer2, {
       open: dialogOpen,
       onclose: () => dialogOpen = false,
-      title: displayName,
+      title: fullName,
       children: ($$renderer3) => {
         $$renderer3.push(`<div class="space-y-5"><div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle"><span class="text-sm text-content-secondary uppercase tracking-wider">Valve</span> <span${attr_class(`font-medium text-sm ${stringify(valve === "opened" ? "text-device-climate-heat-text neon-text-subtle" : "text-device-climate-cool-text neon-text-subtle")}`)}>${escape_html(valve === "opened" ? "Heating" : "Idle")}</span></div> `);
         if (currentTemp !== null && targetTemp !== null) {
@@ -2735,7 +2758,8 @@ function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let lamps = store.lamps.filter((l) => l.category === "lamp");
     let thermostats = store.tuyaDevices.filter((d) => d.category === "wkf");
-    let sensors = store.tuyaDevices.filter((d) => ["sj", "mcs"].includes(d.category));
+    let doorSensors = store.tuyaDevices.filter((d) => d.category === "mcs");
+    let floodSensors = store.tuyaDevices.filter((d) => d.category === "sj");
     let weatherStation = store.tuyaDevices.find((d) => d.category === "wsdcg");
     let hasLoaded = store.lamps.length > 0 || store.tuyaDevices.length > 0 || store.yamahaDevices.length > 0;
     head("1uha8ag", $$renderer2, ($$renderer3) => {
@@ -2750,7 +2774,7 @@ function _page($$renderer, $$props) {
       const each_array = ensure_array_like(Array(4));
       for (let i = 0, $$length = each_array.length; i < $$length; i++) {
         each_array[i];
-        $$renderer2.push(`<section class="relative svelte-1uha8ag"${attr_style(`animation-delay: ${stringify(i * 100)}ms`)}><div class="flex items-center gap-3 mb-4 svelte-1uha8ag"><div class="w-8 h-8 rounded-lg bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="w-24 h-5 rounded bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<section class="relative svelte-1uha8ag"${attr_style(`animation-delay: ${stringify(i * 100)}ms`)}><div class="flex items-center gap-3 mb-4 svelte-1uha8ag"><div class="w-8 h-8 rounded-lg bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="w-24 h-5 rounded bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_1 = ensure_array_like(Array(4));
         for (let j = 0, $$length2 = each_array_1.length; j < $$length2; j++) {
           each_array_1[j];
@@ -2764,7 +2788,7 @@ function _page($$renderer, $$props) {
       HomeStatusCard($$renderer2);
       $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-quick svelte-1uha8ag"><div class="section-icon glow-accent svelte-1uha8ag">`);
       Zap($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
       const each_array_2 = ensure_array_like(store.yamahaDevices);
       for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
         let device = each_array_2[$$index_2];
@@ -2791,7 +2815,7 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-lights svelte-1uha8ag"><div class="section-icon glow-lights svelte-1uha8ag">`);
         Lightbulb($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Lights</h2> <span class="section-count svelte-1uha8ag">${escape_html(lamps.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Lights</h2> <span class="section-count svelte-1uha8ag">${escape_html(lamps.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_3 = ensure_array_like(lamps);
         for (let $$index_3 = 0, $$length = each_array_3.length; $$index_3 < $$length; $$index_3++) {
           let lamp = each_array_3[$$index_3];
@@ -2806,7 +2830,7 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-climate svelte-1uha8ag"><div class="section-icon glow-climate-heat svelte-1uha8ag">`);
         Thermometer($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_4 = ensure_array_like(thermostats);
         for (let $$index_4 = 0, $$length = each_array_4.length; $$index_4 < $$length; $$index_4++) {
           let device = each_array_4[$$index_4];
@@ -2817,14 +2841,29 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[!-->");
       }
       $$renderer2.push(`<!--]--> `);
-      if (sensors.length > 0) {
+      if (doorSensors.length > 0) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-sensors svelte-1uha8ag"><div class="section-icon glow-sensors svelte-1uha8ag">`);
-        Radio($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Sensors</h2> <span class="section-count svelte-1uha8ag">${escape_html(sensors.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
-        const each_array_5 = ensure_array_like(sensors);
+        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-doors svelte-1uha8ag"><div class="section-icon glow-doors svelte-1uha8ag">`);
+        Door_open($$renderer2, { class: "w-4 h-4" });
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Door / Window</h2> <span class="section-count svelte-1uha8ag">${escape_html(doorSensors.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        const each_array_5 = ensure_array_like(doorSensors);
         for (let $$index_5 = 0, $$length = each_array_5.length; $$index_5 < $$length; $$index_5++) {
           let device = each_array_5[$$index_5];
+          TuyaSensorCard($$renderer2, { device, compact: true });
+        }
+        $$renderer2.push(`<!--]--></div></section>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--> `);
+      if (floodSensors.length > 0) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-flood svelte-1uha8ag"><div class="section-icon glow-flood svelte-1uha8ag">`);
+        Droplet($$renderer2, { class: "w-4 h-4" });
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Flood Sensors</h2> <span class="section-count svelte-1uha8ag">${escape_html(floodSensors.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        const each_array_6 = ensure_array_like(floodSensors);
+        for (let $$index_6 = 0, $$length = each_array_6.length; $$index_6 < $$length; $$index_6++) {
+          let device = each_array_6[$$index_6];
           TuyaSensorCard($$renderer2, { device, compact: true });
         }
         $$renderer2.push(`<!--]--></div></section>`);

@@ -97,6 +97,39 @@ export function translateDeviceName(name: string): string {
   return translated;
 }
 
+// Simplified name for compact cards - extracts just the room name
+export function getSimplifiedName(name: string, category: string): string {
+  const translated = translateDeviceName(name);
+
+  // For TRV/radiators - remove "Radiator " prefix
+  if (category === 'wkf') {
+    return translated.replace(/^Radiator\s+/i, '');
+  }
+
+  // For flood sensors - extract room name
+  if (category === 'sj') {
+    // "Kitchen Sensor" -> "Kitchen", "Bathroom Sensor" -> "Bathroom"
+    const match = translated.match(/^(.+?)\s*Sensor$/i);
+    if (match) return match[1];
+    // Handle patterns like "Water Sensor Kitchen"
+    const roomMatch = translated.match(/(Kitchen|Bathroom|Living Room|Bedroom|Hallway)/i);
+    if (roomMatch) return roomMatch[1];
+    return translated;
+  }
+
+  // For door/window sensors - extract location
+  if (category === 'mcs') {
+    // "Door Sensor" -> "Door", "Kitchen Sensor" -> "Kitchen"
+    const lower = translated.toLowerCase();
+    if (lower.includes('kitchen') || lower.includes('kuchnia')) return 'Kitchen';
+    if (lower.includes('door') || lower.includes('drzwi')) return 'Door';
+    if (lower.includes('bathroom') || lower.includes('łazienka')) return 'Bathroom';
+    return translated.replace(/\s*Sensor$/i, '');
+  }
+
+  return translated;
+}
+
 // Room icons (using English names)
 export const roomIcons: Record<string, string> = {
   'Living Room': '🛋️',

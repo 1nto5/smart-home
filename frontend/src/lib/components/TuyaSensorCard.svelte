@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { TuyaDevice } from '$lib/types';
-  import { translateDeviceName } from '$lib/translations';
+  import { translateDeviceName, getSimplifiedName } from '$lib/translations';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Droplet, DoorOpen, DoorClosed, Thermometer, Radio, Tv, Smartphone, AlertTriangle, Battery, Square } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
-  let displayName = $derived(translateDeviceName(device.name));
+  let fullName = $derived(translateDeviceName(device.name));
+  let displayName = $derived(compact ? getSimplifiedName(device.name, device.category) : fullName);
   let dialogOpen = $state(false);
 
   let parsedStatus = $derived(() => {
@@ -114,7 +115,7 @@
 </div>
 
 <!-- Detail Dialog -->
-<DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
+<DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={fullName}>
   <div class="space-y-5">
     <!-- Status Display (not for climate sensors - they have separate temp/humidity boxes) -->
     {#if device.category !== 'wsdcg'}
