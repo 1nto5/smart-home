@@ -881,11 +881,46 @@ const options = {
     app: ({ head, body, assets, nonce, env }) => '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="utf-8" />\n    <link rel="icon" href="' + assets + `/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      /* Prevent flash of unstyled content */
+      /* Prevent flash of unstyled content - hide SvelteKit body until app ready */
       html { background: #0a0a0f; }
       html.light { background: #f8fafc; }
-      body { opacity: 0; transition: opacity 0.2s; }
-      body.ready { opacity: 1; }
+      #svelte-app { visibility: hidden; }
+      html.app-ready #svelte-app { visibility: visible; }
+      html.app-ready #initial-loader { display: none; }
+
+      /* Initial loader styles */
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .loader-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(234, 179, 8, 0.1);
+        border: 1px solid rgba(234, 179, 8, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      html.light .loader-box {
+        background: rgba(234, 179, 8, 0.15);
+        border-color: rgba(234, 179, 8, 0.4);
+      }
+      .loader-icon {
+        width: 24px;
+        height: 24px;
+        color: #eab308;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
     </style>
     <script>
       // Apply theme immediately to prevent flash
@@ -897,7 +932,7 @@ const options = {
         }
       })();
     <\/script>
-    ` + head + '\n  </head>\n  <body data-sveltekit-preload-data="hover">\n    <div style="display: contents">' + body + "</div>\n    <script>document.body.classList.add('ready');<\/script>\n  </body>\n</html>\n",
+    ` + head + '\n  </head>\n  <body data-sveltekit-preload-data="hover">\n    <!-- Initial loader shown before Svelte hydrates -->\n    <div id="initial-loader">\n      <div class="loader-box">\n        <svg class="loader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>\n        </svg>\n      </div>\n    </div>\n    <div id="svelte-app" style="display: contents">' + body + "</div>\n  </body>\n</html>\n",
     error: ({ status, message }) => '<!doctype html>\n<html lang="en">\n	<head>\n		<meta charset="utf-8" />\n		<title>' + message + `</title>
 
 		<style>
@@ -969,7 +1004,7 @@ const options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "blgzru"
+  version_hash: "1dne68l"
 };
 async function get_hooks() {
   let handle;

@@ -223,6 +223,10 @@ function createStore() {
       ]);
       loading = false;
       initialLoadComplete = true;
+      // Signal to app.html that Svelte is ready - hide initial loader, show app
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.add('app-ready');
+      }
     },
   };
 }

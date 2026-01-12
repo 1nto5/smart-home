@@ -57,24 +57,7 @@
   ];
 </script>
 
-<!-- Loading Screen -->
-{#if !store.initialLoadComplete}
-  <div class="fixed inset-0 bg-surface-base z-50 flex items-center justify-center">
-    <div class="flex flex-col items-center gap-4">
-      <div class="w-12 h-12 rounded-xl bg-[var(--color-accent-subtle)] border border-[var(--color-accent)]
-                  flex items-center justify-center animate-pulse">
-        <Zap class="w-6 h-6 text-accent" />
-      </div>
-      <div class="flex gap-1">
-        <div class="w-2 h-2 rounded-full bg-accent animate-bounce" style="animation-delay: 0ms;"></div>
-        <div class="w-2 h-2 rounded-full bg-accent animate-bounce" style="animation-delay: 150ms;"></div>
-        <div class="w-2 h-2 rounded-full bg-accent animate-bounce" style="animation-delay: 300ms;"></div>
-      </div>
-    </div>
-  </div>
-{/if}
-
-<div class="min-h-screen bg-surface-base" class:opacity-0={!store.initialLoadComplete} class:transition-opacity={store.initialLoadComplete} class:duration-300={store.initialLoadComplete}>
+<div class="min-h-screen bg-surface-base">
   <!-- Header -->
   <header class="sticky top-0 z-40 app-header">
     <nav class="flex items-center justify-between max-w-6xl mx-auto px-4 py-3">
