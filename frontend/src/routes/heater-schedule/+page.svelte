@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
   import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices } from '$lib/api';
-  import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame } from 'lucide-svelte';
+  import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame, Pencil } from 'lucide-svelte';
   import type { HeaterPreset, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
   import PresetDialog from '$lib/components/PresetDialog.svelte';
@@ -197,13 +197,7 @@
     <!-- Preset Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {#each store.heaterPresets as preset (preset.id)}
-        <div
-          onclick={() => openPresetDialog(preset)}
-          onkeydown={(e) => e.key === 'Enter' && openPresetDialog(preset)}
-          role="button"
-          tabindex="0"
-          class="card p-4 cursor-pointer hover:border-device-climate-heat-text/30 transition-colors"
-        >
+        <div class="card p-4 hover:border-device-climate-heat-text/30 transition-colors">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">
@@ -213,7 +207,7 @@
             </div>
             <div class="flex items-center gap-1.5">
               <button
-                onclick={(e) => { e.stopPropagation(); handleApplyPreset(preset.id); }}
+                onclick={() => handleApplyPreset(preset.id)}
                 disabled={loading}
                 class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50"
                 title="Apply to all heaters"
@@ -221,7 +215,14 @@
                 <Play class="w-4 h-4" />
               </button>
               <button
-                onclick={(e) => { e.stopPropagation(); handleDeletePreset(preset.id); }}
+                onclick={() => openPresetDialog(preset)}
+                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-device-climate-heat-text hover:border-device-climate-heat-text/30 transition-all"
+                title="Edit preset"
+              >
+                <Pencil class="w-4 h-4" />
+              </button>
+              <button
+                onclick={() => handleDeletePreset(preset.id)}
                 class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
                 title="Delete preset"
               >
