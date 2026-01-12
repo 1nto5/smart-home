@@ -2750,7 +2750,7 @@ function _page($$renderer, $$props) {
       const each_array = ensure_array_like(Array(4));
       for (let i = 0, $$length = each_array.length; i < $$length; i++) {
         each_array[i];
-        $$renderer2.push(`<section class="relative svelte-1uha8ag"${attr_style(`animation-delay: ${stringify(i * 100)}ms`)}><div class="flex items-center gap-3 mb-4 svelte-1uha8ag"><div class="w-8 h-8 rounded-lg bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="w-24 h-5 rounded bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<section class="relative svelte-1uha8ag"${attr_style(`animation-delay: ${stringify(i * 100)}ms`)}><div class="flex items-center gap-3 mb-4 svelte-1uha8ag"><div class="w-8 h-8 rounded-lg bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="w-24 h-5 rounded bg-surface-elevated skeleton-glow svelte-1uha8ag"></div> <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_1 = ensure_array_like(Array(4));
         for (let j = 0, $$length2 = each_array_1.length; j < $$length2; j++) {
           each_array_1[j];
@@ -2764,7 +2764,7 @@ function _page($$renderer, $$props) {
       HomeStatusCard($$renderer2);
       $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-quick svelte-1uha8ag"><div class="section-icon glow-accent svelte-1uha8ag">`);
       Zap($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
       const each_array_2 = ensure_array_like(store.yamahaDevices);
       for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
         let device = each_array_2[$$index_2];
@@ -2791,7 +2791,7 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-lights svelte-1uha8ag"><div class="section-icon glow-lights svelte-1uha8ag">`);
         Lightbulb($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Lights</h2> <span class="section-count svelte-1uha8ag">${escape_html(lamps.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Lights</h2> <span class="section-count svelte-1uha8ag">${escape_html(lamps.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_3 = ensure_array_like(lamps);
         for (let $$index_3 = 0, $$length = each_array_3.length; $$index_3 < $$length; $$index_3++) {
           let lamp = each_array_3[$$index_3];
@@ -2806,7 +2806,7 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-climate svelte-1uha8ag"><div class="section-icon glow-climate-heat svelte-1uha8ag">`);
         Thermometer($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_4 = ensure_array_like(thermostats);
         for (let $$index_4 = 0, $$length = each_array_4.length; $$index_4 < $$length; $$index_4++) {
           let device = each_array_4[$$index_4];
