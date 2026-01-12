@@ -83,6 +83,50 @@ export function toggleSchedule(id: number): Schedule | null {
 }
 
 /**
+ * Update schedule
+ */
+export function updateSchedule(
+  id: number,
+  updates: { name?: string; preset?: PresetName; time?: string }
+): Schedule | null {
+  const db = getDb();
+
+  if (updates.preset && !isValidPreset(updates.preset)) {
+    throw new Error(`Invalid preset: ${updates.preset}`);
+  }
+
+  if (updates.time && !/^\d{2}:\d{2}$/.test(updates.time)) {
+    throw new Error('Time must be in HH:MM format');
+  }
+
+  const fields: string[] = [];
+  const values: (string | number)[] = [];
+
+  if (updates.name !== undefined) {
+    fields.push('name = ?');
+    values.push(updates.name);
+  }
+  if (updates.preset !== undefined) {
+    fields.push('preset = ?');
+    values.push(updates.preset);
+  }
+  if (updates.time !== undefined) {
+    fields.push('time = ?');
+    values.push(updates.time);
+  }
+
+  if (fields.length === 0) {
+    return db.query('SELECT * FROM lamp_schedules WHERE id = ?').get(id) as Schedule | null;
+  }
+
+  fields.push('updated_at = CURRENT_TIMESTAMP');
+  values.push(id);
+
+  db.run(`UPDATE lamp_schedules SET ${fields.join(', ')} WHERE id = ?`, values);
+  return db.query('SELECT * FROM lamp_schedules WHERE id = ?').get(id) as Schedule | null;
+}
+
+/**
  * Get all lamp device IDs
  */
 function getAllLampIds(): string[] {

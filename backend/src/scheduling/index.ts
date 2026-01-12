@@ -19,6 +19,7 @@ export {
   getSchedules,
   getSchedulesByTime,
   createSchedule,
+  updateSchedule,
   deleteSchedule,
   toggleSchedule,
   applyPresetToLamp,

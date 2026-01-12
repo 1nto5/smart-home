@@ -75,6 +75,7 @@ import {
   refreshLampPresetsCache,
   getSchedules,
   createSchedule,
+  updateSchedule,
   deleteSchedule,
   toggleSchedule,
   applyPresetToAllLamps,
@@ -735,6 +736,26 @@ app.patch('/api/schedules/:id/toggle', (c) => {
     return c.json({ error: 'Schedule not found' }, 404);
   }
   return c.json(schedule);
+});
+
+// Update schedule
+app.patch('/api/schedules/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
+  const body = await c.req.json();
+
+  try {
+    const schedule = updateSchedule(id, {
+      name: body.name,
+      preset: body.preset,
+      time: body.time,
+    });
+    if (!schedule) {
+      return c.json({ error: 'Schedule not found' }, 404);
+    }
+    return c.json(schedule);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 400);
+  }
 });
 
 // Get pending actions

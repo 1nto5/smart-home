@@ -158,6 +158,16 @@ export async function toggleSchedule(id: number): Promise<Schedule> {
   return fetcher(`/schedules/${id}/toggle`, { method: 'PATCH' });
 }
 
+export async function updateSchedule(
+  id: number,
+  updates: { name?: string; preset?: string; time?: string }
+): Promise<Schedule> {
+  return fetcher(`/schedules/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
 // Pending Actions
 export async function getPendingActions(): Promise<PendingAction[]> {
   return fetcher('/pending-actions');
