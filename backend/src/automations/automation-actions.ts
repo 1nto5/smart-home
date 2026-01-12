@@ -89,6 +89,13 @@ export async function executeSingleAction(
         }
         break;
 
+      case 'purifier_mode':
+        // Set purifier mode without changing power state
+        if (action.value) {
+          success = await setPurifierMode(action.value as 'auto' | 'silent' | 'favorite');
+        }
+        break;
+
       case 'soundbar_off':
         success = await setSoundbarPowerAll(false);
         break;

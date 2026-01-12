@@ -14,8 +14,10 @@
   let showForm = $state(false);
   let editingId = $state<number | null>(null);
   let formName = $state('');
+  let formTriggerType = $state<'sensor_state' | 'aqi_threshold'>('sensor_state');
   let formTriggerDeviceId = $state<string | null>(null);
   let formTriggerCondition = $state('open');
+  let formAqiThreshold = $state('50');
   let formActions = $state<AutomationAction[]>([]);
   let formTelegramPrompt = $state('');
   let formTelegramActionYes = $state<AutomationAction[]>([]);
@@ -43,8 +45,10 @@
 
   function resetForm() {
     formName = '';
+    formTriggerType = 'sensor_state';
     formTriggerDeviceId = null;
     formTriggerCondition = 'open';
+    formAqiThreshold = '50';
     formActions = [];
     formTelegramPrompt = '';
     formTelegramActionYes = [];
@@ -60,8 +64,16 @@
   function openEdit(automation: Automation) {
     editingId = automation.id;
     formName = automation.name;
-    formTriggerDeviceId = automation.trigger_device_id;
+    formTriggerType = automation.trigger_type as 'sensor_state' | 'aqi_threshold';
     formTriggerCondition = automation.trigger_condition;
+
+    if (automation.trigger_type === 'aqi_threshold') {
+      formAqiThreshold = automation.trigger_device_id || '50';
+      formTriggerDeviceId = null;
+    } else {
+      formTriggerDeviceId = automation.trigger_device_id;
+      formAqiThreshold = '50';
+    }
 
     const actions: AutomationAction[] = JSON.parse(automation.actions);
     formUseTelegram = actions.some(a => a.type === 'telegram_prompt');
@@ -110,8 +122,8 @@
     const data = {
       name: formName.trim(),
       enabled: 1,
-      trigger_type: 'sensor_state',
-      trigger_device_id: formTriggerDeviceId || null,
+      trigger_type: formTriggerType,
+      trigger_device_id: formTriggerType === 'aqi_threshold' ? formAqiThreshold : (formTriggerDeviceId || null),
       trigger_condition: formTriggerCondition,
       actions: JSON.stringify(actions),
       telegram_prompt: formUseTelegram ? formTelegramPrompt : null,
@@ -157,11 +169,19 @@
       case 'set_heater_temp': return `Heater → ${action.value}°C`;
       case 'purifier_off': return 'Purifier OFF';
       case 'purifier_on': return 'Purifier ON';
+      case 'purifier_mode': return `Purifier → ${action.value}`;
       case 'soundbar_off': return 'Soundbar OFF';
       case 'soundbar_on': return 'Soundbar ON';
       case 'telegram_prompt': return 'Ask Telegram';
       default: return action.type;
     }
+  }
+
+  function formatTrigger(automation: Automation): string {
+    if (automation.trigger_type === 'aqi_threshold') {
+      return `AQI ${automation.trigger_condition} ${automation.trigger_device_id}`;
+    }
+    return `${getSensorName(automation.trigger_device_id)} = ${automation.trigger_condition}`;
   }
 
   function formatTime(dateStr: string): string {
@@ -218,11 +238,20 @@
                 </div>
                 <div class="text-sm text-content-secondary flex flex-wrap items-center gap-2">
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-recessed">
-                    <DoorOpen class="w-3 h-3" />
-                    {getSensorName(automation.trigger_device_id)}
+                    {#if automation.trigger_type === 'aqi_threshold'}
+                      <Wind class="w-3 h-3" />
+                      AQI
+                    {:else}
+                      <DoorOpen class="w-3 h-3" />
+                      {getSensorName(automation.trigger_device_id)}
+                    {/if}
                   </span>
-                  <span class="text-content-tertiary">=</span>
-                  <span class="font-medium text-warning">{automation.trigger_condition}</span>
+                  {#if automation.trigger_type === 'aqi_threshold'}
+                    <span class="font-medium text-warning">{automation.trigger_condition} {automation.trigger_device_id}</span>
+                  {:else}
+                    <span class="text-content-tertiary">=</span>
+                    <span class="font-medium text-warning">{automation.trigger_condition}</span>
+                  {/if}
                   <span class="text-content-tertiary">→</span>
                   {#each actions as action}
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-recessed text-accent">
@@ -325,24 +354,66 @@
         <!-- Trigger -->
         <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
           <div class="text-xs uppercase tracking-wider text-content-tertiary mb-2">IF (Trigger)</div>
-          <div class="flex gap-3">
-            <select
-              bind:value={formTriggerDeviceId}
-              class="flex-1 bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+
+          <!-- Trigger type selector -->
+          <div class="flex gap-2 mb-3">
+            <button
+              type="button"
+              onclick={() => { formTriggerType = 'sensor_state'; formTriggerCondition = 'open'; }}
+              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-colors {formTriggerType === 'sensor_state' ? 'bg-accent/20 border-accent text-accent' : 'bg-surface-base border-stroke-default text-content-secondary hover:border-stroke-strong'}"
             >
-              <option value={null}>Any contact sensor</option>
-              {#each contactSensors as sensor (sensor.id)}
-                <option value={sensor.id}>{sensor.name}</option>
-              {/each}
-            </select>
-            <select
-              bind:value={formTriggerCondition}
-              class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+              <DoorOpen class="w-4 h-4" />
+              Sensor
+            </button>
+            <button
+              type="button"
+              onclick={() => { formTriggerType = 'aqi_threshold'; formTriggerCondition = 'above'; }}
+              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-colors {formTriggerType === 'aqi_threshold' ? 'bg-accent/20 border-accent text-accent' : 'bg-surface-base border-stroke-default text-content-secondary hover:border-stroke-strong'}"
             >
-              <option value="open">Opens</option>
-              <option value="closed">Closes</option>
-            </select>
+              <Wind class="w-4 h-4" />
+              AQI
+            </button>
           </div>
+
+          {#if formTriggerType === 'sensor_state'}
+            <div class="flex gap-3">
+              <select
+                bind:value={formTriggerDeviceId}
+                class="flex-1 bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+              >
+                <option value={null}>Any contact sensor</option>
+                {#each contactSensors as sensor (sensor.id)}
+                  <option value={sensor.id}>{sensor.name}</option>
+                {/each}
+              </select>
+              <select
+                bind:value={formTriggerCondition}
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+              >
+                <option value="open">Opens</option>
+                <option value="closed">Closes</option>
+              </select>
+            </div>
+          {:else}
+            <div class="flex gap-3 items-center">
+              <span class="text-content-secondary">When AQI</span>
+              <select
+                bind:value={formTriggerCondition}
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+              >
+                <option value="above">goes above</option>
+                <option value="below">drops below</option>
+              </select>
+              <input
+                type="number"
+                bind:value={formAqiThreshold}
+                min="1"
+                max="500"
+                class="w-20 bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary text-center"
+              />
+              <span class="text-content-tertiary">PM2.5</span>
+            </div>
+          {/if}
         </div>
 
         <!-- Telegram prompt toggle -->
@@ -370,6 +441,7 @@
                       <option value="set_heater_preset">Set heater preset</option>
                       <option value="purifier_off">Purifier OFF</option>
                       <option value="purifier_on">Purifier ON</option>
+                      <option value="purifier_mode">Purifier mode</option>
                       <option value="soundbar_off">Soundbar OFF</option>
                       <option value="soundbar_on">Soundbar ON</option>
                     </select>
@@ -389,6 +461,12 @@
                         {#each heaterPresets as preset (preset.id)}
                           <option value={preset.id}>{preset.name}</option>
                         {/each}
+                      </select>
+                    {:else if action.type === 'purifier_mode'}
+                      <select bind:value={action.value} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                        <option value="auto">Auto</option>
+                        <option value="silent">Silent</option>
+                        <option value="favorite">Favorite (manual)</option>
                       </select>
                     {/if}
                     <button onclick={() => removeAction(i)} class="p-1 text-content-tertiary hover:text-error">
@@ -427,6 +505,7 @@
                       <option value="set_heater_preset">Set heater preset</option>
                       <option value="purifier_off">Purifier OFF</option>
                       <option value="purifier_on">Purifier ON</option>
+                      <option value="purifier_mode">Purifier mode</option>
                       <option value="soundbar_off">Soundbar OFF</option>
                       <option value="soundbar_on">Soundbar ON</option>
                     </select>
@@ -446,6 +525,12 @@
                         {#each heaterPresets as preset (preset.id)}
                           <option value={preset.id}>{preset.name}</option>
                         {/each}
+                      </select>
+                    {:else if action.type === 'purifier_mode'}
+                      <select bind:value={action.value} class="bg-surface-base border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
+                        <option value="auto">Auto</option>
+                        <option value="silent">Silent</option>
+                        <option value="favorite">Favorite (manual)</option>
                       </select>
                     {/if}
                     <button onclick={() => removeTelegramAction(i)} class="p-1 text-content-tertiary hover:text-error">
