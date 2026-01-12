@@ -95,6 +95,7 @@ import {
   deletePresetDeviceTemp,
   getHeaterSchedules,
   createHeaterSchedule,
+  updateHeaterSchedule,
   deleteHeaterSchedule,
   toggleHeaterSchedule,
   applyPresetToAllHeaters,
@@ -900,6 +901,26 @@ app.patch('/api/heater-schedules/:id/toggle', (c) => {
     return c.json({ error: 'Schedule not found' }, 404);
   }
   return c.json(schedule);
+});
+
+// Update heater schedule
+app.patch('/api/heater-schedules/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
+  const body = await c.req.json();
+
+  try {
+    const schedule = updateHeaterSchedule(id, {
+      name: body.name,
+      preset_id: body.preset_id,
+      time: body.time,
+    });
+    if (!schedule) {
+      return c.json({ error: 'Schedule not found' }, 404);
+    }
+    return c.json(schedule);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 400);
+  }
 });
 
 // Get pending heater actions

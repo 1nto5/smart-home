@@ -288,6 +288,16 @@ export async function toggleHeaterSchedule(id: number): Promise<HeaterSchedule> 
   return fetcher(`/heater-schedules/${id}/toggle`, { method: 'PATCH' });
 }
 
+export async function updateHeaterSchedule(
+  id: number,
+  updates: { name?: string; preset_id?: string; time?: string }
+): Promise<HeaterSchedule> {
+  return fetcher(`/heater-schedules/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
 // Pending heater actions
 export async function getPendingHeaterActions(): Promise<PendingHeaterAction[]> {
   return fetcher('/pending-heater-actions');
