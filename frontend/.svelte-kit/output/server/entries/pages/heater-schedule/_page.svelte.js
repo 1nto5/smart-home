@@ -1,8 +1,8 @@
 import { U as sanitize_props, V as spread_props, W as slot, a2 as head, X as attr_class, _ as attr, Y as ensure_array_like, a0 as stringify } from "../../../chunks/index2.js";
 import { I as Icon, s as store } from "../../../chunks/Icon.js";
 import { T as Thermometer } from "../../../chunks/thermometer.js";
-import { P as Plus, C as Clock, T as Trash_2, a as Circle_alert } from "../../../chunks/trash-2.js";
-import { X, F as Flame } from "../../../chunks/x.js";
+import { P as Plus, T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
+import { F as Flame } from "../../../chunks/flame.js";
 import { P as Play } from "../../../chunks/play.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function Chevron_down($$renderer, $$props) {
@@ -357,25 +357,15 @@ function _page($$renderer, $$props) {
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--> <div class="space-y-3"><!--[-->`);
+    $$renderer2.push(`<!--]--> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><!--[-->`);
     const each_array = ensure_array_like(store.heaterPresets);
     for (let $$index_1 = 0, $$length = each_array.length; $$index_1 < $$length; $$index_1++) {
       let preset = each_array[$$index_1];
-      $$renderer2.push(`<div class="card overflow-hidden hover:border-device-climate-heat-text/30 transition-colors"><div class="p-4 relative group"><button class="absolute top-2 right-2 p-1.5 rounded-lg bg-error/10 text-error border border-error/30 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error/20" title="Delete preset">`);
-      X($$renderer2, { class: "w-3 h-3" });
-      $$renderer2.push(`<!----></button> <div class="flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">`);
-      Flame($$renderer2, { class: "w-5 h-5" });
-      $$renderer2.push(`<!----></div> <div><span class="font-display text-sm uppercase tracking-wider text-content-primary">${escape_html(preset.name)}</span> `);
-      if (editingPreset === preset.id) {
-        $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="flex items-center gap-2 mt-1"><input type="number" min="5" max="30" step="0.5"${attr("value", editTemp)} class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&amp;::-webkit-outer-spin-button]:appearance-none [&amp;::-webkit-inner-spin-button]:appearance-none"/> <span class="text-device-climate-heat-text">°C</span> <button class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded hover:bg-success/30 transition-colors">Save</button> <button class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors">Cancel</button></div>`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<button class="font-display text-2xl text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform mt-0.5 block">${escape_html(preset.target_temp)}°C</button>`);
-      }
-      $$renderer2.push(`<!--]--></div></div> <div class="flex items-center gap-2"><button${attr("disabled", loading, true)} class="p-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50" title="Apply to all heaters">`);
+      $$renderer2.push(`<div class="card overflow-hidden hover:border-device-climate-heat-text/30 transition-colors"><div class="p-4"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">`);
+      Flame($$renderer2, { class: "w-4 h-4" });
+      $$renderer2.push(`<!----></div> <span class="font-display text-sm uppercase tracking-wider text-content-primary">${escape_html(preset.name)}</span></div> <div class="flex items-center gap-1.5"><button${attr("disabled", loading, true)} class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50" title="Apply to all heaters">`);
       Play($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></button> <button class="p-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors" title="Per-device settings">`);
+      $$renderer2.push(`<!----></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors" title="Per-device settings">`);
       if (expandedPreset === preset.id) {
         $$renderer2.push("<!--[-->");
         Chevron_up($$renderer2, { class: "w-4 h-4" });
@@ -383,7 +373,17 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[!-->");
         Chevron_down($$renderer2, { class: "w-4 h-4" });
       }
-      $$renderer2.push(`<!--]--></button></div></div></div> `);
+      $$renderer2.push(`<!--]--></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all" title="Delete preset">`);
+      Trash_2($$renderer2, { class: "w-4 h-4" });
+      $$renderer2.push(`<!----></button></div></div> `);
+      if (editingPreset === preset.id) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<div class="flex items-center gap-2"><input type="number" min="5" max="30" step="0.5"${attr("value", editTemp)} class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&amp;::-webkit-outer-spin-button]:appearance-none [&amp;::-webkit-inner-spin-button]:appearance-none"/> <span class="text-device-climate-heat-text">°C</span> <button class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded hover:bg-success/30 transition-colors">Save</button> <button class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors">Cancel</button></div>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<button class="font-display text-2xl text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform">${escape_html(preset.target_temp)}°C</button>`);
+      }
+      $$renderer2.push(`<!--]--></div> `);
       if (expandedPreset === preset.id) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<div class="border-t border-stroke-subtle bg-surface-recessed/50 p-4"><p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Per-device temperatures <span class="text-content-secondary">(override default ${escape_html(preset.target_temp)}°C)</span></p> `);
@@ -464,20 +464,20 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<!----> <p class="text-content-tertiary">No schedules configured</p></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<div class="space-y-2"><!--[-->`);
+      $$renderer2.push(`<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><!--[-->`);
       const each_array_3 = ensure_array_like(store.heaterSchedules);
       for (let $$index_3 = 0, $$length = each_array_3.length; $$index_3 < $$length; $$index_3++) {
         let schedule = each_array_3[$$index_3];
-        $$renderer2.push(`<div${attr_class("card p-3 flex items-center justify-between transition-opacity svelte-1wpfyiy", void 0, {
+        $$renderer2.push(`<div${attr_class("card p-3 transition-opacity svelte-1wpfyiy", void 0, {
           "opacity-50": !schedule.enabled,
           "card-active": schedule.enabled,
           "glow-accent": schedule.enabled
-        })}><div class="flex items-center gap-4"><div class="font-display text-2xl text-accent neon-text-subtle">${escape_html(schedule.time)}</div> <div class="h-8 w-px bg-stroke-subtle"></div> <div><span class="font-medium text-content-primary">${escape_html(schedule.name)}</span> <span class="text-sm text-content-tertiary ml-2"><span class="text-device-climate-heat-text">${escape_html(getPresetName(schedule.preset_id))}</span></span></div></div> <div class="flex gap-2"><button${attr_class(
-          `px-3 py-1.5 rounded-lg font-medium text-sm transition-all ${stringify(schedule.enabled ? "glow-accent power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong")}`,
+        })}><div class="flex items-center justify-between mb-2"><div class="font-display text-xl text-accent neon-text-subtle">${escape_html(schedule.time)}</div> <div class="flex gap-1.5"><button${attr_class(
+          `px-2.5 py-1 rounded-lg font-medium text-xs transition-all ${stringify(schedule.enabled ? "glow-accent power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong")}`,
           "svelte-1wpfyiy"
-        )}>${escape_html(schedule.enabled ? "On" : "Off")}</button> <button class="p-1.5 rounded-lg bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors">`);
-        Trash_2($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></button></div></div>`);
+        )}>${escape_html(schedule.enabled ? "On" : "Off")}</button> <button class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors">`);
+        Trash_2($$renderer2, { class: "w-3.5 h-3.5" });
+        $$renderer2.push(`<!----></button></div></div> <div class="text-sm"><span class="font-medium text-content-primary">${escape_html(schedule.name)}</span> <span class="text-content-tertiary mx-1">→</span> <span class="text-device-climate-heat-text">${escape_html(getPresetName(schedule.preset_id))}</span></div></div>`);
       }
       $$renderer2.push(`<!--]--></div>`);
     }

@@ -54,7 +54,7 @@ function _page($$renderer, $$props) {
       getIcon(name)?.($$renderer2, { class: "w-4 h-4" });
       $$renderer2.push(`<!----></div> <span class="font-display text-sm uppercase tracking-wider text-content-primary">${escape_html(preset.name)}</span></div> <div class="flex items-center gap-1.5"><button${attr("disabled", applyingPreset !== null, true)}${attr_class("p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-lights-text hover:glow-lights hover:power-btn-on transition-all disabled:opacity-50", void 0, { "pulse-ring": applyingPreset === name })} title="Apply to all lamps">`);
       Play($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary opacity-0 group-hover:opacity-100 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all" title="Delete preset">`);
+      $$renderer2.push(`<!----></button> <button class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all" title="Delete preset">`);
       Trash_2($$renderer2, { class: "w-4 h-4" });
       $$renderer2.push(`<!----></button></div></div> `);
       if (editingPreset === name) {
@@ -119,20 +119,20 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<!----> <p class="text-content-tertiary">No schedules configured</p></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<div class="space-y-2"><!--[-->`);
+      $$renderer2.push(`<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><!--[-->`);
       const each_array_2 = ensure_array_like(store.schedules);
       for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
         let schedule = each_array_2[$$index_2];
-        $$renderer2.push(`<div${attr_class("card p-3 flex items-center justify-between transition-opacity svelte-92554t", void 0, {
+        $$renderer2.push(`<div${attr_class("card p-3 transition-opacity svelte-92554t", void 0, {
           "opacity-50": !schedule.enabled,
           "card-active": schedule.enabled,
           "glow-accent": schedule.enabled
-        })}><div class="flex items-center gap-4"><div class="font-display text-2xl text-accent neon-text-subtle">${escape_html(schedule.time)}</div> <div class="h-8 w-px bg-stroke-subtle"></div> <div><span class="font-medium text-content-primary">${escape_html(schedule.name)}</span> <span class="text-sm text-content-tertiary ml-2"><span class="text-device-lights-text">${escape_html(getPresetName(schedule.preset))}</span></span></div></div> <div class="flex gap-2"><button${attr_class(
-          `px-3 py-1.5 rounded-lg font-medium text-sm transition-all ${stringify(schedule.enabled ? "glow-accent power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong")}`,
+        })}><div class="flex items-center justify-between mb-2"><div class="font-display text-xl text-accent neon-text-subtle">${escape_html(schedule.time)}</div> <div class="flex gap-1.5"><button${attr_class(
+          `px-2.5 py-1 rounded-lg font-medium text-xs transition-all ${stringify(schedule.enabled ? "glow-accent power-btn-on" : "bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong")}`,
           "svelte-92554t"
-        )}>${escape_html(schedule.enabled ? "On" : "Off")}</button> <button class="p-1.5 rounded-lg bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors">`);
-        Trash_2($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></button></div></div>`);
+        )}>${escape_html(schedule.enabled ? "On" : "Off")}</button> <button class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors">`);
+        Trash_2($$renderer2, { class: "w-3.5 h-3.5" });
+        $$renderer2.push(`<!----></button></div></div> <div class="text-sm"><span class="font-medium text-content-primary">${escape_html(schedule.name)}</span> <span class="text-content-tertiary mx-1">→</span> <span class="text-device-lights-text">${escape_html(getPresetName(schedule.preset))}</span></div></div>`);
       }
       $$renderer2.push(`<!--]--></div>`);
     }

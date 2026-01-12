@@ -362,71 +362,30 @@
       </div>
     {/if}
 
-    <!-- Preset List -->
-    <div class="space-y-3">
+    <!-- Preset Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {#each store.heaterPresets as preset (preset.id)}
         <div class="card overflow-hidden hover:border-device-climate-heat-text/30 transition-colors">
-          <div class="p-4 relative group">
-            <button
-              onclick={() => handleDeletePreset(preset.id)}
-              class="absolute top-2 right-2 p-1.5 rounded-lg bg-error/10 text-error border border-error/30 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error/20"
-              title="Delete preset"
-            >
-              <X class="w-3 h-3" />
-            </button>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">
-                  <Flame class="w-5 h-5" />
+          <div class="p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">
+                  <Flame class="w-4 h-4" />
                 </div>
-                <div>
-                  <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
-                  {#if editingPreset === preset.id}
-                    <div class="flex items-center gap-2 mt-1">
-                      <input
-                        type="number"
-                        min="5"
-                        max="30"
-                        step="0.5"
-                        bind:value={editTemp}
-                        class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <span class="text-device-climate-heat-text">°C</span>
-                      <button
-                        onclick={() => savePreset(preset.id)}
-                        class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded hover:bg-success/30 transition-colors"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onclick={cancelEdit}
-                        class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  {:else}
-                    <button
-                      onclick={() => startEditPreset(preset)}
-                      class="font-display text-2xl text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform mt-0.5 block"
-                    >
-                      {preset.target_temp}°C
-                    </button>
-                  {/if}
-                </div>
+                <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
                 <button
                   onclick={() => handleApplyPreset(preset.id)}
                   disabled={loading}
-                  class="p-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50"
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50"
                   title="Apply to all heaters"
                 >
                   <Play class="w-4 h-4" />
                 </button>
                 <button
                   onclick={() => toggleExpandPreset(preset.id)}
-                  class="p-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors"
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors"
                   title="Per-device settings"
                 >
                   {#if expandedPreset === preset.id}
@@ -435,8 +394,47 @@
                     <ChevronDown class="w-4 h-4" />
                   {/if}
                 </button>
+                <button
+                  onclick={() => handleDeletePreset(preset.id)}
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                  title="Delete preset"
+                >
+                  <Trash2 class="w-4 h-4" />
+                </button>
               </div>
             </div>
+            {#if editingPreset === preset.id}
+              <div class="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="5"
+                  max="30"
+                  step="0.5"
+                  bind:value={editTemp}
+                  class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span class="text-device-climate-heat-text">°C</span>
+                <button
+                  onclick={() => savePreset(preset.id)}
+                  class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded hover:bg-success/30 transition-colors"
+                >
+                  Save
+                </button>
+                <button
+                  onclick={cancelEdit}
+                  class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            {:else}
+              <button
+                onclick={() => startEditPreset(preset)}
+                class="font-display text-2xl text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform"
+              >
+                {preset.target_temp}°C
+              </button>
+            {/if}
           </div>
 
           <!-- Expanded per-device settings -->
@@ -566,38 +564,36 @@
         <p class="text-content-tertiary">No schedules configured</p>
       </div>
     {:else}
-      <div class="space-y-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {#each store.heaterSchedules as schedule (schedule.id)}
           <div
-            class="card p-3 flex items-center justify-between transition-opacity"
+            class="card p-3 transition-opacity"
             class:opacity-50={!schedule.enabled}
             class:card-active={schedule.enabled}
             class:glow-accent={schedule.enabled}
           >
-            <div class="flex items-center gap-4">
-              <div class="font-display text-2xl text-accent neon-text-subtle">{schedule.time}</div>
-              <div class="h-8 w-px bg-stroke-subtle"></div>
-              <div>
-                <span class="font-medium text-content-primary">{schedule.name}</span>
-                <span class="text-sm text-content-tertiary ml-2">
-                  <span class="text-device-climate-heat-text">{getPresetName(schedule.preset_id)}</span>
-                </span>
+            <div class="flex items-center justify-between mb-2">
+              <div class="font-display text-xl text-accent neon-text-subtle">{schedule.time}</div>
+              <div class="flex gap-1.5">
+                <button
+                  onclick={() => handleToggle(schedule.id)}
+                  class="px-2.5 py-1 rounded-lg font-medium text-xs transition-all
+                         {schedule.enabled ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong'}"
+                >
+                  {schedule.enabled ? 'On' : 'Off'}
+                </button>
+                <button
+                  onclick={() => handleDelete(schedule.id)}
+                  class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-            <div class="flex gap-2">
-              <button
-                onclick={() => handleToggle(schedule.id)}
-                class="px-3 py-1.5 rounded-lg font-medium text-sm transition-all
-                       {schedule.enabled ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong'}"
-              >
-                {schedule.enabled ? 'On' : 'Off'}
-              </button>
-              <button
-                onclick={() => handleDelete(schedule.id)}
-                class="p-1.5 rounded-lg bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors"
-              >
-                <Trash2 class="w-4 h-4" />
-              </button>
+            <div class="text-sm">
+              <span class="font-medium text-content-primary">{schedule.name}</span>
+              <span class="text-content-tertiary mx-1">→</span>
+              <span class="text-device-climate-heat-text">{getPresetName(schedule.preset_id)}</span>
             </div>
           </div>
         {/each}

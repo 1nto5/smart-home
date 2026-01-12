@@ -33,6 +33,14 @@
     "file": "chunks/false.js",
     "name": "false"
   },
+  "_flame.js": {
+    "file": "chunks/flame.js",
+    "name": "flame",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
   "_index.js": {
     "file": "chunks/index.js",
     "name": "index",
@@ -115,14 +123,6 @@
     "file": "chunks/utils.js",
     "name": "utils"
   },
-  "_x.js": {
-    "file": "chunks/x.js",
-    "name": "x",
-    "imports": [
-      "_index2.js",
-      "_Icon.js"
-    ]
-  },
   "_zap.js": {
     "file": "chunks/zap.js",
     "name": "zap",
@@ -187,7 +187,7 @@
       "_thermometer.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.C3FWXK7i.css"
+      "_app/immutable/assets/_layout.B0U_VppZ.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -205,11 +205,11 @@
       "_index2.js",
       "_Icon.js",
       "_context.js",
-      "_x.js",
       "_power.js",
       "_sun.js",
       "_play.js",
       "_zap.js",
+      "_flame.js",
       "_thermometer.js"
     ],
     "css": [
@@ -226,7 +226,7 @@
       "_Icon.js",
       "_thermometer.js",
       "_trash-2.js",
-      "_x.js",
+      "_flame.js",
       "_play.js",
       "_context.js"
     ],
