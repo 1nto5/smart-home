@@ -1,11 +1,11 @@
-import { U as sanitize_props, V as spread_props, W as slot, _ as attr_class, Z as attr, a0 as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
-import { s as store, P as Play } from "../../chunks/play.js";
+import { U as sanitize_props, V as spread_props, W as slot, X as attr_class, _ as attr, a0 as stringify, Y as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
+import { I as Icon, s as store } from "../../chunks/Icon.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
 import { X, F as Flame } from "../../chunks/x.js";
 import { P as Power, M as Moon } from "../../chunks/power.js";
-import { I as Icon } from "../../chunks/Icon.js";
 import { S as Sun, L as Lightbulb } from "../../chunks/sun.js";
+import { P as Play } from "../../chunks/play.js";
 import { H as House, Z as Zap } from "../../chunks/zap.js";
 import { T as Thermometer } from "../../chunks/thermometer.js";
 function Battery_low($$renderer, $$props) {
@@ -2233,7 +2233,7 @@ function TuyaSensorCard($$renderer, $$props) {
         } else {
           $$renderer3.push("<!--[!-->");
         }
-        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span> <span class="text-sm font-medium text-content-primary">${escape_html(config.label)}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Device ID</span> <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">${escape_html(device.id.slice(0, 12))}...</span></div></div></div>`);
+        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span> <span class="text-sm font-medium text-content-primary">${escape_html(config.label)}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div></div></div>`);
       }
     });
     $$renderer2.push(`<!---->`);
@@ -2307,7 +2307,7 @@ function TRVCard($$renderer, $$props) {
           Thermometer_sun($$renderer3, { class: "w-12 h-12 mx-auto mb-3 opacity-50" });
           $$renderer3.push(`<!----> <p>No data available</p></div>`);
         }
-        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Device ID</span> <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">${escape_html(device.id.slice(0, 12))}...</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div></div></div>`);
+        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div></div></div>`);
       }
     });
     $$renderer2.push(`<!---->`);
