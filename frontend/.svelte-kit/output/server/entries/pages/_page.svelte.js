@@ -1903,7 +1903,7 @@ function translateDeviceName(name) {
 function getSimplifiedName(name, category) {
   const translated = translateDeviceName(name);
   if (category === "wkf") {
-    return translated.replace(/^Radiator\s+/i, "");
+    return translated.replace(/^(Radiator|Heater|Grzejnik)\s+/i, "").replace(/\s+(Radiator|Heater|Grzejnik)$/i, "");
   }
   if (category === "sj") {
     const match = translated.match(/^(.+?)\s*Sensor$/i);

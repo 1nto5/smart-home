@@ -101,9 +101,11 @@ export function translateDeviceName(name: string): string {
 export function getSimplifiedName(name: string, category: string): string {
   const translated = translateDeviceName(name);
 
-  // For TRV/radiators - remove "Radiator " prefix
+  // For TRV/radiators - remove "Radiator ", "Heater ", or similar prefixes/suffixes
   if (category === 'wkf') {
-    return translated.replace(/^Radiator\s+/i, '');
+    return translated
+      .replace(/^(Radiator|Heater|Grzejnik)\s+/i, '')
+      .replace(/\s+(Radiator|Heater|Grzejnik)$/i, '');
   }
 
   // For flood sensors - extract room name
