@@ -1,24 +1,22 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, updateHeaterPreset, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices, getPresetDeviceTemps, setPresetDeviceTemp, deletePresetDeviceTemp } from '$lib/api';
-  import { Thermometer, Clock, Trash2, Plus, Play, X, ChevronDown, ChevronUp, RotateCcw, AlertCircle, Flame } from 'lucide-svelte';
-  import type { HeaterPreset, HeaterPresetDevice, TuyaDevice } from '$lib/types';
+  import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices } from '$lib/api';
+  import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame } from 'lucide-svelte';
+  import type { HeaterPreset, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
-  import { getSimplifiedName } from '$lib/translations';
+  import PresetDialog from '$lib/components/PresetDialog.svelte';
 
   let newName = $state('');
   let newPresetId = $state('night');
   let newTime = $state('22:00');
   let loading = $state(false);
-  let editingPreset = $state<string | null>(null);
-  let editTemp = $state(21);
 
-  // Per-device temps state
-  let expandedPreset = $state<string | null>(null);
+  // TRV devices for dialog
   let trvDevices = $state<TuyaDevice[]>([]);
-  let presetDeviceTemps = $state<HeaterPresetDevice[]>([]);
-  let editingDeviceTemp = $state<string | null>(null);
-  let deviceTempValue = $state(21);
+
+  // Dialog state
+  let selectedPreset = $state<HeaterPreset | null>(null);
+  let dialogOpen = $state(false);
 
   // Load TRV devices on mount
   $effect(() => {
@@ -29,50 +27,14 @@
     }
   });
 
-  async function toggleExpandPreset(presetId: string) {
-    if (expandedPreset === presetId) {
-      expandedPreset = null;
-      presetDeviceTemps = [];
-    } else {
-      expandedPreset = presetId;
-      presetDeviceTemps = await getPresetDeviceTemps(presetId);
-    }
-    editingDeviceTemp = null;
+  function openPresetDialog(preset: HeaterPreset) {
+    selectedPreset = preset;
+    dialogOpen = true;
   }
 
-  function getDeviceTemp(deviceId: string, defaultTemp: number): { temp: number; isCustom: boolean } {
-    const custom = presetDeviceTemps.find(d => d.device_id === deviceId);
-    return custom
-      ? { temp: custom.target_temp, isCustom: true }
-      : { temp: defaultTemp, isCustom: false };
-  }
-
-  function startEditDeviceTemp(deviceId: string, currentTemp: number) {
-    editingDeviceTemp = deviceId;
-    deviceTempValue = currentTemp;
-  }
-
-  async function saveDeviceTemp(presetId: string, deviceId: string) {
-    loading = true;
-    try {
-      await setPresetDeviceTemp(presetId, deviceId, deviceTempValue);
-      presetDeviceTemps = await getPresetDeviceTemps(presetId);
-      editingDeviceTemp = null;
-    } catch (e) {
-      console.error(e);
-    }
-    loading = false;
-  }
-
-  async function resetDeviceTemp(presetId: string, deviceId: string) {
-    loading = true;
-    try {
-      await deletePresetDeviceTemp(presetId, deviceId);
-      presetDeviceTemps = await getPresetDeviceTemps(presetId);
-    } catch (e) {
-      console.error(e);
-    }
-    loading = false;
+  function closeDialog() {
+    dialogOpen = false;
+    selectedPreset = null;
   }
 
   async function handleCreate() {
@@ -101,21 +63,6 @@
   async function handleClearPending() {
     await clearPendingHeaterActions();
     await store.refreshPendingHeater();
-  }
-
-  function startEditPreset(preset: HeaterPreset) {
-    editingPreset = preset.id;
-    editTemp = preset.target_temp;
-  }
-
-  async function savePreset(id: string) {
-    await updateHeaterPreset(id, editTemp);
-    editingPreset = null;
-    await store.refreshHeaterPresets();
-  }
-
-  function cancelEdit() {
-    editingPreset = null;
   }
 
   // New preset state
@@ -250,143 +197,54 @@
     <!-- Preset Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {#each store.heaterPresets as preset (preset.id)}
-        <div class="card overflow-hidden hover:border-device-climate-heat-text/30 transition-colors">
-          <div class="p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">
-                  <Flame class="w-4 h-4" />
-                </div>
-                <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
+        <div
+          onclick={() => openPresetDialog(preset)}
+          onkeydown={(e) => e.key === 'Enter' && openPresetDialog(preset)}
+          role="button"
+          tabindex="0"
+          class="card p-4 cursor-pointer hover:border-device-climate-heat-text/30 transition-colors"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">
+                <Flame class="w-4 h-4" />
               </div>
-              <div class="flex items-center gap-1.5">
-                <button
-                  onclick={() => handleApplyPreset(preset.id)}
-                  disabled={loading}
-                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50"
-                  title="Apply to all heaters"
-                >
-                  <Play class="w-4 h-4" />
-                </button>
-                <button
-                  onclick={() => toggleExpandPreset(preset.id)}
-                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors"
-                  title="Per-device settings"
-                >
-                  {#if expandedPreset === preset.id}
-                    <ChevronUp class="w-4 h-4" />
-                  {:else}
-                    <ChevronDown class="w-4 h-4" />
-                  {/if}
-                </button>
-                <button
-                  onclick={() => handleDeletePreset(preset.id)}
-                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
-                  title="Delete preset"
-                >
-                  <Trash2 class="w-4 h-4" />
-                </button>
-              </div>
+              <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
             </div>
-            {#if editingPreset === preset.id}
-              <div class="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="5"
-                  max="30"
-                  step="0.5"
-                  bind:value={editTemp}
-                  class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <span class="text-device-climate-heat-text">°C</span>
-                <button
-                  onclick={() => savePreset(preset.id)}
-                  class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded hover:bg-success/30 transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  onclick={cancelEdit}
-                  class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            {:else}
+            <div class="flex items-center gap-1.5">
               <button
-                onclick={() => startEditPreset(preset)}
-                class="font-display text-2xl text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform"
+                onclick={(e) => { e.stopPropagation(); handleApplyPreset(preset.id); }}
+                disabled={loading}
+                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50"
+                title="Apply to all heaters"
               >
-                {preset.target_temp}°C
+                <Play class="w-4 h-4" />
               </button>
-            {/if}
-          </div>
-
-          <!-- Expanded per-device settings -->
-          {#if expandedPreset === preset.id}
-            <div class="border-t border-stroke-subtle bg-surface-recessed/50 p-4">
-              <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">
-                Per-device temperatures <span class="text-content-secondary">(override default {preset.target_temp}°C)</span>
-              </p>
-              {#if trvDevices.length === 0}
-                <p class="text-sm text-content-tertiary">No TRV devices found</p>
-              {:else}
-                <div class="space-y-2">
-                  {#each trvDevices as device (device.id)}
-                    {@const tempInfo = getDeviceTemp(device.id, preset.target_temp)}
-                    <div class="flex items-center justify-between bg-surface-elevated rounded-lg p-3 border border-stroke-subtle">
-                      <span class="text-sm text-content-primary">{getSimplifiedName(device.name, 'wkf') || device.id}</span>
-                      <div class="flex items-center gap-2">
-                        {#if editingDeviceTemp === device.id}
-                          <input
-                            type="number"
-                            min="5"
-                            max="30"
-                            step="0.5"
-                            bind:value={deviceTempValue}
-                            class="bg-surface-recessed border border-stroke-default rounded px-2 py-1 w-16 text-content-primary text-center text-sm font-display focus:outline-none focus:border-device-climate-heat-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                          <button
-                            onclick={() => saveDeviceTemp(preset.id, device.id)}
-                            disabled={loading}
-                            class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded disabled:opacity-50 hover:bg-success/30 transition-colors"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onclick={() => editingDeviceTemp = null}
-                            class="text-xs px-2 py-1 bg-surface-recessed border border-stroke-default text-content-secondary rounded hover:border-stroke-strong transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        {:else}
-                          <button
-                            onclick={() => startEditDeviceTemp(device.id, tempInfo.temp)}
-                            class="font-display text-sm {tempInfo.isCustom ? 'text-device-climate-heat-text' : 'text-content-secondary'} hover:text-device-climate-heat-text transition-colors"
-                          >
-                            {tempInfo.temp}°C {tempInfo.isCustom ? '' : '(default)'}
-                          </button>
-                          {#if tempInfo.isCustom}
-                            <button
-                              onclick={() => resetDeviceTemp(preset.id, device.id)}
-                              disabled={loading}
-                              class="p-1.5 rounded bg-surface-recessed border border-stroke-subtle text-content-tertiary hover:text-content-secondary transition-colors disabled:opacity-50"
-                              title="Reset to default"
-                            >
-                              <RotateCcw class="w-3 h-3" />
-                            </button>
-                          {/if}
-                        {/if}
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
+              <button
+                onclick={(e) => { e.stopPropagation(); handleDeletePreset(preset.id); }}
+                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                title="Delete preset"
+              >
+                <Trash2 class="w-4 h-4" />
+              </button>
             </div>
-          {/if}
+          </div>
+          <span class="font-display text-2xl text-device-climate-heat-text neon-text-subtle">
+            {preset.target_temp}°C
+          </span>
         </div>
       {/each}
     </div>
+
+    <!-- Preset Dialog -->
+    {#if selectedPreset}
+      <PresetDialog
+        preset={selectedPreset}
+        {trvDevices}
+        bind:open={dialogOpen}
+        onclose={closeDialog}
+      />
+    {/if}
   </section>
 
   <!-- Create Schedule -->
