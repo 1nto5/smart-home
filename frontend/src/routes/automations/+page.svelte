@@ -491,12 +491,12 @@
         {#if formUseTelegram}
           <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle space-y-3">
             <div class="text-xs uppercase tracking-wider text-content-tertiary">Telegram Prompt</div>
-            <input
-              type="text"
+            <textarea
               bind:value={formTelegramPrompt}
               placeholder="e.g. Door opened! Turn off heating?"
-              class="w-full bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary"
-            />
+              rows="4"
+              class="w-full bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary placeholder:text-content-tertiary resize-y"
+            ></textarea>
 
             <div class="flex items-center justify-between">
               <div class="text-xs uppercase tracking-wider text-content-tertiary">On "Yes" execute:</div>
