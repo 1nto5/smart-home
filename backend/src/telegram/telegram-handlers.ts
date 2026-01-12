@@ -592,10 +592,8 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
 
   const text = `📊 <b>Smart Home Status</b>
 
-🌡️ Weather: <b>${weatherText}</b>
+🌡️ Indoor: <b>${weatherText}</b> · <b>${avgTemp}°C</b> avg
 🛡️ Alarm: <b>${alarm.armed ? '🔴 ARMED' : '🟢 Disarmed'}</b>
-💡 Lights: <b>${currentLampPreset}</b> (${lampCount})
-🔥 Heating: <b>${override.enabled ? overrideStatus : currentHeaterPreset}</b> (avg ${avgTemp}°C)
 🤖 Vacuum: ${roborockState}${roborockStatus ? ` (${roborockStatus.battery}%)` : ''}
 🌬️ Purifier: ${purifierState}`;
 
