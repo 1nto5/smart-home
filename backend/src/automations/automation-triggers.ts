@@ -71,14 +71,11 @@ export async function evaluateSensorTrigger(
 }
 
 /**
- * Evaluate AQI threshold crossings and trigger matching automations
+ * Evaluate AQI state and trigger matching automations
  * trigger_condition: 'above' or 'below'
  * trigger_device_id: threshold value (e.g., '50' for PM2.5)
  */
-export async function evaluateAqiTrigger(
-  previousAqi: number,
-  currentAqi: number
-): Promise<void> {
+export async function evaluateAqiTrigger(currentAqi: number): Promise<void> {
   const automations = getEnabledAqiAutomations();
 
   if (automations.length === 0) return;
@@ -97,15 +94,13 @@ export async function evaluateAqiTrigger(
     let shouldTrigger = false;
 
     if (condition === 'above') {
-      // Trigger when crossing from below to above threshold
-      shouldTrigger = previousAqi <= threshold && currentAqi > threshold;
+      shouldTrigger = currentAqi > threshold;
     } else if (condition === 'below') {
-      // Trigger when crossing from above to below (or equal) threshold
-      shouldTrigger = previousAqi > threshold && currentAqi <= threshold;
+      shouldTrigger = currentAqi <= threshold;
     }
 
     if (shouldTrigger) {
-      console.log(`AQI trigger: ${previousAqi} -> ${currentAqi} (threshold ${threshold}, condition ${condition})`);
+      console.log(`AQI trigger: ${currentAqi} ${condition} ${threshold}`);
       try {
         await executeAutomationActions(automation, context);
       } catch (error: any) {
