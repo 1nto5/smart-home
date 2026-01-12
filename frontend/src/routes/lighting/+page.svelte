@@ -253,7 +253,7 @@
                 </button>
                 <button
                   onclick={() => handleDeletePreset(name)}
-                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary opacity-0 group-hover:opacity-100 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
                   title="Delete preset"
                 >
                   <Trash2 class="w-4 h-4" />
@@ -393,38 +393,36 @@
         <p class="text-content-tertiary">No schedules configured</p>
       </div>
     {:else}
-      <div class="space-y-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {#each store.schedules as schedule (schedule.id)}
           <div
-            class="card p-3 flex items-center justify-between transition-opacity"
+            class="card p-3 transition-opacity"
             class:opacity-50={!schedule.enabled}
             class:card-active={schedule.enabled}
             class:glow-accent={schedule.enabled}
           >
-            <div class="flex items-center gap-4">
-              <div class="font-display text-2xl text-accent neon-text-subtle">{schedule.time}</div>
-              <div class="h-8 w-px bg-stroke-subtle"></div>
-              <div>
-                <span class="font-medium text-content-primary">{schedule.name}</span>
-                <span class="text-sm text-content-tertiary ml-2">
-                  <span class="text-device-lights-text">{getPresetName(schedule.preset)}</span>
-                </span>
+            <div class="flex items-center justify-between mb-2">
+              <div class="font-display text-xl text-accent neon-text-subtle">{schedule.time}</div>
+              <div class="flex gap-1.5">
+                <button
+                  onclick={() => handleToggle(schedule.id)}
+                  class="px-2.5 py-1 rounded-lg font-medium text-xs transition-all
+                         {schedule.enabled ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong'}"
+                >
+                  {schedule.enabled ? 'On' : 'Off'}
+                </button>
+                <button
+                  onclick={() => handleDelete(schedule.id)}
+                  class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-            <div class="flex gap-2">
-              <button
-                onclick={() => handleToggle(schedule.id)}
-                class="px-3 py-1.5 rounded-lg font-medium text-sm transition-all
-                       {schedule.enabled ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong'}"
-              >
-                {schedule.enabled ? 'On' : 'Off'}
-              </button>
-              <button
-                onclick={() => handleDelete(schedule.id)}
-                class="p-1.5 rounded-lg bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors"
-              >
-                <Trash2 class="w-4 h-4" />
-              </button>
+            <div class="text-sm">
+              <span class="font-medium text-content-primary">{schedule.name}</span>
+              <span class="text-content-tertiary mx-1">→</span>
+              <span class="text-device-lights-text">{getPresetName(schedule.preset)}</span>
             </div>
           </div>
         {/each}
