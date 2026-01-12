@@ -2,9 +2,10 @@
   import { store } from '$lib/stores.svelte';
   import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices } from '$lib/api';
   import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame, Pencil } from 'lucide-svelte';
-  import type { HeaterPreset, TuyaDevice } from '$lib/types';
+  import type { HeaterPreset, HeaterSchedule, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
   import PresetDialog from '$lib/components/PresetDialog.svelte';
+  import ScheduleDialog from '$lib/components/ScheduleDialog.svelte';
 
   let newName = $state('');
   let newPresetId = $state('night');
@@ -14,9 +15,13 @@
   // TRV devices for dialog
   let trvDevices = $state<TuyaDevice[]>([]);
 
-  // Dialog state
+  // Preset dialog state
   let selectedPreset = $state<HeaterPreset | null>(null);
-  let dialogOpen = $state(false);
+  let presetDialogOpen = $state(false);
+
+  // Schedule dialog state
+  let selectedSchedule = $state<HeaterSchedule | null>(null);
+  let scheduleDialogOpen = $state(false);
 
   // Load TRV devices on mount
   $effect(() => {
@@ -29,12 +34,22 @@
 
   function openPresetDialog(preset: HeaterPreset) {
     selectedPreset = preset;
-    dialogOpen = true;
+    presetDialogOpen = true;
   }
 
-  function closeDialog() {
-    dialogOpen = false;
+  function closePresetDialog() {
+    presetDialogOpen = false;
     selectedPreset = null;
+  }
+
+  function openScheduleDialog(schedule: HeaterSchedule) {
+    selectedSchedule = schedule;
+    scheduleDialogOpen = true;
+  }
+
+  function closeScheduleDialog() {
+    scheduleDialogOpen = false;
+    selectedSchedule = null;
   }
 
   async function handleCreate() {
@@ -242,8 +257,8 @@
       <PresetDialog
         preset={selectedPreset}
         {trvDevices}
-        bind:open={dialogOpen}
-        onclose={closeDialog}
+        bind:open={presetDialogOpen}
+        onclose={closePresetDialog}
       />
     {/if}
   </section>
@@ -327,8 +342,16 @@
                   {schedule.enabled ? 'On' : 'Off'}
                 </button>
                 <button
+                  onclick={() => openScheduleDialog(schedule)}
+                  class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-accent hover:border-accent/30 transition-colors"
+                  title="Edit schedule"
+                >
+                  <Pencil class="w-3.5 h-3.5" />
+                </button>
+                <button
                   onclick={() => handleDelete(schedule.id)}
                   class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"
+                  title="Delete schedule"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
@@ -342,6 +365,16 @@
           </div>
         {/each}
       </div>
+    {/if}
+
+    <!-- Schedule Dialog -->
+    {#if selectedSchedule}
+      <ScheduleDialog
+        schedule={selectedSchedule}
+        presets={store.heaterPresets}
+        bind:open={scheduleDialogOpen}
+        onclose={closeScheduleDialog}
+      />
     {/if}
   </section>
 

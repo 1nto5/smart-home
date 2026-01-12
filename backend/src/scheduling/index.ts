@@ -63,6 +63,7 @@ export {
   getHeaterSchedules,
   getHeaterSchedulesByTime,
   createHeaterSchedule,
+  updateHeaterSchedule,
   deleteHeaterSchedule,
   toggleHeaterSchedule,
   applyPresetToHeater,

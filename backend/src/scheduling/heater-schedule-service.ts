@@ -89,6 +89,50 @@ export function toggleHeaterSchedule(id: number): HeaterSchedule | null {
 }
 
 /**
+ * Update heater schedule
+ */
+export function updateHeaterSchedule(
+  id: number,
+  updates: { name?: string; preset_id?: string; time?: string }
+): HeaterSchedule | null {
+  const db = getDb();
+
+  if (updates.preset_id && !isValidHeaterPreset(updates.preset_id)) {
+    throw new Error(`Invalid preset: ${updates.preset_id}`);
+  }
+
+  if (updates.time && !/^\d{2}:\d{2}$/.test(updates.time)) {
+    throw new Error('Time must be in HH:MM format');
+  }
+
+  const fields: string[] = [];
+  const values: (string | number)[] = [];
+
+  if (updates.name !== undefined) {
+    fields.push('name = ?');
+    values.push(updates.name);
+  }
+  if (updates.preset_id !== undefined) {
+    fields.push('preset_id = ?');
+    values.push(updates.preset_id);
+  }
+  if (updates.time !== undefined) {
+    fields.push('time = ?');
+    values.push(updates.time);
+  }
+
+  if (fields.length === 0) {
+    return db.query('SELECT * FROM heater_schedules WHERE id = ?').get(id) as HeaterSchedule | null;
+  }
+
+  fields.push('updated_at = CURRENT_TIMESTAMP');
+  values.push(id);
+
+  db.run(`UPDATE heater_schedules SET ${fields.join(', ')} WHERE id = ?`, values);
+  return db.query('SELECT * FROM heater_schedules WHERE id = ?').get(id) as HeaterSchedule | null;
+}
+
+/**
  * Get all TRV device IDs
  */
 function getAllTrvIds(): string[] {

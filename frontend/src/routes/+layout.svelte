@@ -115,7 +115,7 @@
           class="p-2 rounded-lg transition-all duration-200 {alarmArmed
             ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30'
             : 'text-content-secondary hover:text-content-primary hover:bg-surface-recessed'}"
-          title={alarmArmed ? 'Alarm UZBROJONY - kliknij aby rozbroić' : 'Alarm rozbrojony - kliknij aby uzbroić'}
+          title={alarmArmed ? 'Alarm ARMED - click to disarm' : 'Alarm disarmed - click to arm'}
         >
           {#if alarmArmed}
             <Shield class="w-4 h-4" />
