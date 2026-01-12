@@ -991,6 +991,7 @@ import {
   setPurifierPower,
   setPurifierMode,
   setPurifierFanSpeed,
+  setLedBrightness,
 } from './xiaomi/air-purifier';
 
 // Get air purifier status
@@ -1015,6 +1016,9 @@ app.post('/api/purifier/control', async (c) => {
   }
   if (body.fan_speed !== undefined) {
     results.fan_speed = await setPurifierFanSpeed(body.fan_speed);
+  }
+  if (body.led_brightness !== undefined) {
+    results.led_brightness = await setLedBrightness(body.led_brightness);
   }
 
   const allSuccess = Object.values(results).every((v) => v);

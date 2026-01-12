@@ -13,6 +13,7 @@ import {
   roborockRoomsKeyboard,
   purifierKeyboard,
   purifierRpmKeyboard,
+  purifierLedKeyboard,
   soundbarKeyboard,
   soundbarProgramsKeyboard,
   soundbarAudioKeyboard,
@@ -52,6 +53,7 @@ import {
   setPurifierPower,
   setPurifierMode,
   setPurifierFanSpeed,
+  setLedBrightness,
 } from '../xiaomi/air-purifier';
 import {
   getSoundbarStatus,
@@ -558,6 +560,26 @@ async function handlePurifierAction(
     success = await setPurifierFanSpeed(newRpm);
     actionName = `Fan: ${newRpm} RPM`;
     const menu = purifierRpmKeyboard(newRpm);
+    const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
+    await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
+    return;
+  }
+
+  // LED brightness submenu
+  if (subAction === 'led_menu') {
+    const status = await getPurifierStatus();
+    const currentLevel = status?.led_brightness ?? 'bright';
+    const menu = purifierLedKeyboard(currentLevel);
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+
+  // Set LED brightness
+  if (subAction === 'led' && param) {
+    success = await setLedBrightness(param as 'bright' | 'dim' | 'off');
+    const levelNames: Record<string, string> = { bright: 'Bright', dim: 'Dim', off: 'Off' };
+    actionName = `LED: ${levelNames[param] || param}`;
+    const menu = purifierLedKeyboard(param);
     const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
     return;

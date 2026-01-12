@@ -2,7 +2,7 @@
   import { controlAirPurifier } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus } from 'lucide-svelte';
+  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus, Sun, SunDim, SunMoon } from 'lucide-svelte';
   import { debounce } from '$lib/debounce';
 
   let { compact = false }: { compact?: boolean } = $props();
@@ -13,12 +13,14 @@
   let optimisticPower = $state<boolean | null>(null);
   let optimisticMode = $state<string | null>(null);
   let optimisticFanSpeed = $state<number | null>(null);
+  let optimisticLedBrightness = $state<string | null>(null);
   let isPowerPending = $state(false);
 
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
   let displayFanSpeed = $derived(optimisticFanSpeed ?? status?.fan_speed ?? 300);
+  let displayLedBrightness = $derived(optimisticLedBrightness ?? status?.led_brightness ?? 'bright');
 
   async function togglePower() {
     const newPower = !displayPower;
@@ -45,6 +47,18 @@
     } catch (e) {
       console.error(e);
       optimisticMode = oldMode;
+    }
+  }
+
+  async function setLedBrightness(level: string) {
+    const oldLevel = displayLedBrightness;
+    optimisticLedBrightness = level;
+    try {
+      await controlAirPurifier({ led_brightness: level });
+      await store.refreshAirPurifier();
+    } catch (e) {
+      console.error(e);
+      optimisticLedBrightness = oldLevel;
     }
   }
 
@@ -98,6 +112,12 @@
   ];
 
   const modeLabels: Record<string, string> = { auto: 'Auto', silent: 'Night', favorite: 'Manual' };
+
+  const ledLevels = [
+    { value: 'bright', label: 'Bright', icon: Sun },
+    { value: 'dim', label: 'Dim', icon: SunDim },
+    { value: 'off', label: 'Off', icon: SunMoon },
+  ];
 </script>
 
 <!-- Card -->
@@ -240,6 +260,23 @@
             </div>
           </div>
         {/if}
+
+        <!-- LED Brightness -->
+        <div>
+          <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">LED Brightness</p>
+          <div class="grid grid-cols-3 gap-2">
+            {#each ledLevels as level}
+              <button
+                onclick={() => setLedBrightness(level.value)}
+                class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium
+                       {displayLedBrightness === level.value ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
+              >
+                <svelte:component this={level.icon} class="w-5 h-5" />
+                {level.label}
+              </button>
+            {/each}
+          </div>
+        </div>
 
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-3">

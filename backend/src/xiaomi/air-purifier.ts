@@ -14,7 +14,21 @@ interface PurifierStatus {
   aqi: number;
   filter_life: number;
   fan_speed?: number;
+  led_brightness?: 'bright' | 'dim' | 'off';
 }
+
+// LED brightness mapping (siid 6, piid 1)
+const LED_MAP: Record<number, 'bright' | 'dim' | 'off'> = {
+  0: 'bright',
+  1: 'dim',
+  2: 'off',
+};
+
+const LED_TO_VALUE: Record<string, number> = {
+  bright: 0,
+  dim: 1,
+  off: 2,
+};
 
 // MiOT mode mapping
 const MODE_MAP: Record<number, string> = {
@@ -77,11 +91,14 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     // siid 2 = air purifier service
     // siid 3 = environment
     // siid 4 = filter
+    // siid 6 = screen/LED
+    // siid 9 = motor
     const result = await purifierConnection.call('get_properties', [
       { siid: 2, piid: 1 },  // power (bool)
       { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
       { siid: 3, piid: 4 },  // pm2.5
       { siid: 4, piid: 3 },  // filter life % (piid 3 works for this device)
+      { siid: 6, piid: 1 },  // LED brightness (0=bright, 1=dim, 2=off)
       { siid: 9, piid: 1 },  // motor_speed (current RPM)
       { siid: 9, piid: 3 },  // favorite_rpm (set RPM)
     ]);
@@ -93,6 +110,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
 
     const modeValue = getValue(2, 4);
     const favoriteRpm = getValue(9, 3);
+    const ledValue = getValue(6, 1);
 
     return {
       power: getValue(2, 1) ?? false,
@@ -101,6 +119,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       filter_life: getValue(4, 3) ?? 0,
       fan_speed: favoriteRpm ?? 300,  // RPM value (300-2200)
       motor_rpm: getValue(9, 1),  // actual current RPM
+      led_brightness: LED_MAP[ledValue] ?? 'bright',
     };
   } catch (error: any) {
     console.error('Failed to get purifier status:', error.message);
@@ -174,6 +193,30 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
     return true;
   } catch (error: any) {
     console.error('Failed to set purifier fan speed:', error.message);
+    return false;
+  }
+}
+
+/**
+ * Set LED brightness (bright, dim, off)
+ */
+export async function setLedBrightness(level: 'bright' | 'dim' | 'off'): Promise<boolean> {
+  if (!purifierConnection) {
+    await connectPurifier();
+  }
+  if (!purifierConnection) return false;
+
+  const ledValue = LED_TO_VALUE[level];
+  if (ledValue === undefined) return false;
+
+  try {
+    await purifierConnection.call('set_properties', [
+      { siid: 6, piid: 1, value: ledValue }
+    ]);
+    console.log(`Air Purifier: LED brightness set to ${level}`);
+    return true;
+  } catch (error: any) {
+    console.error('Failed to set LED brightness:', error.message);
     return false;
   }
 }
