@@ -19,73 +19,98 @@
 </script>
 
 <!-- Home Status Card - Shows at top of dashboard -->
-<div class="card p-4 mb-6">
-  <div class="flex items-center gap-3 mb-4">
-    <div class="section-icon glow-accent">
-      <Home class="w-4 h-4" />
+{#if status}
+  <div class="grid grid-cols-3 gap-2 sm:gap-3">
+    <!-- Weather Station -->
+    <div class="status-tile">
+      <Thermometer class="w-5 h-5 sm:w-6 sm:h-6 text-device-sensors-text" />
+      <span class="status-label">Station</span>
+      <span class="status-value">
+        {status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : 'N/A'}
+      </span>
+      <span class="status-sub text-accent">
+        {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : ''}
+      </span>
     </div>
-    <h2 class="section-title text-accent">Home Status</h2>
+
+    <!-- Radiator Average -->
+    <div class="status-tile">
+      <Flame class="w-5 h-5 sm:w-6 sm:h-6 text-device-climate-heat-text" />
+      <span class="status-label">Radiators</span>
+      <span class="status-value">
+        {status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : 'N/A'}
+      </span>
+      <span class="status-sub text-content-tertiary">avg</span>
+    </div>
+
+    <!-- Air Quality -->
+    <div class="status-tile">
+      <Wind class="w-5 h-5 sm:w-6 sm:h-6 text-device-air-text" />
+      <span class="status-label">Air<br class="sm:hidden"/> Quality</span>
+      <span class="status-value {purifier ? aqiColor(purifier.aqi) : ''}">
+        {purifier ? purifier.aqi : 'N/A'}
+      </span>
+      <span class="status-sub {purifier ? aqiColor(purifier.aqi) : 'text-content-tertiary'}">
+        {purifier ? aqiLabel(purifier.aqi) : ''}
+      </span>
+    </div>
   </div>
-
-  {#if status}
-    <div class="grid grid-cols-3 gap-3">
-      <!-- Weather Station -->
-      <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Thermometer class="w-6 h-6 text-device-sensors-text mb-2" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Station</span>
-        <span class="font-display text-xl text-content-primary">
-          {status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : 'N/A'}
-        </span>
-        <span class="text-sm text-accent">
-          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : ''}
-        </span>
-      </div>
-
-      <!-- Radiator Average -->
-      <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Flame class="w-6 h-6 text-device-climate-heat-text mb-2" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators</span>
-        <span class="font-display text-xl text-content-primary">
-          {status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : 'N/A'}
-        </span>
-        <span class="text-sm text-content-tertiary">avg</span>
-      </div>
-
-      <!-- Air Quality -->
-      <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Wind class="w-6 h-6 text-device-air-text mb-2" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Air Quality</span>
-        <span class="font-display text-xl {purifier ? aqiColor(purifier.aqi) : 'text-content-primary'}">
-          {purifier ? purifier.aqi : 'N/A'}
-        </span>
-        <span class="text-sm {purifier ? aqiColor(purifier.aqi) : 'text-content-tertiary'}">
-          {purifier ? aqiLabel(purifier.aqi) : ''}
-        </span>
-      </div>
-    </div>
-  {:else}
-    <div class="text-center text-content-tertiary py-4">Loading...</div>
-  {/if}
-</div>
+{/if}
 
 <style>
-  .section-icon {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.5rem;
+  .status-tile {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
-    color: var(--color-accent);
+    padding: 0.75rem 0.5rem;
+    border-radius: 0.75rem;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-stroke-subtle);
+    text-align: center;
   }
 
-  .section-title {
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 600;
+  @media (min-width: 640px) {
+    .status-tile {
+      padding: 1rem;
+    }
+  }
+
+  .status-label {
+    font-size: 0.625rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
+    color: var(--color-content-tertiary);
+    margin-top: 0.25rem;
+    line-height: 1.2;
+  }
+
+  @media (min-width: 640px) {
+    .status-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+  }
+
+  .status-value {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    color: var(--color-content-primary);
+    margin-top: 0.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .status-value {
+      font-size: 1.25rem;
+    }
+  }
+
+  .status-sub {
+    font-size: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .status-sub {
+      font-size: 0.875rem;
+    }
   }
 </style>
