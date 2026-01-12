@@ -21,6 +21,7 @@ function createStore() {
   let heaterOverride = $state<HeaterOverride | null>(null);
   let homeStatus = $state<HomeStatusData | null>(null);
   let loading = $state(false);
+  let initialLoadComplete = $state(false);
   let error = $state<string | null>(null);
   let wsConnected = $state(false);
 
@@ -84,6 +85,7 @@ function createStore() {
     get heaterOverride() { return heaterOverride; },
     get homeStatus() { return homeStatus; },
     get loading() { return loading; },
+    get initialLoadComplete() { return initialLoadComplete; },
     get error() { return error; },
     get wsConnected() { return wsConnected; },
 
@@ -220,6 +222,7 @@ function createStore() {
         this.refreshHomeStatus(),
       ]);
       loading = false;
+      initialLoadComplete = true;
     },
   };
 }

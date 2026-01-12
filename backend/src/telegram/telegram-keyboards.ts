@@ -99,7 +99,7 @@ export function lampsListKeyboard(): { text: string; keyboard: InlineKeyboard } 
   const lamps = db.query(`
     SELECT id, name, last_status
     FROM xiaomi_devices
-    WHERE category = 'yeelink.light'
+    WHERE category = 'lamp'
     ORDER BY room, name
   `).all() as Array<{ id: string; name: string; last_status: string | null }>;
 

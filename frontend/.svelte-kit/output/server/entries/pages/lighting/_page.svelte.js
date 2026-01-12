@@ -1,7 +1,8 @@
-import { a2 as head, X as ensure_array_like, Z as attr, _ as attr_class, a0 as stringify } from "../../../chunks/index2.js";
-import { P as Play, s as store } from "../../../chunks/play.js";
+import { a2 as head, Y as ensure_array_like, _ as attr, X as attr_class, a0 as stringify } from "../../../chunks/index2.js";
+import { s as store } from "../../../chunks/Icon.js";
 import { L as Lightbulb, S as Sun } from "../../../chunks/sun.js";
 import { P as Plus, T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
+import { P as Play } from "../../../chunks/play.js";
 import { P as Power, M as Moon } from "../../../chunks/power.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function _page($$renderer, $$props) {

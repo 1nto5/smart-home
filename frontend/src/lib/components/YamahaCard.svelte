@@ -44,7 +44,13 @@
     isPowerPending = true;
     try {
       await controlYamaha(device.id, { power: newPower === 'on' });
-      refreshStatus();
+      // Soundbar needs time to change power state before status reflects it
+      await new Promise(r => setTimeout(r, 1500));
+      await refreshStatus();
+      // Keep optimistic state if server status doesn't match yet
+      if (status?.power !== newPower) {
+        optimisticPower = newPower;
+      }
     } catch (e) {
       console.error(e);
       optimisticPower = null;

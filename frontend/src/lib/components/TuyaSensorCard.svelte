@@ -190,10 +190,6 @@
         <span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span>
         <span class="text-xs {device.online ? 'text-success' : 'text-error'}">{device.online ? 'Connected' : 'Offline'}</span>
       </div>
-      <div class="flex justify-between items-center">
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Device ID</span>
-        <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">{device.id.slice(0, 12)}...</span>
-      </div>
     </div>
   </div>
 </DeviceDialog>
