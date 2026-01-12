@@ -6,7 +6,6 @@
 import { getSchedulesByTime, applyPresetToAllLamps } from './schedule-service';
 import { getHeaterSchedulesByTime, applyPresetToAllHeaters } from './heater-schedule-service';
 import { isOverrideActive } from './heater-override';
-import { telegramScheduleNotification } from '../notifications/telegram-service';
 
 let schedulerInterval: Timer | null = null;
 let lastTriggeredMinute: string = '';
@@ -39,8 +38,6 @@ export function startScheduler(): void {
       for (const schedule of lampSchedules) {
         console.log(`Triggering lamp schedule "${schedule.name}" (${schedule.preset}) at ${currentTime}`);
         applyPresetToAllLamps(schedule.preset, schedule.id);
-        // Send Telegram notification
-        telegramScheduleNotification('lamp', schedule.name, schedule.preset).catch(() => {});
       }
     }
 
@@ -53,8 +50,6 @@ export function startScheduler(): void {
         for (const schedule of heaterSchedules) {
           console.log(`Triggering heater schedule "${schedule.name}" (${schedule.preset_id}) at ${currentTime}`);
           applyPresetToAllHeaters(schedule.preset_id, schedule.id);
-          // Send Telegram notification
-          telegramScheduleNotification('heater', schedule.name, schedule.preset_id).catch(() => {});
         }
       }
     }
