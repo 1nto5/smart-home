@@ -312,3 +312,21 @@ export async function setHeaterOverride(
     body: JSON.stringify({ enabled, mode, fixed_temp }),
   });
 }
+
+// Alarm system
+export interface AlarmStatus {
+  armed: boolean;
+  updated_at: string;
+}
+
+export async function getAlarmStatus(): Promise<AlarmStatus> {
+  return fetcher('/alarm');
+}
+
+export async function armAlarm(): Promise<AlarmStatus> {
+  return fetcher('/alarm/arm', { method: 'POST' });
+}
+
+export async function disarmAlarm(): Promise<AlarmStatus> {
+  return fetcher('/alarm/disarm', { method: 'POST' });
+}
