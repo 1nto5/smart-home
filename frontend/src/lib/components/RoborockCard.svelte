@@ -4,7 +4,7 @@
   import { store } from '$lib/stores.svelte';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { VolumeX, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin } from 'lucide-svelte';
+  import { VolumeX, Volume2, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin, Minus, Plus } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { status, compact = false }: { status: RoborockStatus | null; compact?: boolean } = $props();
@@ -398,17 +398,41 @@
         <div>
           <div class="flex justify-between items-center mb-3">
             <span class="text-xs text-content-tertiary uppercase tracking-wider">Volume</span>
-            <span class="font-display text-lg text-content-primary">{displayVolume}%</span>
+            <span class="font-display text-lg text-device-sensors-text neon-text-subtle">{displayVolume}%</span>
           </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="10"
-            value={displayVolume}
-            oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
-            class="w-full"
-          />
+          <div class="flex gap-2 items-center">
+            <button
+              onclick={() => handleVolumeInput(Math.max(0, displayVolume - 10))}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+            >
+              <Minus class="w-5 h-5" />
+            </button>
+            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+              <div
+                class="absolute inset-y-0 left-0 bg-device-sensors-text/30 transition-all duration-150"
+                style="width: {displayVolume}%"
+              ></div>
+              <div
+                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-sensors-text shadow-[0_0_10px_var(--color-sensors-glow)] transition-all duration-150"
+                style="left: calc({displayVolume}% - 8px)"
+              ></div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="10"
+                value={displayVolume}
+                oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <button
+              onclick={() => handleVolumeInput(Math.min(100, displayVolume + 10))}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+            >
+              <Plus class="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <!-- Consumables -->
