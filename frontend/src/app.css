@@ -698,6 +698,11 @@ input[type="range"].slider-audio::-moz-range-thumb {
   --glow-bg: var(--color-air-bg);
 }
 
+/* iOS safe area support for bottom tab bar */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
