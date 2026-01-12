@@ -86,6 +86,21 @@
         </div>
       </a>
 
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-1">
+        {#each navItems as item (item.href)}
+          {@const isActive = $page.url.pathname === item.href}
+          <a
+            href={item.href}
+            class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
+                   {isActive ? 'bg-[var(--color-accent-subtle)] text-accent' : 'text-content-secondary hover:text-content-primary hover:bg-surface-recessed'}"
+          >
+            <svelte:component this={item.icon} class="w-4 h-4" />
+            <span class="text-sm font-medium">{item.label}</span>
+          </a>
+        {/each}
+      </div>
+
       <!-- Utility Buttons -->
       <div class="flex items-center gap-1">
         <!-- Refresh Button -->
@@ -133,12 +148,12 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-6xl mx-auto px-4 py-6 pb-24">
+  <main class="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6">
     {@render children()}
   </main>
 
-  <!-- Bottom Tab Bar -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface-elevated border-t border-stroke-subtle pb-safe">
+  <!-- Bottom Tab Bar (mobile only) -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface-elevated border-t border-stroke-subtle pb-safe md:hidden">
     <div class="flex justify-around max-w-lg mx-auto px-2 py-1.5">
       {#each navItems as item (item.href)}
         {@const isActive = $page.url.pathname === item.href}
