@@ -7,13 +7,15 @@
   import AirPurifierCard from '$lib/components/AirPurifierCard.svelte';
   import HomeStatusCard from '$lib/components/HomeStatusCard.svelte';
   import { store } from '$lib/stores.svelte';
-  import { Lightbulb, Thermometer, Radio, Zap } from 'lucide-svelte';
+  import { Lightbulb, Thermometer, Zap, DoorOpen, Droplet } from 'lucide-svelte';
 
   // Filter devices by type
   let lamps = $derived(store.lamps.filter(l => l.category === 'lamp'));
   let thermostats = $derived(store.tuyaDevices.filter(d => d.category === 'wkf'));
-  // Sensors excluding weather station (shown in quick access)
-  let sensors = $derived(store.tuyaDevices.filter(d => ['sj', 'mcs'].includes(d.category)));
+  // Door/window sensors (mcs category)
+  let doorSensors = $derived(store.tuyaDevices.filter(d => d.category === 'mcs'));
+  // Flood sensors (sj category)
+  let floodSensors = $derived(store.tuyaDevices.filter(d => d.category === 'sj'));
   // Weather station for quick access
   let weatherStation = $derived(store.tuyaDevices.find(d => d.category === 'wsdcg'));
 
@@ -42,7 +44,7 @@
             <div class="flex-1 h-px bg-gradient-to-r from-stroke-subtle to-transparent"></div>
           </div>
           <!-- Card grid skeleton -->
-          <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {#each Array(4) as _, j}
               <div class="card p-3 relative overflow-hidden" style="animation-delay: {(i * 4 + j) * 50}ms">
                 <div class="flex items-center gap-3">
@@ -73,7 +75,7 @@
         <h2 class="section-title">Quick Access</h2>
         <div class="section-line"></div>
       </div>
-      <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {#each store.yamahaDevices as device (device.id)}
           <YamahaCard {device} compact />
         {/each}
@@ -98,7 +100,7 @@
           <span class="section-count">{lamps.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each lamps as lamp (lamp.id)}
             <LampCard {lamp} compact />
           {/each}
@@ -117,7 +119,7 @@
           <span class="section-count">{thermostats.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each thermostats as device (device.id)}
             <TRVCard {device} compact />
           {/each}
@@ -125,19 +127,38 @@
       </section>
     {/if}
 
-    <!-- Sensors -->
-    {#if sensors.length > 0}
+    <!-- Door/Window Sensors -->
+    {#if doorSensors.length > 0}
       <section>
-        <div class="section-header section-header-sensors">
-          <div class="section-icon glow-sensors">
-            <Radio class="w-4 h-4" />
+        <div class="section-header section-header-doors">
+          <div class="section-icon glow-doors">
+            <DoorOpen class="w-4 h-4" />
           </div>
-          <h2 class="section-title">Sensors</h2>
-          <span class="section-count">{sensors.length}</span>
+          <h2 class="section-title">Door / Window</h2>
+          <span class="section-count">{doorSensors.length}</span>
           <div class="section-line"></div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {#each sensors as device (device.id)}
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {#each doorSensors as device (device.id)}
+            <TuyaSensorCard {device} compact />
+          {/each}
+        </div>
+      </section>
+    {/if}
+
+    <!-- Flood Sensors -->
+    {#if floodSensors.length > 0}
+      <section>
+        <div class="section-header section-header-flood">
+          <div class="section-icon glow-flood">
+            <Droplet class="w-4 h-4" />
+          </div>
+          <h2 class="section-title">Flood Sensors</h2>
+          <span class="section-count">{floodSensors.length}</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {#each floodSensors as device (device.id)}
             <TuyaSensorCard {device} compact />
           {/each}
         </div>
@@ -219,6 +240,34 @@
   .section-header-sensors .section-title { color: var(--color-sensors-text); }
   .section-header-sensors .section-line {
     background: linear-gradient(90deg, color-mix(in srgb, var(--color-sensors-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  /* Door/Window sensors - using warning color */
+  .section-header-doors .section-icon {
+    background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+    color: var(--color-warning);
+  }
+  .section-header-doors .section-title { color: var(--color-warning); }
+  .section-header-doors .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning) 40%, transparent) 0%, transparent 100%);
+  }
+  .glow-doors {
+    box-shadow: 0 0 15px -3px color-mix(in srgb, var(--color-warning) 40%, transparent);
+  }
+
+  /* Flood sensors - using accent/blue color */
+  .section-header-flood .section-icon {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+    color: var(--color-accent);
+  }
+  .section-header-flood .section-title { color: var(--color-accent); }
+  .section-header-flood .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);
+  }
+  .glow-flood {
+    box-shadow: 0 0 15px -3px color-mix(in srgb, var(--color-accent) 40%, transparent);
   }
 
   .section-header-audio .section-icon {

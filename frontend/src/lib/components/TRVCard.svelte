@@ -1,13 +1,14 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import type { TuyaDevice } from '$lib/types';
-  import { translateDeviceName } from '$lib/translations';
+  import { translateDeviceName, getSimplifiedName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Flame, Snowflake, ThermometerSun } from 'lucide-svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
-  let displayName = $derived(translateDeviceName(device.name));
+  let fullName = $derived(translateDeviceName(device.name));
+  let displayName = $derived(compact ? getSimplifiedName(device.name, device.category) : fullName);
   let dialogOpen = $state(false);
 
   // Optimistic state
@@ -144,7 +145,7 @@
 </div>
 
 <!-- Detail Dialog -->
-<DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
+<DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={fullName}>
   <div class="space-y-5">
     <!-- Valve Status -->
     <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
