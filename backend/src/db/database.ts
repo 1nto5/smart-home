@@ -455,6 +455,14 @@ export function initDatabase(): Database {
   db.run(`CREATE INDEX IF NOT EXISTS idx_telegram_log_time
           ON telegram_log(sent_at DESC)`);
 
+  // Telegram bot polling offset - singleton table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS telegram_updates_offset (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      offset INTEGER DEFAULT 0
+    )
+  `);
+
   console.log(`📦 Database initialized: ${dbPath}`);
   return db;
 }
@@ -906,4 +914,17 @@ export function getLastTelegramTime(alertType: string, deviceId?: string): Date 
 
   const result = database.query(query).get(...params) as { sent_at: string } | null;
   return result ? new Date(result.sent_at) : null;
+}
+
+// === TELEGRAM BOT POLLING OFFSET ===
+
+export function getUpdateOffset(): number {
+  const database = getDb();
+  const result = database.query('SELECT offset FROM telegram_updates_offset WHERE id = 1').get() as { offset: number } | null;
+  return result?.offset ?? 0;
+}
+
+export function setUpdateOffset(offset: number): void {
+  const database = getDb();
+  database.run('INSERT OR REPLACE INTO telegram_updates_offset (id, offset) VALUES (1, ?)', [offset]);
 }

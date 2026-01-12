@@ -26,6 +26,7 @@ import {
 } from './db/database';
 import { sendTestSms } from './notifications/sms-service';
 import { sendTestTelegram } from './notifications/telegram-service';
+import { startTelegramBot } from './telegram/telegram-bot';
 import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from './tuya/tuya-api';
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus, connectDevice, disconnectAll } from './tuya/tuya-local';
 import {
@@ -121,6 +122,9 @@ refreshLampPresetsCache();
 // Start scheduler and poller
 startScheduler();
 startPoller();
+
+// Start Telegram bot
+startTelegramBot();
 
 // Health check
 app.get('/api/health', (c) => {
