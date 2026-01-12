@@ -7,12 +7,15 @@
   import AirPurifierCard from '$lib/components/AirPurifierCard.svelte';
   import HomeStatusCard from '$lib/components/HomeStatusCard.svelte';
   import { store } from '$lib/stores.svelte';
-  import { Lightbulb, Thermometer, Radio, Volume2, Bot } from 'lucide-svelte';
+  import { Lightbulb, Thermometer, Radio, Zap } from 'lucide-svelte';
 
   // Filter devices by type
   let lamps = $derived(store.lamps.filter(l => l.category === 'lamp'));
   let thermostats = $derived(store.tuyaDevices.filter(d => d.category === 'wkf'));
-  let sensors = $derived(store.tuyaDevices.filter(d => ['sj', 'mcs', 'wsdcg'].includes(d.category)));
+  // Sensors excluding weather station (shown in quick access)
+  let sensors = $derived(store.tuyaDevices.filter(d => ['sj', 'mcs'].includes(d.category)));
+  // Weather station for quick access
+  let weatherStation = $derived(store.tuyaDevices.find(d => d.category === 'wsdcg'));
 
   // Check if data loaded
   let hasLoaded = $derived(
@@ -61,39 +64,28 @@
     <!-- Home Status -->
     <HomeStatusCard />
 
-    <!-- Robot -->
+    <!-- Quick Access: Roborock, Soundbar, Weather Station, Air Purifier -->
     <section>
-      <div class="section-header section-header-robot">
-        <div class="section-icon glow-robot">
-          <Bot class="w-4 h-4" />
+      <div class="section-header section-header-quick">
+        <div class="section-icon glow-accent">
+          <Zap class="w-4 h-4" />
         </div>
-        <h2 class="section-title">Robot</h2>
-        <span class="section-count">1</span>
+        <h2 class="section-title">Quick Access</h2>
         <div class="section-line"></div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <RoborockCard status={store.roborock} compact />
+        {#each store.yamahaDevices as device (device.id)}
+          <YamahaCard {device} compact />
+        {/each}
+        {#if weatherStation}
+          <TuyaSensorCard device={weatherStation} compact />
+        {/if}
+        {#if store.airPurifier}
+          <AirPurifierCard compact />
+        {/if}
       </div>
     </section>
-
-    <!-- Audio -->
-    {#if store.yamahaDevices.length > 0}
-      <section>
-        <div class="section-header section-header-audio">
-          <div class="section-icon glow-audio">
-            <Volume2 class="w-4 h-4" />
-          </div>
-          <h2 class="section-title">Audio</h2>
-          <span class="section-count">{store.yamahaDevices.length}</span>
-          <div class="section-line"></div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {#each store.yamahaDevices as device (device.id)}
-            <YamahaCard {device} compact />
-          {/each}
-        </div>
-      </section>
-    {/if}
 
     <!-- Lights -->
     {#if lamps.length > 0}
@@ -114,24 +106,21 @@
       </section>
     {/if}
 
-    <!-- Climate -->
-    {#if thermostats.length > 0 || store.airPurifier}
+    <!-- Climate (Thermostats only) -->
+    {#if thermostats.length > 0}
       <section>
         <div class="section-header section-header-climate">
           <div class="section-icon glow-climate-heat">
             <Thermometer class="w-4 h-4" />
           </div>
           <h2 class="section-title">Climate</h2>
-          <span class="section-count">{thermostats.length + (store.airPurifier ? 1 : 0)}</span>
+          <span class="section-count">{thermostats.length}</span>
           <div class="section-line"></div>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {#each thermostats as device (device.id)}
             <TRVCard {device} compact />
           {/each}
-          {#if store.airPurifier}
-            <AirPurifierCard compact />
-          {/if}
         </div>
       </section>
     {/if}
@@ -250,6 +239,16 @@
   .section-header-robot .section-title { color: var(--color-robot-text); }
   .section-header-robot .section-line {
     background: linear-gradient(90deg, color-mix(in srgb, var(--color-robot-text) 40%, transparent) 0%, transparent 100%);
+  }
+
+  .section-header-quick .section-icon {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+    color: var(--color-accent);
+  }
+  .section-header-quick .section-title { color: var(--color-accent); }
+  .section-header-quick .section-line {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);
   }
 
   /* Skeleton loading effects */

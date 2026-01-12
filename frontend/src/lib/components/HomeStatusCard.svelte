@@ -1,8 +1,21 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { Thermometer, Droplet, Flame, Home } from 'lucide-svelte';
+  import { Thermometer, Flame, Home, Wind } from 'lucide-svelte';
 
   let status = $derived(store.homeStatus);
+  let purifier = $derived(store.airPurifier);
+
+  function aqiColor(aqi: number): string {
+    if (aqi <= 50) return 'text-success';
+    if (aqi <= 100) return 'text-warning';
+    return 'text-error';
+  }
+
+  function aqiLabel(aqi: number): string {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    return 'Poor';
+  }
 </script>
 
 <!-- Home Status Card - Shows at top of dashboard -->
@@ -15,27 +28,39 @@
   </div>
 
   {#if status}
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-3 gap-3">
       <!-- Weather Station -->
       <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
         <Thermometer class="w-6 h-6 text-device-sensors-text mb-2" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Weather Station</span>
+        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Station</span>
         <span class="font-display text-xl text-content-primary">
           {status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : 'N/A'}
         </span>
         <span class="text-sm text-accent">
-          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}% humidity` : ''}
+          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : ''}
         </span>
       </div>
 
       <!-- Radiator Average -->
       <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
         <Flame class="w-6 h-6 text-device-climate-heat-text mb-2" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators Avg</span>
+        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators</span>
         <span class="font-display text-xl text-content-primary">
           {status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : 'N/A'}
         </span>
-        <span class="text-sm text-content-tertiary">from 5 thermostats</span>
+        <span class="text-sm text-content-tertiary">avg</span>
+      </div>
+
+      <!-- Air Quality -->
+      <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">
+        <Wind class="w-6 h-6 text-device-air-text mb-2" />
+        <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Air Quality</span>
+        <span class="font-display text-xl {purifier ? aqiColor(purifier.aqi) : 'text-content-primary'}">
+          {purifier ? purifier.aqi : 'N/A'}
+        </span>
+        <span class="text-sm {purifier ? aqiColor(purifier.aqi) : 'text-content-tertiary'}">
+          {purifier ? aqiLabel(purifier.aqi) : ''}
+        </span>
       </div>
     </div>
   {:else}
