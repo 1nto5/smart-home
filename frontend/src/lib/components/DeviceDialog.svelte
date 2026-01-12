@@ -25,6 +25,17 @@
       onclose();
     }
   }
+
+  $effect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  });
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
