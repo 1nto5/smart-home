@@ -395,23 +395,25 @@
               </select>
             </div>
           {:else}
-            <div class="flex gap-3 items-center">
-              <span class="text-content-secondary">When AQI</span>
+            <div class="flex flex-wrap gap-2 items-center">
+              <span class="text-content-secondary text-sm">When AQI</span>
               <select
                 bind:value={formTriggerCondition}
-                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary text-sm"
               >
                 <option value="above">goes above</option>
                 <option value="below">drops below</option>
               </select>
-              <input
-                type="number"
-                bind:value={formAqiThreshold}
-                min="1"
-                max="500"
-                class="w-20 bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary text-center"
-              />
-              <span class="text-content-tertiary">PM2.5</span>
+              <div class="flex items-center gap-2">
+                <input
+                  type="number"
+                  bind:value={formAqiThreshold}
+                  min="1"
+                  max="500"
+                  class="w-16 bg-surface-base border border-stroke-default rounded-lg px-2 py-2 text-content-primary text-center text-sm"
+                />
+                <span class="text-content-tertiary text-sm">PM2.5</span>
+              </div>
             </div>
           {/if}
         </div>
