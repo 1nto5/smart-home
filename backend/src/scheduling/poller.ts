@@ -14,12 +14,14 @@ import { applyPresetToHeater } from './heater-schedule-service';
 import { getDb, cleanupOldHistory, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
 import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
-import { evaluateSensorTrigger } from '../automations/automation-triggers';
+import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automation-triggers';
+import { getPurifierStatus } from '../xiaomi/air-purifier';
 
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
 let sensorRefreshCounter = 0;
 let cleanupCounter = 0;
+let lastAqiValue: number | null = null;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = 'bf889f95067d327853rwzw';
@@ -166,6 +168,25 @@ async function refreshTrvStatuses(): Promise<void> {
   }
 }
 
+// Poll AQI from air purifier and trigger automations on threshold crossings
+async function pollAqi(): Promise<void> {
+  try {
+    const status = await getPurifierStatus();
+    if (!status) return;
+
+    const currentAqi = status.aqi;
+
+    // Only evaluate on threshold crossings, not continuously
+    if (lastAqiValue !== null && lastAqiValue !== currentAqi) {
+      evaluateAqiTrigger(lastAqiValue, currentAqi);
+    }
+
+    lastAqiValue = currentAqi;
+  } catch (e: any) {
+    console.error('AQI poll error:', e.message);
+  }
+}
+
 // Fast poll door/window sensors (every 5 seconds) - local API
 async function pollDoorSensors(): Promise<void> {
   const db = getDb();
@@ -230,6 +251,7 @@ export async function startPoller(): Promise<void> {
       refreshWeatherStationStatuses().catch(e => console.error('Weather station error:', e.message));
       refreshSensorStatuses().catch(e => console.error('Sensor refresh error:', e.message));
       refreshTrvStatuses().catch(e => console.error('TRV refresh error:', e.message));
+      pollAqi().catch(e => console.error('AQI poll error:', e.message));
     }
 
     // Daily cleanup (every 24 hours = 2880 iterations of 30s)
