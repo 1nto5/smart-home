@@ -1,6 +1,13 @@
 import { getAlarmConfig, getDb } from '../db/database';
 import { getLampPresets, getHeaterPresets, getHeaterOverride } from '../scheduling';
 
+type SensorReading = {
+  temperature: number | null;
+  humidity: number | null;
+  battery: number | null;
+  recorded_at: string;
+};
+
 type InlineKeyboard = { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> };
 
 /**
@@ -24,6 +31,7 @@ Select a category:`;
         [{ text: '🤖 Vacuum', callback_data: 'menu:roborock' }],
         [{ text: '🌬️ Air Purifier', callback_data: 'menu:purifier' }],
         [{ text: '🔊 Soundbar', callback_data: 'menu:soundbar' }],
+        [{ text: '🌡️ Weather Station', callback_data: 'menu:weather' }],
         [{ text: '📊 Status', callback_data: 'status' }],
       ],
     },
@@ -247,6 +255,49 @@ Select an action:`;
           { text: '🔈 Unmute', callback_data: 'soundbar:unmute' },
         ],
         [{ text: '📊 Status', callback_data: 'soundbar:status' }],
+        [{ text: '« Back to Menu', callback_data: 'menu:main' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Weather station keyboard with current readings
+ */
+export function weatherKeyboard(): { text: string; keyboard: InlineKeyboard } {
+  const db = getDb();
+
+  // Get latest reading from weather station
+  const reading = db.query(`
+    SELECT temperature, humidity, battery, recorded_at
+    FROM sensor_history
+    WHERE device_id = (SELECT id FROM devices WHERE category = 'wsdcg' LIMIT 1)
+    ORDER BY recorded_at DESC
+    LIMIT 1
+  `).get() as SensorReading | null;
+
+  let statusText = 'No data available';
+  if (reading) {
+    const temp = reading.temperature !== null ? `${reading.temperature}°C` : 'N/A';
+    const hum = reading.humidity !== null ? `${reading.humidity}%` : 'N/A';
+    const bat = reading.battery !== null ? `${reading.battery}%` : 'N/A';
+    const time = new Date(reading.recorded_at + 'Z').toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' });
+    statusText = `🌡️ Temperature: <b>${temp}</b>
+💧 Humidity: <b>${hum}</b>
+🔋 Battery: <b>${bat}</b>
+
+🕐 Updated: ${time}`;
+  }
+
+  const text = `🌡️ <b>Weather Station</b>
+
+${statusText}`;
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        [{ text: '🔄 Refresh', callback_data: 'weather:refresh' }],
         [{ text: '« Back to Menu', callback_data: 'menu:main' }],
       ],
     },

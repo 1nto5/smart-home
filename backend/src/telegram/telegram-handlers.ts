@@ -8,6 +8,7 @@ import {
   roborockKeyboard,
   purifierKeyboard,
   soundbarKeyboard,
+  weatherKeyboard,
 } from './telegram-keyboards';
 import { setAlarmArmed, getAlarmConfig, getDb } from '../db/database';
 import {
@@ -97,6 +98,9 @@ export async function handleCallbackQuery(
       case 'soundbar':
         await handleSoundbarAction(args, chatId, messageId);
         break;
+      case 'weather':
+        await handleWeatherAction(args, chatId, messageId);
+        break;
       case 'status':
         await sendStatusMessage(chatId, messageId);
         break;
@@ -141,6 +145,9 @@ async function handleMenuNavigation(
       break;
     case 'soundbar':
       result = soundbarKeyboard();
+      break;
+    case 'weather':
+      result = weatherKeyboard();
       break;
     default:
       result = await mainMenuKeyboard();
@@ -432,6 +439,19 @@ async function handleSoundbarAction(
   const menu = soundbarKeyboard();
   const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
   await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
+}
+
+/**
+ * Handle weather actions
+ */
+async function handleWeatherAction(
+  args: string[],
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  // For refresh or any action, just show updated weather data
+  const result = weatherKeyboard();
+  await editMessage(chatId, messageId, result.text, result.keyboard);
 }
 
 /**
