@@ -12,6 +12,7 @@ import {
   roborockMopKeyboard,
   roborockRoomsKeyboard,
   purifierKeyboard,
+  purifierRpmKeyboard,
   soundbarKeyboard,
   soundbarProgramsKeyboard,
   soundbarAudioKeyboard,
@@ -50,6 +51,7 @@ import {
   getPurifierStatus,
   setPurifierPower,
   setPurifierMode,
+  setPurifierFanSpeed,
 } from '../xiaomi/air-purifier';
 import {
   getSoundbarStatus,
@@ -527,6 +529,40 @@ async function handlePurifierAction(
   let success = false;
   let actionName = '';
 
+  // RPM submenu
+  if (subAction === 'rpm_menu') {
+    const status = await getPurifierStatus();
+    const currentRpm = status?.fan_speed ?? 300;
+    const menu = purifierRpmKeyboard(currentRpm);
+    await editMessage(chatId, messageId, menu.text, menu.keyboard);
+    return;
+  }
+
+  // Set RPM directly
+  if (subAction === 'rpm' && param) {
+    const rpm = parseInt(param);
+    success = await setPurifierFanSpeed(rpm);
+    actionName = `Fan: ${rpm} RPM`;
+    const menu = purifierRpmKeyboard(rpm);
+    const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
+    await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
+    return;
+  }
+
+  // Adjust RPM by +/- value
+  if (subAction === 'rpm_adj' && param) {
+    const status = await getPurifierStatus();
+    const currentRpm = status?.fan_speed ?? 300;
+    const adj = parseInt(param);
+    const newRpm = Math.max(300, Math.min(2200, currentRpm + adj));
+    success = await setPurifierFanSpeed(newRpm);
+    actionName = `Fan: ${newRpm} RPM`;
+    const menu = purifierRpmKeyboard(newRpm);
+    const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
+    await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
+    return;
+  }
+
   if (subAction === 'on') {
     success = await setPurifierPower(true);
     actionName = 'Power On';
@@ -535,12 +571,15 @@ async function handlePurifierAction(
     actionName = 'Power Off';
   } else if (subAction === 'mode' && param) {
     success = await setPurifierMode(param);
-    actionName = `Mode: ${param}`;
+    const modeNames: Record<string, string> = { auto: 'Auto', silent: 'Silent', favorite: 'Manual' };
+    actionName = `Mode: ${modeNames[param] || param}`;
   } else if (subAction === 'status') {
     const status = await getPurifierStatus();
     const menu = purifierKeyboard();
     if (status) {
-      const text = `${menu.text}\n\n📊 <b>Status:</b>\nPower: ${status.power ? 'On' : 'Off'}\nMode: ${status.mode}\nAQI: ${status.aqi}\nFilter: ${status.filter_life}%`;
+      const modeNames: Record<string, string> = { auto: 'Auto', silent: 'Silent', favorite: 'Manual' };
+      const modeName = modeNames[status.mode] || status.mode;
+      const text = `${menu.text}\n\n📊 <b>Status:</b>\nPower: ${status.power ? 'On' : 'Off'}\nMode: ${modeName}\nFan: ${status.fan_speed} RPM\nAQI: ${status.aqi}\nFilter: ${status.filter_life}%`;
       await editMessage(chatId, messageId, text, menu.keyboard);
     } else {
       await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);
