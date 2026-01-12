@@ -1,7 +1,7 @@
 import { a2 as head, X as ensure_array_like, Z as attr, _ as attr_class, a0 as stringify } from "../../../chunks/index2.js";
-import { P as Play, s as store } from "../../../chunks/play.js";
+import { P as Plus, a as Play, s as store } from "../../../chunks/plus.js";
 import { L as Lightbulb, S as Sun } from "../../../chunks/sun.js";
-import { P as Plus, T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
+import { T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
 import { P as Power, M as Moon } from "../../../chunks/power.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function _page($$renderer, $$props) {
@@ -45,7 +45,7 @@ function _page($$renderer, $$props) {
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"><!--[-->`);
+    $$renderer2.push(`<!--]--> <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"><!--[-->`);
     const each_array = ensure_array_like(Object.entries(presets));
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
       let [name, preset] = each_array[$$index];

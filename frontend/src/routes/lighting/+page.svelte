@@ -230,7 +230,7 @@
     {/if}
 
     <!-- Preset Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {#each Object.entries(presets) as [name, preset] (name)}
         <div class="card group hover:border-device-lights-text/30 transition-colors">
           <div class="p-4">

@@ -5,7 +5,7 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Power, Sun, Moon, Sparkles } from 'lucide-svelte';
+  import { Power, Sun, Moon, Sparkles, Minus, Plus } from 'lucide-svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
@@ -237,32 +237,75 @@
               <span class="text-xs text-content-tertiary uppercase tracking-wider">Brightness</span>
               <span class="font-display text-lg text-device-lights-text neon-text-subtle">{displayBrightness}%</span>
             </div>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={displayBrightness}
-              oninput={(e) => handleBrightnessInput(parseInt(e.currentTarget.value))}
-              class="w-full"
-              style="--color-accent: var(--color-lights-text); --color-accent-glow: var(--color-lights-glow);"
-            />
+            <div class="flex gap-2 items-center">
+              <button
+                onclick={() => handleBrightnessInput(Math.max(1, displayBrightness - 10))}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+              >
+                <Minus class="w-5 h-5" />
+              </button>
+              <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+                <div
+                  class="absolute inset-y-0 left-0 bg-device-lights-text/30 transition-all duration-150"
+                  style="width: {displayBrightness}%"
+                ></div>
+                <div
+                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-lights-text shadow-[0_0_10px_var(--color-lights-glow)] transition-all duration-150"
+                  style="left: calc({displayBrightness}% - 8px)"
+                ></div>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={displayBrightness}
+                  oninput={(e) => handleBrightnessInput(parseInt(e.currentTarget.value))}
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <button
+                onclick={() => handleBrightnessInput(Math.min(100, displayBrightness + 10))}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
+              >
+                <Plus class="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <!-- Color Temperature -->
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span>
-              <span class="font-display text-lg text-content-primary">{displayColorTemp}K</span>
+              <span class="font-display text-lg text-device-lights-text neon-text-subtle">{displayColorTemp}K</span>
             </div>
-            <input
-              type="range"
-              min="1700"
-              max="6500"
-              step="100"
-              value={displayColorTemp}
-              oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
-              class="w-full"
-            />
+            <div class="flex gap-2 items-center">
+              <button
+                onclick={() => handleColorTempInput(Math.max(1700, displayColorTemp - 500))}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-orange-400 hover:border-orange-400/50 transition-all flex items-center justify-center"
+              >
+                <Minus class="w-5 h-5" />
+              </button>
+              <div class="flex-1 h-10 rounded-lg overflow-hidden relative" style="background: linear-gradient(to right, #f97316, #fbbf24, #fef3c7, #e0f2fe, #7dd3fc);">
+                <div
+                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-content-primary shadow-lg transition-all duration-150"
+                  style="left: calc({((displayColorTemp - 1700) / 4800) * 100}% - 8px)"
+                ></div>
+                <input
+                  type="range"
+                  min="1700"
+                  max="6500"
+                  step="100"
+                  value={displayColorTemp}
+                  oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <button
+                onclick={() => handleColorTempInput(Math.min(6500, displayColorTemp + 500))}
+                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-sky-400 hover:border-sky-400/50 transition-all flex items-center justify-center"
+              >
+                <Plus class="w-5 h-5" />
+              </button>
+            </div>
             <div class="flex justify-between text-[10px] text-content-tertiary mt-2 uppercase tracking-wider">
               <span class="text-orange-400">Warm</span>
               <span class="text-sky-400">Cool</span>

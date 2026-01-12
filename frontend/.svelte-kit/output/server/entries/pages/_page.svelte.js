@@ -1,5 +1,5 @@
 import { U as sanitize_props, V as spread_props, W as slot, _ as attr_class, Z as attr, a0 as stringify, X as ensure_array_like, a1 as attr_style, a2 as head } from "../../chunks/index2.js";
-import { s as store, P as Play } from "../../chunks/play.js";
+import { s as store, P as Plus, a as Play } from "../../chunks/plus.js";
 import { e as escape_html } from "../../chunks/context.js";
 import "clsx";
 import { I as Icon } from "../../chunks/Icon.js";
@@ -648,6 +648,78 @@ function Gauge($$renderer, $$props) {
     }
   ]));
 }
+function Minus($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [["path", { "d": "M5 12h14" }]];
+  Icon($$renderer, spread_props([
+    { name: "minus" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Minus
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNNSAxMmgxNCIgLz4KPC9zdmc+Cg==) - https://lucide.dev/icons/minus
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function Pause($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   /**
@@ -1121,6 +1193,83 @@ function Sparkles($$renderer, $$props) {
        * @description Lucide SVG icon component, renders SVG Element with children.
        *
        * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cGF0aCBkPSJNMTEuMDE3IDIuODE0YTEgMSAwIDAgMSAxLjk2NiAwbDEuMDUxIDUuNTU4YTIgMiAwIDAgMCAxLjU5NCAxLjU5NGw1LjU1OCAxLjA1MWExIDEgMCAwIDEgMCAxLjk2NmwtNS41NTggMS4wNTFhMiAyIDAgMCAwLTEuNTk0IDEuNTk0bC0xLjA1MSA1LjU1OGExIDEgMCAwIDEtMS45NjYgMGwtMS4wNTEtNS41NThhMiAyIDAgMCAwLTEuNTk0LTEuNTk0bC01LjU1OC0xLjA1MWExIDEgMCAwIDEgMC0xLjk2Nmw1LjU1OC0xLjA1MWEyIDIgMCAwIDAgMS41OTQtMS41OTR6IiAvPgogIDxwYXRoIGQ9Ik0yMCAydjQiIC8+CiAgPHBhdGggZD0iTTIyIDRoLTQiIC8+CiAgPGNpcmNsZSBjeD0iNCIgY3k9IjIwIiByPSIyIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/sparkles
+       * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
+       *
+       * @param {Object} props - Lucide icons props and any valid SVG attribute
+       * @returns {FunctionalComponent} Svelte component
+       *
+       */
+      iconNode,
+      children: ($$renderer2) => {
+        $$renderer2.push(`<!--[-->`);
+        slot($$renderer2, $$props, "default", {});
+        $$renderer2.push(`<!--]-->`);
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Square($$renderer, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  /**
+   * @license lucide-svelte v0.562.0 - ISC
+   *
+   * ISC License
+   *
+   * Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+   *
+   * Permission to use, copy, modify, and/or distribute this software for any
+   * purpose with or without fee is hereby granted, provided that the above
+   * copyright notice and this permission notice appear in all copies.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+   *
+   * ---
+   *
+   * The MIT License (MIT) (for portions derived from Feather)
+   *
+   * Copyright (c) 2013-2023 Cole Bemis
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
+  const iconNode = [
+    [
+      "rect",
+      { "width": "18", "height": "18", "x": "3", "y": "3", "rx": "2" }
+    ]
+  ];
+  Icon($$renderer, spread_props([
+    { name: "square" },
+    $$sanitized_props,
+    {
+      /**
+       * @component @name Square
+       * @description Lucide SVG icon component, renders SVG Element with children.
+       *
+       * @preview ![img](data:image/svg+xml;base64,PHN2ZyAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHdpZHRoPSIyNCIKICBoZWlnaHQ9IjI0IgogIHZpZXdCb3g9IjAgMCAyNCAyNCIKICBmaWxsPSJub25lIgogIHN0cm9rZT0iIzAwMCIgc3R5bGU9ImJhY2tncm91bmQtY29sb3I6ICNmZmY7IGJvcmRlci1yYWRpdXM6IDJweCIKICBzdHJva2Utd2lkdGg9IjIiCiAgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIgogIHN0cm9rZS1saW5lam9pbj0icm91bmQiCj4KICA8cmVjdCB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHg9IjMiIHk9IjMiIHJ4PSIyIiAvPgo8L3N2Zz4K) - https://lucide.dev/icons/square
        * @see https://lucide.dev/guide/packages/lucide-svelte - Documentation
        *
        * @param {Object} props - Lucide icons props and any valid SVG attribute
@@ -1887,7 +2036,15 @@ function LampCard($$renderer, $$props) {
             $$renderer3.push(`<!--]--></div></div> `);
             if (!status.moonlight_mode) {
               $$renderer3.push("<!--[-->");
-              $$renderer3.push(`<div><div class="flex justify-between items-center mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider">Brightness</span> <span class="font-display text-lg text-device-lights-text neon-text-subtle">${escape_html(displayBrightness)}%</span></div> <input type="range" min="1" max="100"${attr("value", displayBrightness)} class="w-full" style="--color-accent: var(--color-lights-text); --color-accent-glow: var(--color-lights-glow);"/></div> <div><div class="flex justify-between items-center mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span> <span class="font-display text-lg text-content-primary">${escape_html(displayColorTemp)}K</span></div> <input type="range" min="1700" max="6500" step="100"${attr("value", displayColorTemp)} class="w-full"/> <div class="flex justify-between text-[10px] text-content-tertiary mt-2 uppercase tracking-wider"><span class="text-orange-400">Warm</span> <span class="text-sky-400">Cool</span></div></div>`);
+              $$renderer3.push(`<div><div class="flex justify-between items-center mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider">Brightness</span> <span class="font-display text-lg text-device-lights-text neon-text-subtle">${escape_html(displayBrightness)}%</span></div> <div class="flex gap-2 items-center"><button class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center">`);
+              Minus($$renderer3, { class: "w-5 h-5" });
+              $$renderer3.push(`<!----></button> <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative"><div class="absolute inset-y-0 left-0 bg-device-lights-text/30 transition-all duration-150"${attr_style(`width: ${stringify(displayBrightness)}%`)}></div> <div class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-lights-text shadow-[0_0_10px_var(--color-lights-glow)] transition-all duration-150"${attr_style(`left: calc(${stringify(displayBrightness)}% - 8px)`)}></div> <input type="range" min="1" max="100"${attr("value", displayBrightness)} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/></div> <button class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center">`);
+              Plus($$renderer3, { class: "w-5 h-5" });
+              $$renderer3.push(`<!----></button></div></div> <div><div class="flex justify-between items-center mb-3"><span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span> <span class="font-display text-lg text-device-lights-text neon-text-subtle">${escape_html(displayColorTemp)}K</span></div> <div class="flex gap-2 items-center"><button class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-orange-400 hover:border-orange-400/50 transition-all flex items-center justify-center">`);
+              Minus($$renderer3, { class: "w-5 h-5" });
+              $$renderer3.push(`<!----></button> <div class="flex-1 h-10 rounded-lg overflow-hidden relative" style="background: linear-gradient(to right, #f97316, #fbbf24, #fef3c7, #e0f2fe, #7dd3fc);"><div class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-content-primary shadow-lg transition-all duration-150"${attr_style(`left: calc(${stringify((displayColorTemp - 1700) / 4800 * 100)}% - 8px)`)}></div> <input type="range" min="1700" max="6500" step="100"${attr("value", displayColorTemp)} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/></div> <button class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-sky-400 hover:border-sky-400/50 transition-all flex items-center justify-center">`);
+              Plus($$renderer3, { class: "w-5 h-5" });
+              $$renderer3.push(`<!----></button></div> <div class="flex justify-between text-[10px] text-content-tertiary mt-2 uppercase tracking-wider"><span class="text-orange-400">Warm</span> <span class="text-sky-400">Cool</span></div></div>`);
             } else {
               $$renderer3.push("<!--[!-->");
               $$renderer3.push(`<div class="py-6 text-center rounded-lg bg-device-audio-bg/30 border border-device-audio-text/20">`);
@@ -2143,6 +2300,7 @@ function TuyaSensorCard($$renderer, $$props) {
         return null;
       }
     };
+    const isWindowSensor = device.category === "mcs" && (device.name.toLowerCase().includes("kuchnia") || device.name.toLowerCase().includes("kitchen"));
     const categoryConfig = {
       sj: { label: "Water", icon: Droplet },
       mcs: { label: "Door", icon: Door_open },
@@ -2231,14 +2389,19 @@ function TuyaSensorCard($$renderer, $$props) {
           };
       }
     }
-    let config = categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
+    let config = () => {
+      if (isWindowSensor) {
+        return { label: "Window", icon: Square };
+      }
+      return categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
+    };
     let statusInfo = getStatusInfo(parsedStatus(), device.category);
     $$renderer2.push(`<div role="button" tabindex="0"${attr_class(`card ${stringify(compact ? "p-3" : "p-4")} w-full text-left cursor-pointer ${stringify(statusInfo.alert ? "card-active border-error/50" : statusInfo.lowBattery ? "border-warning/50" : "")}`)}><div class="flex items-center gap-3"><div${attr_class(
       `power-btn ${stringify(statusInfo.alert ? "bg-error/20 text-error border-error/50" : statusInfo.lowBattery ? "bg-warning/20 text-warning border-warning/50" : "glow-sensors power-btn-on")}`,
       void 0,
       { "animate-glow": statusInfo.alert }
     )}><!---->`);
-    config.icon?.($$renderer2, { class: "w-4 h-4" });
+    config().icon?.($$renderer2, { class: "w-4 h-4" });
     $$renderer2.push(`<!----></div> <div class="min-w-0 flex-1"><h4 class="font-medium text-sm text-content-primary truncate">${escape_html(displayName)}</h4> <p${attr_class(`text-xs ${stringify(statusInfo.lowBattery ? "text-warning" : statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text-subtle" : "")}`)}>${escape_html(statusInfo.text)}</p></div> <div${attr_class(`w-2 h-2 rounded-full shrink-0 ${stringify(device.online ? "bg-success animate-glow" : "bg-content-tertiary")}`)}></div></div></div> `);
     DeviceDialog($$renderer2, {
       open: dialogOpen,
@@ -2255,10 +2418,10 @@ function TuyaSensorCard($$renderer, $$props) {
           } else {
             $$renderer3.push("<!--[!-->");
             $$renderer3.push(`<!---->`);
-            config.icon?.($$renderer3, { class: "w-12 h-12" });
+            config().icon?.($$renderer3, { class: "w-12 h-12" });
             $$renderer3.push(`<!---->`);
           }
-          $$renderer3.push(`<!--]--></div> <p${attr_class(`font-display text-2xl mt-3 ${stringify(statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text" : "")}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">${escape_html(config.label)} Sensor</p></div>`);
+          $$renderer3.push(`<!--]--></div> <p${attr_class(`font-display text-2xl mt-3 ${stringify(statusInfo.color)} ${stringify(statusInfo.alert ? "neon-text" : "")}`)}>${escape_html(statusInfo.text)}</p> <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">${escape_html(config().label)} Sensor</p></div>`);
         } else {
           $$renderer3.push("<!--[!-->");
         }
@@ -2308,7 +2471,7 @@ function TuyaSensorCard($$renderer, $$props) {
         } else {
           $$renderer3.push("<!--[!-->");
         }
-        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span> <span class="text-sm font-medium text-content-primary">${escape_html(config.label)}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div></div></div>`);
+        $$renderer3.push(`<!--]--> <div class="pt-4 border-t border-stroke-subtle space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span> <span class="text-sm font-medium text-content-primary">${escape_html(config().label)}</span></div> <div class="flex justify-between items-center"><span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span> <span${attr_class(`text-xs ${stringify(device.online ? "text-success" : "text-error")}`)}>${escape_html(device.online ? "Connected" : "Offline")}</span></div></div></div>`);
       }
     });
     $$renderer2.push(`<!---->`);

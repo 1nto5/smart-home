@@ -2,7 +2,7 @@
   import type { TuyaDevice } from '$lib/types';
   import { translateDeviceName } from '$lib/translations';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Droplet, DoorOpen, Thermometer, Radio, Tv, Smartphone, AlertTriangle, Battery } from 'lucide-svelte';
+  import { Droplet, DoorOpen, DoorClosed, Thermometer, Radio, Tv, Smartphone, AlertTriangle, Battery, Square } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
@@ -14,6 +14,12 @@
     try { return JSON.parse(device.last_status); }
     catch { return null; }
   });
+
+  // Window sensor detection - Kitchen sensor is a window sensor
+  const isWindowSensor = $derived(
+    device.category === 'mcs' &&
+    (device.name.toLowerCase().includes('kuchnia') || device.name.toLowerCase().includes('kitchen'))
+  );
 
   const categoryConfig: Record<string, { label: string; icon: ComponentType }> = {
     sj: { label: 'Water', icon: Droplet },
@@ -69,7 +75,12 @@
     }
   }
 
-  let config = $derived(categoryConfig[device.category] || { label: device.category, icon: defaultIcon });
+  let config = $derived(() => {
+    if (isWindowSensor) {
+      return { label: 'Window', icon: Square };
+    }
+    return categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
+  });
   let statusInfo = $derived(getStatusInfo(parsedStatus(), device.category));
 </script>
 
@@ -88,7 +99,7 @@
       class="power-btn {statusInfo.alert ? 'bg-error/20 text-error border-error/50' : statusInfo.lowBattery ? 'bg-warning/20 text-warning border-warning/50' : 'glow-sensors power-btn-on'}"
       class:animate-glow={statusInfo.alert}
     >
-      <svelte:component this={config.icon} class="w-4 h-4" />
+      <svelte:component this={config().icon} class="w-4 h-4" />
     </div>
 
     <!-- Info -->
@@ -112,11 +123,11 @@
           {#if statusInfo.alert}
             <AlertTriangle class="w-12 h-12 animate-glow" />
           {:else}
-            <svelte:component this={config.icon} class="w-12 h-12" />
+            <svelte:component this={config().icon} class="w-12 h-12" />
           {/if}
         </div>
         <p class="font-display text-2xl mt-3 {statusInfo.color} {statusInfo.alert ? 'neon-text' : ''}">{statusInfo.text}</p>
-        <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">{config.label} Sensor</p>
+        <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">{config().label} Sensor</p>
       </div>
     {/if}
 
@@ -184,7 +195,7 @@
     <div class="pt-4 border-t border-stroke-subtle space-y-2">
       <div class="flex justify-between items-center">
         <span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span>
-        <span class="text-sm font-medium text-content-primary">{config.label}</span>
+        <span class="text-sm font-medium text-content-primary">{config().label}</span>
       </div>
       <div class="flex justify-between items-center">
         <span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span>

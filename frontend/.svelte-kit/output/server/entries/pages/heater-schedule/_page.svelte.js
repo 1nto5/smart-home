@@ -1,9 +1,9 @@
 import { U as sanitize_props, V as spread_props, W as slot, a2 as head, X as ensure_array_like, Z as attr, _ as attr_class, a0 as stringify } from "../../../chunks/index2.js";
-import { P as Play, s as store } from "../../../chunks/play.js";
+import { P as Plus, a as Play, s as store } from "../../../chunks/plus.js";
 import { T as Thermometer } from "../../../chunks/thermometer.js";
-import { P as Plus, T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
 import { F as Flame } from "../../../chunks/flame.js";
 import { I as Icon } from "../../../chunks/Icon.js";
+import { T as Trash_2, C as Clock, a as Circle_alert } from "../../../chunks/trash-2.js";
 import { e as escape_html } from "../../../chunks/context.js";
 function Chevron_down($$renderer, $$props) {
   const $$sanitized_props = sanitize_props($$props);
