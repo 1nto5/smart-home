@@ -41,6 +41,14 @@ export function getSchedulesByTime(time: string): Schedule[] {
 }
 
 /**
+ * Get all enabled schedules sorted by time (for time window calculation)
+ */
+export function getEnabledSchedulesSorted(): Schedule[] {
+  const db = getDb();
+  return db.query('SELECT * FROM lamp_schedules WHERE enabled = 1 ORDER BY time').all() as Schedule[];
+}
+
+/**
  * Create a new schedule
  */
 export function createSchedule(name: string, preset: PresetName, time: string): Schedule {
