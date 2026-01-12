@@ -398,6 +398,7 @@ Select an action:`;
         ],
         [{ text: '⚙️ Manual', callback_data: 'purifier:mode:favorite' }],
         [{ text: '🌀 Fan Speed', callback_data: 'purifier:rpm_menu' }],
+        [{ text: '💡 LED Brightness', callback_data: 'purifier:led_menu' }],
         [{ text: '📊 Status', callback_data: 'purifier:status' }],
         [{ text: '« Back to Menu', callback_data: 'menu:main' }],
       ],
@@ -436,6 +437,34 @@ Select speed:`;
           { text: '➖ 100', callback_data: 'purifier:rpm_adj:-100' },
           { text: '➕ 100', callback_data: 'purifier:rpm_adj:100' },
         ],
+        [{ text: '« Back to Purifier', callback_data: 'menu:purifier' }],
+      ],
+    },
+  };
+}
+
+/**
+ * Air purifier LED brightness control keyboard
+ */
+export function purifierLedKeyboard(currentLevel: string): { text: string; keyboard: InlineKeyboard } {
+  const levelNames: Record<string, string> = { bright: 'Bright', dim: 'Dim', off: 'Off' };
+  const text = `🌬️ <b>Air Purifier - LED Brightness</b>
+
+Current: <b>${levelNames[currentLevel] || currentLevel}</b>
+
+Select brightness:`;
+
+  const levels = ['bright', 'dim', 'off'] as const;
+  const icons: Record<string, string> = { bright: '☀️', dim: '🔅', off: '🌑' };
+
+  return {
+    text,
+    keyboard: {
+      inline_keyboard: [
+        levels.map(level => ({
+          text: level === currentLevel ? `[${icons[level]} ${levelNames[level]}]` : `${icons[level]} ${levelNames[level]}`,
+          callback_data: `purifier:led:${level}`,
+        })),
         [{ text: '« Back to Purifier', callback_data: 'menu:purifier' }],
       ],
     },
