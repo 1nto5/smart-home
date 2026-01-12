@@ -49,12 +49,15 @@
   }
 
   // Debounced fan speed control
-  const [sendFanSpeedDebounced] = debounce(async (level: number) => {
+  const [sendFanSpeedDebounced] = debounce(async (rpm: number) => {
     try {
-      await controlAirPurifier({ fan_speed: level });
-      store.refreshAirPurifier();
+      await controlAirPurifier({ fan_speed: rpm });
+      await store.refreshAirPurifier();
+      // Clear optimistic state so actual device value is shown
+      optimisticFanSpeed = null;
     } catch (e) {
       console.error(e);
+      optimisticFanSpeed = null;
     }
   }, 300);
 
