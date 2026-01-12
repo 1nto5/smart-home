@@ -2735,23 +2735,19 @@ function HomeStatusCard($$renderer, $$props) {
       if (aqi <= 100) return "Moderate";
       return "Poor";
     }
-    $$renderer2.push(`<div class="card p-4 mb-6"><div class="flex items-center gap-3 mb-4"><div class="section-icon glow-accent svelte-cnjzzp">`);
-    House($$renderer2, { class: "w-4 h-4" });
-    $$renderer2.push(`<!----></div> <h2 class="section-title text-accent svelte-cnjzzp">Home Status</h2></div> `);
     if (status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="grid grid-cols-3 gap-3"><div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
-      Thermometer($$renderer2, { class: "w-6 h-6 text-device-sensors-text mb-2" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Station</span> <span class="font-display text-xl text-content-primary">${escape_html(status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : "N/A")}</span> <span class="text-sm text-accent">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : "")}</span></div> <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
-      Flame($$renderer2, { class: "w-6 h-6 text-device-climate-heat-text mb-2" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators</span> <span class="font-display text-xl text-content-primary">${escape_html(status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : "N/A")}</span> <span class="text-sm text-content-tertiary">avg</span></div> <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
-      Wind($$renderer2, { class: "w-6 h-6 text-device-air-text mb-2" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Air Quality</span> <span${attr_class(`font-display text-xl ${stringify(purifier ? aqiColor(purifier.aqi) : "text-content-primary")}`, "svelte-cnjzzp")}>${escape_html(purifier ? purifier.aqi : "N/A")}</span> <span${attr_class(`text-sm ${stringify(purifier ? aqiColor(purifier.aqi) : "text-content-tertiary")}`, "svelte-cnjzzp")}>${escape_html(purifier ? aqiLabel(purifier.aqi) : "")}</span></div></div>`);
+      $$renderer2.push(`<div class="grid grid-cols-3 gap-2 sm:gap-3"><div class="status-tile svelte-cnjzzp">`);
+      Thermometer($$renderer2, { class: "w-5 h-5 sm:w-6 sm:h-6 text-device-sensors-text" });
+      $$renderer2.push(`<!----> <span class="status-label svelte-cnjzzp">Station</span> <span class="status-value svelte-cnjzzp">${escape_html(status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : "N/A")}</span> <span class="status-sub text-accent svelte-cnjzzp">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : "")}</span></div> <div class="status-tile svelte-cnjzzp">`);
+      Flame($$renderer2, { class: "w-5 h-5 sm:w-6 sm:h-6 text-device-climate-heat-text" });
+      $$renderer2.push(`<!----> <span class="status-label svelte-cnjzzp">Radiators</span> <span class="status-value svelte-cnjzzp">${escape_html(status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : "N/A")}</span> <span class="status-sub text-content-tertiary svelte-cnjzzp">avg</span></div> <div class="status-tile svelte-cnjzzp">`);
+      Wind($$renderer2, { class: "w-5 h-5 sm:w-6 sm:h-6 text-device-air-text" });
+      $$renderer2.push(`<!----> <span class="status-label svelte-cnjzzp">Air<br class="sm:hidden"/> Quality</span> <span${attr_class(`status-value ${stringify(purifier ? aqiColor(purifier.aqi) : "")}`, "svelte-cnjzzp")}>${escape_html(purifier ? purifier.aqi : "N/A")}</span> <span${attr_class(`status-sub ${stringify(purifier ? aqiColor(purifier.aqi) : "text-content-tertiary")}`, "svelte-cnjzzp")}>${escape_html(purifier ? aqiLabel(purifier.aqi) : "")}</span></div></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<div class="text-center text-content-tertiary py-4">Loading...</div>`);
     }
-    $$renderer2.push(`<!--]--></div>`);
+    $$renderer2.push(`<!--]-->`);
   });
 }
 function _page($$renderer, $$props) {
