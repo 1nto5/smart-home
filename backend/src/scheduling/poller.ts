@@ -14,6 +14,7 @@ import { applyPresetToHeater } from './heater-schedule-service';
 import { getDb, cleanupOldHistory, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
 import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
+import { evaluateSensorTrigger } from '../automations/automation-triggers';
 
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
@@ -165,14 +166,14 @@ async function refreshTrvStatuses(): Promise<void> {
   }
 }
 
-// Fast poll door sensors (every 5 seconds) - local API
+// Fast poll door/window sensors (every 5 seconds) - local API
 async function pollDoorSensors(): Promise<void> {
   const db = getDb();
+  // Poll all contact sensors (doors and windows)
   const doors = db.query(`
-    SELECT id, name FROM devices
+    SELECT id, name, room FROM devices
     WHERE category = 'mcs'
-    AND (LOWER(name) LIKE '%door%' OR LOWER(name) LIKE '%drzwi%')
-  `).all() as { id: string; name: string }[];
+  `).all() as { id: string; name: string; room: string | null }[];
 
   for (const door of doors) {
     try {
@@ -188,6 +189,8 @@ async function pollDoorSensors(): Promise<void> {
           if (lastState === null || lastState !== isOpen) {
             recordContactChange(door.id, door.name, isOpen);
             console.log(`🚪 ${door.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
+            // Trigger automations
+            evaluateSensorTrigger(door.id, door.name, isOpen ? 'open' : 'closed');
           }
         }
       }
