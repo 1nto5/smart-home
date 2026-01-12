@@ -4,16 +4,47 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor } from 'lucide-svelte';
+  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
+  import { getAlarmStatus, armAlarm, disarmAlarm } from '$lib/api';
 
   let { children } = $props();
+
+  let alarmArmed = $state(false);
+  let alarmLoading = $state(false);
+
+  async function loadAlarmStatus() {
+    try {
+      const status = await getAlarmStatus();
+      alarmArmed = status.armed;
+    } catch (e) {
+      console.error('Failed to load alarm status:', e);
+    }
+  }
+
+  async function toggleAlarm() {
+    alarmLoading = true;
+    try {
+      if (alarmArmed) {
+        const status = await disarmAlarm();
+        alarmArmed = status.armed;
+      } else {
+        const status = await armAlarm();
+        alarmArmed = status.armed;
+      }
+    } catch (e) {
+      console.error('Failed to toggle alarm:', e);
+    } finally {
+      alarmLoading = false;
+    }
+  }
 
   $effect(() => {
     if (browser) {
       theme.init();
       store.initWebSocket();
       store.refreshAll();
+      loadAlarmStatus();
       const interval = setInterval(() => store.refreshAll(), 30000);
       return () => clearInterval(interval);
     }
@@ -59,10 +90,26 @@
           </a>
         {/each}
 
+        <!-- Alarm Toggle -->
+        <button
+          onclick={toggleAlarm}
+          disabled={alarmLoading}
+          class="ml-2 p-2 rounded-lg transition-all duration-200 {alarmArmed
+            ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30'
+            : 'text-content-secondary hover:text-content-primary hover:bg-surface-recessed'}"
+          title={alarmArmed ? 'Alarm UZBROJONY - kliknij aby rozbroić' : 'Alarm rozbrojony - kliknij aby uzbroić'}
+        >
+          {#if alarmArmed}
+            <Shield class="w-4 h-4" />
+          {:else}
+            <ShieldOff class="w-4 h-4" />
+          {/if}
+        </button>
+
         <!-- Theme Toggle -->
         <button
           onclick={() => theme.toggle()}
-          class="theme-toggle ml-2"
+          class="theme-toggle ml-1"
           title="Toggle theme ({theme.mode})"
         >
           {#if theme.mode === 'system'}
