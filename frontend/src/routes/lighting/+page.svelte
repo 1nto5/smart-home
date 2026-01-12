@@ -1,10 +1,11 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
   import { getPresets, applyPreset, createSchedule, deleteSchedule, toggleSchedule, clearPendingActions, updateLampPreset, createLampPreset, deleteLampPreset } from '$lib/api';
-  import { Sun, Moon, Power, Lightbulb, Clock, Plus, Trash2, Play, X, Zap, AlertCircle } from 'lucide-svelte';
+  import { Sun, Moon, Power, Lightbulb, Clock, Plus, Trash2, Play, X, Zap, AlertCircle, Pencil } from 'lucide-svelte';
   import { browser } from '$app/environment';
-  import type { Preset, ApplyResult } from '$lib/types';
+  import type { Preset, ApplyResult, Schedule } from '$lib/types';
   import type { ComponentType } from 'svelte';
+  import LampScheduleDialog from '$lib/components/LampScheduleDialog.svelte';
 
   let presets = $state<Record<string, Preset>>({});
   let applyingPreset = $state<string | null>(null);
@@ -28,6 +29,20 @@
   let createPresetBrightness = $state(100);
   let createPresetColorTemp = $state(4000);
   let createPresetPower = $state(true);
+
+  // Schedule dialog state
+  let selectedSchedule = $state<Schedule | null>(null);
+  let scheduleDialogOpen = $state(false);
+
+  function openScheduleDialog(schedule: Schedule) {
+    selectedSchedule = schedule;
+    scheduleDialogOpen = true;
+  }
+
+  function closeScheduleDialog() {
+    scheduleDialogOpen = false;
+    selectedSchedule = null;
+  }
 
   async function refreshPresets() {
     presets = await getPresets();
@@ -412,8 +427,16 @@
                   {schedule.enabled ? 'On' : 'Off'}
                 </button>
                 <button
+                  onclick={() => openScheduleDialog(schedule)}
+                  class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-accent hover:border-accent/30 transition-colors"
+                  title="Edit schedule"
+                >
+                  <Pencil class="w-3.5 h-3.5" />
+                </button>
+                <button
                   onclick={() => handleDelete(schedule.id)}
                   class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"
+                  title="Delete schedule"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
@@ -427,6 +450,16 @@
           </div>
         {/each}
       </div>
+    {/if}
+
+    <!-- Schedule Dialog -->
+    {#if selectedSchedule}
+      <LampScheduleDialog
+        schedule={selectedSchedule}
+        {presets}
+        bind:open={scheduleDialogOpen}
+        onclose={closeScheduleDialog}
+      />
     {/if}
   </section>
 
