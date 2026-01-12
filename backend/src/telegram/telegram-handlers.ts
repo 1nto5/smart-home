@@ -421,7 +421,7 @@ async function handleRoborockAction(
     const segmentId = parseInt(param);
     const roomNames: Record<number, string> = {
       16: 'Living Room', 17: 'Kitchen', 18: 'Hallway', 19: 'Bathroom',
-      20: 'Bedroom', 21: 'Office', 22: 'Kids Room',
+      20: 'Bedroom', 21: 'Wardrobe', 22: 'Kids Room',
     };
     const roomName = roomNames[segmentId] || `Room ${segmentId}`;
     console.log(`Telegram: Starting room cleaning for ${roomName} (segment ${segmentId})`);

@@ -60,7 +60,7 @@ ROOM_NAMES = {
     18: "Hallway",
     19: "Bathroom",
     20: "Bedroom",
-    21: "Office",
+    21: "Wardrobe",
     22: "Kids Room",
 }
 
@@ -224,7 +224,6 @@ async def get_rooms():
     """Get room list with names"""
     try:
         result = await send_command("get_room_mapping")
-        print(f"DEBUG get_room_mapping result: {result}")
         if result is None:
             return {"rooms": []}
 

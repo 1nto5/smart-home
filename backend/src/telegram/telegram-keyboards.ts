@@ -353,7 +353,7 @@ Select a room to clean:`;
     { id: 18, name: 'Hallway' },
     { id: 19, name: 'Bathroom' },
     { id: 20, name: 'Bedroom' },
-    { id: 21, name: 'Office' },
+    { id: 21, name: 'Wardrobe' },
     { id: 22, name: 'Kids Room' },
   ];
 
