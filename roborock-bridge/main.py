@@ -308,7 +308,7 @@ async def clean_segments(req: CleanSegmentsRequest):
     """Clean specific room segments"""
     try:
         # Roborock expects segments as [[seg1, seg2, ...], repeat_count]
-        await send_command("app_segment_clean", [req.segments])
+        await send_command("app_segment_clean", [req.segments, 1])
         return {"success": True, "segments": req.segments}
     except HTTPException:
         raise
