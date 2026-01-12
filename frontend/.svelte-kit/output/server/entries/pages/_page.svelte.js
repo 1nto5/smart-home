@@ -2463,16 +2463,29 @@ function AirPurifierCard($$renderer, $$props) {
 function HomeStatusCard($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let status = store.homeStatus;
+    let purifier = store.airPurifier;
+    function aqiColor(aqi) {
+      if (aqi <= 50) return "text-success";
+      if (aqi <= 100) return "text-warning";
+      return "text-error";
+    }
+    function aqiLabel(aqi) {
+      if (aqi <= 50) return "Good";
+      if (aqi <= 100) return "Moderate";
+      return "Poor";
+    }
     $$renderer2.push(`<div class="card p-4 mb-6"><div class="flex items-center gap-3 mb-4"><div class="section-icon glow-accent svelte-cnjzzp">`);
     House($$renderer2, { class: "w-4 h-4" });
     $$renderer2.push(`<!----></div> <h2 class="section-title text-accent svelte-cnjzzp">Home Status</h2></div> `);
     if (status) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="grid grid-cols-2 gap-3"><div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      $$renderer2.push(`<div class="grid grid-cols-3 gap-3"><div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
       Thermometer($$renderer2, { class: "w-6 h-6 text-device-sensors-text mb-2" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Weather Station</span> <span class="font-display text-xl text-content-primary">${escape_html(status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : "N/A")}</span> <span class="text-sm text-accent">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}% humidity` : "")}</span></div> <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Station</span> <span class="font-display text-xl text-content-primary">${escape_html(status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : "N/A")}</span> <span class="text-sm text-accent">${escape_html(status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : "")}</span></div> <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
       Flame($$renderer2, { class: "w-6 h-6 text-device-climate-heat-text mb-2" });
-      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators Avg</span> <span class="font-display text-xl text-content-primary">${escape_html(status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : "N/A")}</span> <span class="text-sm text-content-tertiary">from 5 thermostats</span></div></div>`);
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Radiators</span> <span class="font-display text-xl text-content-primary">${escape_html(status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : "N/A")}</span> <span class="text-sm text-content-tertiary">avg</span></div> <div class="flex flex-col items-center p-4 rounded-lg bg-surface-recessed border border-stroke-subtle">`);
+      Wind($$renderer2, { class: "w-6 h-6 text-device-air-text mb-2" });
+      $$renderer2.push(`<!----> <span class="text-xs text-content-tertiary uppercase tracking-wider mb-1">Air Quality</span> <span${attr_class(`font-display text-xl ${stringify(purifier ? aqiColor(purifier.aqi) : "text-content-primary")}`, "svelte-cnjzzp")}>${escape_html(purifier ? purifier.aqi : "N/A")}</span> <span${attr_class(`text-sm ${stringify(purifier ? aqiColor(purifier.aqi) : "text-content-tertiary")}`, "svelte-cnjzzp")}>${escape_html(purifier ? aqiLabel(purifier.aqi) : "")}</span></div></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<div class="text-center text-content-tertiary py-4">Loading...</div>`);
@@ -2484,7 +2497,8 @@ function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let lamps = store.lamps.filter((l) => l.category === "lamp");
     let thermostats = store.tuyaDevices.filter((d) => d.category === "wkf");
-    let sensors = store.tuyaDevices.filter((d) => ["sj", "mcs", "wsdcg"].includes(d.category));
+    let sensors = store.tuyaDevices.filter((d) => ["sj", "mcs"].includes(d.category));
+    let weatherStation = store.tuyaDevices.find((d) => d.category === "wsdcg");
     let hasLoaded = store.lamps.length > 0 || store.tuyaDevices.length > 0 || store.yamahaDevices.length > 0;
     head("1uha8ag", $$renderer2, ($$renderer3) => {
       $$renderer3.title(($$renderer4) => {
@@ -2510,26 +2524,31 @@ function _page($$renderer, $$props) {
     } else {
       $$renderer2.push("<!--[!-->");
       HomeStatusCard($$renderer2);
-      $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-robot svelte-1uha8ag"><div class="section-icon glow-robot svelte-1uha8ag">`);
-      Bot($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Robot</h2> <span class="section-count svelte-1uha8ag">1</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 svelte-1uha8ag">`);
+      $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-quick svelte-1uha8ag"><div class="section-icon glow-accent svelte-1uha8ag">`);
+      Zap($$renderer2, { class: "w-4 h-4" });
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag">`);
       RoborockCard($$renderer2, { status: store.roborock, compact: true });
-      $$renderer2.push(`<!----></div></section> `);
-      if (store.yamahaDevices.length > 0) {
+      $$renderer2.push(`<!----> <!--[-->`);
+      const each_array_2 = ensure_array_like(store.yamahaDevices);
+      for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
+        let device = each_array_2[$$index_2];
+        YamahaCard($$renderer2, { device, compact: true });
+      }
+      $$renderer2.push(`<!--]--> `);
+      if (weatherStation) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-audio svelte-1uha8ag"><div class="section-icon glow-audio svelte-1uha8ag">`);
-        Volume_2($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Audio</h2> <span class="section-count svelte-1uha8ag">${escape_html(store.yamahaDevices.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
-        const each_array_2 = ensure_array_like(store.yamahaDevices);
-        for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
-          let device = each_array_2[$$index_2];
-          YamahaCard($$renderer2, { device, compact: true });
-        }
-        $$renderer2.push(`<!--]--></div></section>`);
+        TuyaSensorCard($$renderer2, { device: weatherStation, compact: true });
       } else {
         $$renderer2.push("<!--[!-->");
       }
       $$renderer2.push(`<!--]--> `);
+      if (store.airPurifier) {
+        $$renderer2.push("<!--[-->");
+        AirPurifierCard($$renderer2, { compact: true });
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div></section> `);
       if (lamps.length > 0) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-lights svelte-1uha8ag"><div class="section-icon glow-lights svelte-1uha8ag">`);
@@ -2545,22 +2564,15 @@ function _page($$renderer, $$props) {
         $$renderer2.push("<!--[!-->");
       }
       $$renderer2.push(`<!--]--> `);
-      if (thermostats.length > 0 || store.airPurifier) {
+      if (thermostats.length > 0) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<section class="svelte-1uha8ag"><div class="section-header section-header-climate svelte-1uha8ag"><div class="section-icon glow-climate-heat svelte-1uha8ag">`);
         Thermometer($$renderer2, { class: "w-4 h-4" });
-        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length + (store.airPurifier ? 1 : 0))}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
+        $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Climate</h2> <span class="section-count svelte-1uha8ag">${escape_html(thermostats.length)}</span> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 svelte-1uha8ag"><!--[-->`);
         const each_array_4 = ensure_array_like(thermostats);
         for (let $$index_4 = 0, $$length = each_array_4.length; $$index_4 < $$length; $$index_4++) {
           let device = each_array_4[$$index_4];
           TRVCard($$renderer2, { device, compact: true });
-        }
-        $$renderer2.push(`<!--]--> `);
-        if (store.airPurifier) {
-          $$renderer2.push("<!--[-->");
-          AirPurifierCard($$renderer2, { compact: true });
-        } else {
-          $$renderer2.push("<!--[!-->");
         }
         $$renderer2.push(`<!--]--></div></section>`);
       } else {

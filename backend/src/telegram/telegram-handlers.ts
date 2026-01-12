@@ -577,25 +577,24 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
     roborockState = stateMap[roborockStatus.state] || `State ${roborockStatus.state}`;
   }
 
-  // Get purifier status
-  let purifierState = 'Unknown';
+  // Get purifier status with AQI
+  let purifierAqi = 'N/A';
+  let aqiLabel = '';
   const purifierStatus = await getPurifierStatus();
   if (purifierStatus) {
-    purifierState = purifierStatus.power ? `On (${purifierStatus.mode})` : 'Off';
-  }
-
-  let overrideStatus = 'Normal';
-  if (override.enabled) {
-    overrideStatus = override.mode === 'pause' ? 'Paused' : `Fixed ${override.fixed_temp}°C`;
+    purifierAqi = String(purifierStatus.aqi);
+    if (purifierStatus.aqi <= 50) aqiLabel = 'Good';
+    else if (purifierStatus.aqi <= 100) aqiLabel = 'Moderate';
+    else aqiLabel = 'Poor';
   }
 
   const text = `📊 <b>Smart Home Status</b>
 
 🌡️ Station: <b>${stationTemp}</b> · ${humidity}
 🔥 Heaters: <b>${heaterAvgTemp}</b> avg
+🌬️ Air Quality: <b>${purifierAqi}</b> ${aqiLabel}
 🛡️ Alarm: <b>${alarm.armed ? '🔴 ARMED' : '🟢 Disarmed'}</b>
-🤖 Vacuum: ${roborockState}${roborockStatus ? ` (${roborockStatus.battery}%)` : ''}
-🌬️ Purifier: ${purifierState}`;
+🤖 Vacuum: ${roborockState}${roborockStatus ? ` (${roborockStatus.battery}%)` : ''}`;
 
   const keyboard = {
     inline_keyboard: [[{ text: '« Back to Menu', callback_data: 'menu:main' }]],
