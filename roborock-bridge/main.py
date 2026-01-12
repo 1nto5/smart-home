@@ -224,6 +224,7 @@ async def get_rooms():
     """Get room list with names"""
     try:
         result = await send_command("get_room_mapping")
+        print(f"DEBUG get_room_mapping result: {result}")
         if result is None:
             return {"rooms": []}
 
