@@ -1,6 +1,6 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { Thermometer, Droplet, Lightbulb, Flame, Home } from 'lucide-svelte';
+  import { Thermometer, Droplet, Flame, Home } from 'lucide-svelte';
 
   let status = $derived(store.homeStatus);
 </script>
@@ -15,11 +15,11 @@
   </div>
 
   {#if status}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="grid grid-cols-3 gap-3">
       <!-- Weather - Temperature -->
       <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
         <Thermometer class="w-5 h-5 text-device-sensors-text mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Temp</span>
+        <span class="text-xs text-content-tertiary uppercase tracking-wider">Outdoor</span>
         <span class="font-display text-lg text-content-primary">
           {status.weather?.temperature !== null ? `${status.weather.temperature.toFixed(1)}°C` : 'N/A'}
         </span>
@@ -30,33 +30,17 @@
         <Droplet class="w-5 h-5 text-accent mb-1" />
         <span class="text-xs text-content-tertiary uppercase tracking-wider">Humidity</span>
         <span class="font-display text-lg text-content-primary">
-          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(1)}%` : 'N/A'}
+          {status.weather?.humidity !== null ? `${status.weather.humidity.toFixed(0)}%` : 'N/A'}
         </span>
       </div>
 
-      <!-- Lights Mode -->
-      <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <Lightbulb class="w-5 h-5 text-device-lights-text mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Lights</span>
-        <span class="font-display text-lg text-content-primary truncate max-w-full">
-          {status.lamp.preset_name ?? 'N/A'}
-        </span>
-      </div>
-
-      <!-- Heating Mode -->
+      <!-- Average Heater Temp -->
       <div class="flex flex-col items-center p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
         <Flame class="w-5 h-5 text-device-climate-heat-text mb-1" />
-        <span class="text-xs text-content-tertiary uppercase tracking-wider">Heating</span>
-        <span class="font-display text-lg text-content-primary truncate max-w-full">
-          {#if status.heater.override}
-            {status.heater.override.mode === 'pause' ? 'Paused' : `${status.heater.override.fixed_temp}°C`}
-          {:else}
-            {status.heater.preset_name ?? 'N/A'}
-          {/if}
+        <span class="text-xs text-content-tertiary uppercase tracking-wider">Indoor</span>
+        <span class="font-display text-lg text-content-primary">
+          {status.heater.avg_temp !== null ? `${status.heater.avg_temp}°C` : 'N/A'}
         </span>
-        {#if status.heater.avg_temp !== null}
-          <span class="text-xs text-content-tertiary">avg {status.heater.avg_temp}°C</span>
-        {/if}
       </div>
     </div>
   {:else}
