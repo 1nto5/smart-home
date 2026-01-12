@@ -75,7 +75,7 @@
         <h2 class="section-title">Quick Access</h2>
         <div class="section-line"></div>
       </div>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {#each store.yamahaDevices as device (device.id)}
           <YamahaCard {device} compact />
         {/each}

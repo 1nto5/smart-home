@@ -2788,7 +2788,7 @@ function _page($$renderer, $$props) {
       HomeStatusCard($$renderer2);
       $$renderer2.push(`<!----> <section class="svelte-1uha8ag"><div class="section-header section-header-quick svelte-1uha8ag"><div class="section-icon glow-accent svelte-1uha8ag">`);
       Zap($$renderer2, { class: "w-4 h-4" });
-      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
+      $$renderer2.push(`<!----></div> <h2 class="section-title svelte-1uha8ag">Quick Access</h2> <div class="section-line svelte-1uha8ag"></div></div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 svelte-1uha8ag"><!--[-->`);
       const each_array_2 = ensure_array_like(store.yamahaDevices);
       for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
         let device = each_array_2[$$index_2];
