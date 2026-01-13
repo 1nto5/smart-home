@@ -22,6 +22,10 @@ export async function getLamps(): Promise<Lamp[]> {
   return fetcher('/xiaomi');
 }
 
+export async function getLampsRefresh(): Promise<Lamp[]> {
+  return fetcher('/xiaomi/refresh');
+}
+
 export async function getLampStatus(id: string): Promise<{ device_id: string; status: LampStatus }> {
   return fetcher(`/xiaomi/${id}/status`);
 }
@@ -189,6 +193,10 @@ export async function getTuyaDeviceStatus(id: string): Promise<{ device_id: stri
 // Yamaha devices
 export async function getYamahaDevices(): Promise<YamahaDevice[]> {
   return fetcher('/yamaha');
+}
+
+export async function getYamahaDevicesRefresh(): Promise<YamahaDevice[]> {
+  return fetcher('/yamaha/refresh');
 }
 
 export async function getYamahaStatus(id: string): Promise<{ device_id: string; status: YamahaStatus }> {

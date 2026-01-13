@@ -1,4 +1,4 @@
-import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride, getHomeStatus } from './api';
+import { getLamps, getLampsRefresh, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getYamahaDevicesRefresh, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride, getHomeStatus } from './api';
 import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData } from './types';
 
 // WebSocket connection state
@@ -99,9 +99,9 @@ function createStore() {
       lampStatuses = newStatuses;
     },
 
-    async refreshLamps() {
+    async refreshLamps(activeRefresh = false) {
       try {
-        lamps = await getLamps();
+        lamps = activeRefresh ? await getLampsRefresh() : await getLamps();
         // Parse cached last_status into lampStatuses map
         const newStatuses = new Map(lampStatuses);
         for (const lamp of lamps) {
@@ -149,9 +149,9 @@ function createStore() {
       }
     },
 
-    async refreshYamaha() {
+    async refreshYamaha(activeRefresh = false) {
       try {
-        yamahaDevices = await getYamahaDevices();
+        yamahaDevices = activeRefresh ? await getYamahaDevicesRefresh() : await getYamahaDevices();
       } catch (e: any) {
         console.error('Failed to fetch Yamaha devices:', e);
       }
@@ -205,15 +205,15 @@ function createStore() {
       }
     },
 
-    async refreshAll() {
+    async refreshAll(activeRefresh = false) {
       loading = true;
       await Promise.all([
-        this.refreshLamps(),
+        this.refreshLamps(activeRefresh),
         this.refreshRoborock(),
         this.refreshSchedules(),
         this.refreshPending(),
-        this.refreshTuya(),
-        this.refreshYamaha(),
+        this.refreshTuya(activeRefresh),
+        this.refreshYamaha(activeRefresh),
         this.refreshAirPurifier(),
         this.refreshHeaterPresets(),
         this.refreshHeaterSchedules(),

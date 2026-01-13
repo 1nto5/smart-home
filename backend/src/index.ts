@@ -341,6 +341,23 @@ app.get('/api/yamaha', (c) => {
   return c.json(devices);
 });
 
+// Refresh all Yamaha device statuses (actively checks each device)
+app.get('/api/yamaha/refresh', async (c) => {
+  const db = getDb();
+  const devices = db.query('SELECT id FROM yamaha_devices').all() as { id: string }[];
+
+  // Check all devices in parallel - getSoundbarStatus updates DB automatically
+  await Promise.all(devices.map(async (device) => {
+    try {
+      await getSoundbarStatus(device.id);
+    } catch {}
+  }));
+
+  // Return fresh data
+  const result = db.query('SELECT * FROM yamaha_devices ORDER BY room, name').all();
+  return c.json(result);
+});
+
 // Get single Yamaha device
 app.get('/api/yamaha/:id', (c) => {
   const db = getDb();
@@ -411,6 +428,39 @@ app.post('/api/yamaha/:id/control', async (c) => {
 // Get all Xiaomi devices
 app.get('/api/xiaomi', (c) => {
   const db = getDb();
+  const devices = db.query('SELECT * FROM xiaomi_devices ORDER BY room, name').all();
+  return c.json(devices);
+});
+
+// Refresh all Xiaomi lamp statuses (actively checks each lamp)
+app.get('/api/xiaomi/refresh', async (c) => {
+  const db = getDb();
+  const lamps = db.query("SELECT id, name FROM xiaomi_devices WHERE category = 'lamp'").all() as { id: string; name: string }[];
+
+  // Check all lamps in parallel
+  await Promise.all(lamps.map(async (lamp) => {
+    try {
+      const status = await getLampStatus(lamp.id);
+      if (status) {
+        db.run(
+          'UPDATE xiaomi_devices SET online = 1, last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+          [JSON.stringify(status), lamp.id]
+        );
+      } else {
+        db.run(
+          'UPDATE xiaomi_devices SET online = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+          [lamp.id]
+        );
+      }
+    } catch {
+      db.run(
+        'UPDATE xiaomi_devices SET online = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [lamp.id]
+      );
+    }
+  }));
+
+  // Return fresh data
   const devices = db.query('SELECT * FROM xiaomi_devices ORDER BY room, name').all();
   return c.json(devices);
 });

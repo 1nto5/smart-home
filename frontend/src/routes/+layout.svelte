@@ -16,7 +16,7 @@
 
   async function handleRefresh() {
     isRefreshing = true;
-    await store.refreshAll();
+    await store.refreshAll(true);
     await loadAlarmStatus();
     setTimeout(() => isRefreshing = false, 500);
   }
