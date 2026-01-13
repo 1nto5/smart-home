@@ -27,6 +27,9 @@ interface TelegramUpdate {
 
 let isPolling = false;
 let pollInterval: Timer | null = null;
+let watchdogInterval: Timer | null = null;
+let lastPollTime = 0;
+const WATCHDOG_TIMEOUT_MS = 30000; // 30 seconds
 
 /**
  * Fetch updates from Telegram Bot API
@@ -105,10 +108,41 @@ async function pollUpdates(): Promise<void> {
       await processUpdate(update);
       setUpdateOffset(update.update_id + 1);
     }
+
+    // Mark successful poll for watchdog
+    lastPollTime = Date.now();
   } catch (error: any) {
     console.error('Poll updates error:', error.message);
   } finally {
     isPolling = false;
+  }
+}
+
+/**
+ * Watchdog: restart polling if stalled
+ */
+function checkPollingHealth(): void {
+  const config = getTelegramConfig();
+  if (!config.enabled || !config.bot_token || !config.chat_id) {
+    return;
+  }
+
+  const timeSinceLastPoll = Date.now() - lastPollTime;
+
+  if (lastPollTime > 0 && timeSinceLastPoll > WATCHDOG_TIMEOUT_MS) {
+    console.warn(`🐕 Telegram watchdog: polling stalled (${Math.round(timeSinceLastPoll / 1000)}s), restarting...`);
+
+    // Reset state
+    isPolling = false;
+
+    // Clear and restart polling interval
+    if (pollInterval) {
+      clearInterval(pollInterval);
+    }
+    pollInterval = setInterval(pollUpdates, 2000);
+    pollUpdates();
+
+    console.log('🐕 Telegram watchdog: polling restarted');
   }
 }
 
@@ -125,8 +159,14 @@ export function startTelegramBot(): void {
 
   console.log('🤖 Starting Telegram bot polling...');
 
+  // Initialize watchdog timestamp
+  lastPollTime = Date.now();
+
   // Poll every 2 seconds
   pollInterval = setInterval(pollUpdates, 2000);
+
+  // Watchdog checks every 30 seconds
+  watchdogInterval = setInterval(checkPollingHealth, WATCHDOG_TIMEOUT_MS);
 
   // Initial poll
   pollUpdates();
@@ -139,6 +179,10 @@ export function stopTelegramBot(): void {
   if (pollInterval) {
     clearInterval(pollInterval);
     pollInterval = null;
+  }
+  if (watchdogInterval) {
+    clearInterval(watchdogInterval);
+    watchdogInterval = null;
   }
   console.log('🤖 Telegram bot stopped');
 }
