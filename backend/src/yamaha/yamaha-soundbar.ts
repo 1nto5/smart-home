@@ -6,6 +6,7 @@
 import { getDb } from '../db/database';
 import { YamahaClient } from './yamaha-client';
 import type { YamahaDevice, YamahaSoundbarStatus } from './yamaha-types';
+import { broadcastYamahaStatus, broadcastYamahaOffline } from '../ws/device-broadcast';
 
 // Connection cache
 const clients = new Map<string, YamahaClient>();
@@ -57,6 +58,7 @@ export async function getSoundbarStatus(deviceId: string): Promise<YamahaSoundba
   const raw = await client.getStatus();
   if (!raw) {
     updateDeviceStatus(deviceId, {} as YamahaSoundbarStatus, false);
+    broadcastYamahaOffline(deviceId);
     return null;
   }
 
@@ -72,6 +74,7 @@ export async function getSoundbarStatus(deviceId: string): Promise<YamahaSoundba
   };
 
   updateDeviceStatus(deviceId, status, true);
+  broadcastYamahaStatus(deviceId, status, true);
   return status;
 }
 

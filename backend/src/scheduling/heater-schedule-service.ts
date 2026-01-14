@@ -7,6 +7,7 @@ import { getDb, setHeaterPreset } from '../db/database';
 import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp, type HeaterPreset } from './heater-presets';
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
+import { broadcastTuyaStatus } from '../ws/device-broadcast';
 
 export interface HeaterSchedule {
   id: number;
@@ -156,6 +157,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
 
     if (success) {
       console.log(`Set ${deviceId} to ${targetTemp}°C`);
+      broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
     }
 
     return success;
