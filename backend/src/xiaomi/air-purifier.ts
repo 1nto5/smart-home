@@ -18,7 +18,7 @@ interface PurifierStatus {
   led_brightness?: 'bright' | 'dim' | 'off';
 }
 
-// LED brightness mapping (siid 6, piid 1)
+// LED brightness mapping (siid 7, piid 2 for mb4)
 const LED_MAP: Record<number, 'bright' | 'dim' | 'off'> = {
   0: 'bright',
   1: 'dim',
@@ -92,14 +92,14 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     // siid 2 = air purifier service
     // siid 3 = environment
     // siid 4 = filter
-    // siid 6 = screen/LED
+    // siid 7 = screen/LED (mb4)
     // siid 9 = motor
     const result = await purifierConnection.call('get_properties', [
       { siid: 2, piid: 1 },  // power (bool)
       { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
       { siid: 3, piid: 4 },  // pm2.5
       { siid: 4, piid: 3 },  // filter life % (piid 3 works for this device)
-      { siid: 6, piid: 1 },  // LED brightness (0=bright, 1=dim, 2=off)
+      { siid: 7, piid: 2 },  // LED brightness (0=bright, 1=dim, 2=off)
       { siid: 9, piid: 1 },  // motor_speed (current RPM)
       { siid: 9, piid: 3 },  // favorite_rpm (set RPM)
     ]);
@@ -111,7 +111,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
 
     const modeValue = getValue(2, 4);
     const favoriteRpm = getValue(9, 3);
-    const ledValue = getValue(6, 1);
+    const ledValue = getValue(7, 2);
 
     const status = {
       power: getValue(2, 1) ?? false,
@@ -214,7 +214,7 @@ export async function setLedBrightness(level: 'bright' | 'dim' | 'off'): Promise
 
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 6, piid: 1, value: ledValue }
+      { siid: 7, piid: 2, value: ledValue }
     ]);
     console.log(`Air Purifier: LED brightness set to ${level}`);
     return true;
