@@ -20,15 +20,15 @@ interface PurifierStatus {
 
 // LED brightness mapping (siid 7, piid 2 for mb4)
 const LED_MAP: Record<number, 'bright' | 'dim' | 'off'> = {
-  0: 'bright',
+  0: 'off',
   1: 'dim',
-  2: 'off',
+  2: 'bright',
 };
 
 const LED_TO_VALUE: Record<string, number> = {
-  bright: 0,
+  off: 0,
   dim: 1,
-  off: 2,
+  bright: 2,
 };
 
 // MiOT mode mapping
