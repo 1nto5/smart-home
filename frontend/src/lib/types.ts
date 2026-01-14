@@ -195,6 +195,11 @@ export interface AutomationAction {
   value?: string;
 }
 
+export interface QuietWindow {
+  start: string;
+  end: string;
+}
+
 export interface Automation {
   id: number;
   name: string;
@@ -205,8 +210,7 @@ export interface Automation {
   actions: string; // JSON array of AutomationAction
   telegram_prompt: string | null;
   telegram_action_yes: string | null;
-  quiet_start: string | null; // HH:MM format
-  quiet_end: string | null; // HH:MM format
+  quiet_windows: string | null; // JSON array of QuietWindow
   created_at: string;
 }
 
