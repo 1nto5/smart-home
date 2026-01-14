@@ -51,20 +51,50 @@ function createStore() {
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
+
+        // Lamp status
         if (msg.type === 'lamp_status' && msg.deviceId && msg.status) {
-          // Create new Map for Svelte 5 reactivity
           const newStatuses = new Map(lampStatuses);
           newStatuses.set(msg.deviceId, msg.status);
           lampStatuses = newStatuses;
-          // Update online status in lamps array
           lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 1 } : l);
         } else if (msg.type === 'lamp_offline' && msg.deviceId) {
-          // Create new Map for Svelte 5 reactivity
           const newStatuses = new Map(lampStatuses);
           newStatuses.delete(msg.deviceId);
           lampStatuses = newStatuses;
-          // Update online status in lamps array
           lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 0 } : l);
+        }
+
+        // Tuya devices (sensors, heaters, doors)
+        else if (msg.type === 'tuya_status' && msg.deviceId && msg.status) {
+          tuyaDevices = tuyaDevices.map(d =>
+            d.id === msg.deviceId
+              ? { ...d, last_status: JSON.stringify(msg.status), online: 1 }
+              : d
+          );
+        } else if (msg.type === 'tuya_offline' && msg.deviceId) {
+          tuyaDevices = tuyaDevices.map(d =>
+            d.id === msg.deviceId ? { ...d, online: 0 } : d
+          );
+        }
+
+        // Roborock vacuum
+        else if (msg.type === 'roborock_status' && msg.status) {
+          roborock = msg.status;
+        }
+
+        // Yamaha soundbar
+        else if (msg.type === 'yamaha_status' && msg.deviceId) {
+          yamahaDevices = yamahaDevices.map(d =>
+            d.id === msg.deviceId
+              ? { ...d, last_status: msg.status ? JSON.stringify(msg.status) : null, online: msg.online ? 1 : 0 }
+              : d
+          );
+        }
+
+        // Air purifier
+        else if (msg.type === 'purifier_status' && msg.status) {
+          airPurifier = msg.status;
         }
       } catch {}
     };

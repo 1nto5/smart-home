@@ -5,6 +5,7 @@
 
 import miio from 'miio';
 import { getDb } from '../db/database';
+import { broadcastPurifierStatus } from '../ws/device-broadcast';
 
 let purifierConnection: any = null;
 
@@ -112,7 +113,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     const favoriteRpm = getValue(9, 3);
     const ledValue = getValue(6, 1);
 
-    return {
+    const status = {
       power: getValue(2, 1) ?? false,
       mode: MODE_MAP[modeValue] ?? 'unknown',
       aqi: getValue(3, 4) ?? 0,
@@ -121,6 +122,8 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       motor_rpm: getValue(9, 1),  // actual current RPM
       led_brightness: LED_MAP[ledValue] ?? 'bright',
     };
+    broadcastPurifierStatus(status);
+    return status;
   } catch (error: any) {
     console.error('Failed to get purifier status:', error.message);
     return null;

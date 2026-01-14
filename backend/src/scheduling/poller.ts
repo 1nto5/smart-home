@@ -16,6 +16,7 @@ import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
 import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automation-triggers';
 import { getPurifierStatus } from '../xiaomi/air-purifier';
+import { broadcastTuyaStatus } from '../ws/device-broadcast';
 
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
@@ -93,6 +94,7 @@ async function refreshWeatherStationStatuses(): Promise<void> {
         const battery = dps['102'] !== undefined ? dps['102'] : null;
         if (temp !== null || humidity !== null) {
           recordSensorReading(station.id, station.name, temp, humidity, null, battery);
+          broadcastTuyaStatus(station.id, 'wsdcg', { temp, humidity, battery });
         }
       }
     } catch (e: any) {
@@ -124,6 +126,7 @@ async function refreshSensorStatuses(): Promise<void> {
           const lastState = getLastContactState(sensor.id);
           if (lastState === null || lastState !== isOpen) {
             recordContactChange(sensor.id, sensor.name, isOpen);
+            broadcastTuyaStatus(sensor.id, 'mcs', { '101': isOpen });
           }
         }
         if (sensor.category === 'sj' && dps['1'] !== undefined) {
@@ -131,6 +134,7 @@ async function refreshSensorStatuses(): Promise<void> {
           const lastState = getLastContactState(sensor.id);
           if (lastState === null || lastState !== isLeaking) {
             recordContactChange(sensor.id, sensor.name, isLeaking);
+            broadcastTuyaStatus(sensor.id, 'sj', { '1': isLeaking ? 1 : 0 });
             if (isLeaking) console.log(`🚨 WATER LEAK: ${sensor.name}`);
           }
         }
@@ -159,6 +163,7 @@ async function refreshTrvStatuses(): Promise<void> {
         const battery = dps['35'] !== undefined ? dps['35'] : null;
         if (currentTemp !== null) {
           recordSensorReading(trv.id, trv.name, currentTemp, null, targetTemp, battery);
+          broadcastTuyaStatus(trv.id, 'wkf', { currentTemp, targetTemp, battery });
         }
       }
     } catch (e: any) {
@@ -173,6 +178,7 @@ async function pollAqi(): Promise<void> {
     const status = await getPurifierStatus();
     if (!status) return;
 
+    // broadcast is called inside getPurifierStatus
     evaluateAqiTrigger(status.aqi);
   } catch (e: any) {
     console.error('AQI poll error:', e.message);
@@ -201,6 +207,7 @@ async function pollDoorSensors(): Promise<void> {
           const lastState = getLastContactState(door.id);
           if (lastState === null || lastState !== isOpen) {
             recordContactChange(door.id, door.name, isOpen);
+            broadcastTuyaStatus(door.id, 'mcs', { '101': isOpen });
             console.log(`🚪 ${door.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
             // Trigger automations
             evaluateSensorTrigger(door.id, door.name, isOpen ? 'open' : 'closed');

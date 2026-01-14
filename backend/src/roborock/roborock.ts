@@ -3,6 +3,8 @@
  * Bridge runs on port 3002
  */
 
+import { broadcastRoborockStatus } from '../ws/device-broadcast';
+
 // In Docker, use service name; locally use localhost
 const BRIDGE_URL = process.env.ROBOROCK_BRIDGE_URL || 'http://roborock:3002';
 
@@ -49,7 +51,9 @@ export async function getStatus(): Promise<RoborockStatus | null> {
   try {
     const res = await fetch(`${BRIDGE_URL}/status`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const status = await res.json() as RoborockStatus;
+    broadcastRoborockStatus(status);
+    return status;
   } catch (error: any) {
     console.error('Roborock status error:', error.message);
     return null;

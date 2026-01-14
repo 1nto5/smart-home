@@ -2,6 +2,7 @@ import TuyAPI from 'tuyapi';
 import { getDb, recordContactChange, getLastContactState, recordSensorReading } from '../db/database';
 import { triggerAlarm } from '../notifications/alarm-service';
 import { evaluateSensorTrigger } from '../automations/automation-triggers';
+import { broadcastTuyaStatus } from '../ws/device-broadcast';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -71,6 +72,7 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
     // Only record if state changed
     if (lastState === null || lastState !== isOpen) {
       recordContactChange(device.id, device.name, isOpen);
+      broadcastTuyaStatus(device.id, device.category, { '101': isOpen });
       console.log(`📍 ${device.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
 
       // Trigger automations
@@ -93,6 +95,7 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
     // Only record if state changed (treat leak as "open")
     if (lastState === null || lastState !== isLeaking) {
       recordContactChange(device.id, device.name, isLeaking);
+      broadcastTuyaStatus(device.id, device.category, { '1': isLeaking ? 1 : 0 });
       if (isLeaking) {
         console.log(`🚨 WATER LEAK DETECTED: ${device.name}`);
 
@@ -114,6 +117,7 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
 
     if (temp !== null || humidity !== null) {
       recordSensorReading(device.id, device.name, temp, humidity, null, battery);
+      broadcastTuyaStatus(device.id, device.category, { temp, humidity, battery });
       console.log(`🌡️ ${device.name}: ${temp}°C, ${humidity}%`);
     }
   }
@@ -126,6 +130,7 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
 
     if (currentTemp !== null) {
       recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
+      broadcastTuyaStatus(device.id, device.category, { currentTemp, targetTemp, battery });
       console.log(`🔥 ${device.name}: ${currentTemp}°C (target: ${targetTemp}°C)`);
     }
   }
