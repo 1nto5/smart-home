@@ -129,6 +129,16 @@ startTelegramBot();
 // Start alarm notification loop (persistent notifications)
 startAlarmNotificationLoop();
 
+// Polish → English translation for device names
+const plToEn: Record<string, string> = {
+  'drzwi': 'Door', 'kuchnia': 'Kitchen', 'salon': 'Living room', 'sypialnia': 'Bedroom',
+  'łazienka': 'Bathroom', 'okno': 'Window', 'balkon': 'Balcony', 'przedpokój': 'Hallway',
+  'garaż': 'Garage', 'biuro': 'Office', 'pokój': 'Room'
+};
+function translateName(name: string): string {
+  return plToEn[name.toLowerCase()] || name;
+}
+
 // Health check
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -157,18 +167,19 @@ app.get('/api/devices', async (c) => {
     }
   }
 
-  const devices = db.query('SELECT * FROM devices ORDER BY room, name').all();
-  return c.json(devices);
+  const devices = db.query('SELECT * FROM devices ORDER BY room, name').all() as any[];
+  const translated = devices.map(d => ({ ...d, name: translateName(d.name) }));
+  return c.json(translated);
 });
 
 // Get single device
 app.get('/api/devices/:id', (c) => {
   const db = getDb();
-  const device = db.query('SELECT * FROM devices WHERE id = ?').get(c.req.param('id'));
+  const device = db.query('SELECT * FROM devices WHERE id = ?').get(c.req.param('id')) as any;
   if (!device) {
     return c.json({ error: 'Device not found' }, 404);
   }
-  return c.json(device);
+  return c.json({ ...device, name: translateName(device.name) });
 });
 
 // Update device (room, type, name)
@@ -1146,8 +1157,9 @@ app.get('/api/sensors', (c) => {
     FROM devices d
     WHERE d.category IN ('wsdcg', 'wkf', 'sj', 'mcs')
     ORDER BY d.room, d.name
-  `).all();
-  return c.json(sensors);
+  `).all() as any[];
+  const translated = sensors.map(s => ({ ...s, name: translateName(s.name) }));
+  return c.json(translated);
 });
 
 // === HOME STATUS ===
