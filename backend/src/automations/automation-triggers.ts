@@ -7,6 +7,30 @@ import { getDb, type Automation } from '../db/database';
 import { executeAutomationActions, type TriggerContext } from './automation-actions';
 
 /**
+ * Check if current time is within the quiet window (automation should be suppressed)
+ * Handles midnight crossing (e.g., 22:00-06:00)
+ */
+function isInQuietWindow(quietStart: string | null, quietEnd: string | null): boolean {
+  if (!quietStart || !quietEnd) return false;
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const [startH, startM] = quietStart.split(':').map(Number);
+  const [endH, endM] = quietEnd.split(':').map(Number);
+  const startMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+
+  if (startMinutes <= endMinutes) {
+    // Normal range (e.g., 06:00-08:00)
+    return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+  } else {
+    // Crosses midnight (e.g., 22:00-06:00)
+    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+  }
+}
+
+/**
  * Get enabled automations for a specific trigger type
  */
 function getEnabledAutomationsForTrigger(triggerType: string, condition: string, deviceId?: string): Automation[] {
@@ -60,8 +84,12 @@ export async function evaluateSensorTrigger(
 
   console.log(`Automation trigger: ${deviceName} -> ${condition}, found ${automations.length} matching rule(s)`);
 
-  // Execute each matching automation
+  // Execute each matching automation (skip if in quiet window)
   for (const automation of automations) {
+    if (isInQuietWindow(automation.quiet_start, automation.quiet_end)) {
+      console.log(`Automation "${automation.name}" skipped - in quiet window (${automation.quiet_start}-${automation.quiet_end})`);
+      continue;
+    }
     try {
       await executeAutomationActions(automation, context);
     } catch (error: any) {
@@ -100,6 +128,10 @@ export async function evaluateAqiTrigger(currentAqi: number): Promise<void> {
     }
 
     if (shouldTrigger) {
+      if (isInQuietWindow(automation.quiet_start, automation.quiet_end)) {
+        console.log(`AQI automation "${automation.name}" skipped - in quiet window (${automation.quiet_start}-${automation.quiet_end})`);
+        continue;
+      }
       console.log(`AQI trigger: ${currentAqi} ${condition} ${threshold}`);
       try {
         await executeAutomationActions(automation, context);

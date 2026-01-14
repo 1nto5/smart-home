@@ -22,6 +22,9 @@
   let formTelegramPrompt = $state('');
   let formTelegramActionYes = $state<AutomationAction[]>([]);
   let formUseTelegram = $state(false);
+  let formUseQuietHours = $state(false);
+  let formQuietStart = $state('');
+  let formQuietEnd = $state('');
 
   // Load data on mount
   $effect(() => {
@@ -53,6 +56,9 @@
     formTelegramPrompt = '';
     formTelegramActionYes = [];
     formUseTelegram = false;
+    formUseQuietHours = false;
+    formQuietStart = '';
+    formQuietEnd = '';
     editingId = null;
   }
 
@@ -85,6 +91,9 @@
       formTelegramActionYes = [];
     }
     formTelegramPrompt = automation.telegram_prompt || '';
+    formUseQuietHours = !!(automation.quiet_start && automation.quiet_end);
+    formQuietStart = automation.quiet_start || '';
+    formQuietEnd = automation.quiet_end || '';
     showForm = true;
   }
 
@@ -130,6 +139,8 @@
       telegram_action_yes: formUseTelegram && formTelegramActionYes.length > 0
         ? JSON.stringify(formTelegramActionYes)
         : null,
+      quiet_start: formUseQuietHours && formQuietStart ? formQuietStart : null,
+      quiet_end: formUseQuietHours && formQuietEnd ? formQuietEnd : null,
     };
 
     try {
@@ -234,6 +245,12 @@
                   <span class="font-display text-sm uppercase tracking-wider text-content-primary">{automation.name}</span>
                   {#if automation.telegram_prompt}
                     <MessageCircle class="w-4 h-4 text-accent" title="Telegram prompt" />
+                  {/if}
+                  {#if automation.quiet_start && automation.quiet_end}
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning text-xs" title="Quiet hours">
+                      <Clock class="w-3 h-3" />
+                      {automation.quiet_start}-{automation.quiet_end}
+                    </span>
                   {/if}
                 </div>
                 <div class="text-sm text-content-secondary flex flex-wrap items-center gap-2">
@@ -554,6 +571,35 @@
                 {/each}
               </div>
             {/if}
+          </div>
+        {/if}
+
+        <!-- Quiet Hours Toggle -->
+        <label class="flex items-center gap-3 p-3 rounded-lg bg-surface-recessed border border-stroke-subtle cursor-pointer">
+          <input type="checkbox" bind:checked={formUseQuietHours} class="w-4 h-4 accent-accent" />
+          <Clock class="w-5 h-5 text-warning" />
+          <span class="text-content-primary">Set quiet hours (do not trigger)</span>
+        </label>
+
+        {#if formUseQuietHours}
+          <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+            <div class="text-xs uppercase tracking-wider text-content-tertiary mb-2">Quiet Window</div>
+            <div class="flex items-center gap-2">
+              <input
+                type="time"
+                bind:value={formQuietStart}
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+              />
+              <span class="text-content-tertiary">to</span>
+              <input
+                type="time"
+                bind:value={formQuietEnd}
+                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
+              />
+            </div>
+            <p class="text-xs text-content-tertiary mt-2">
+              Automation won't trigger during this time (supports overnight, e.g., 22:00-06:00)
+            </p>
           </div>
         {/if}
       </div>

@@ -431,6 +431,14 @@ export function initDatabase(): Database {
     )
   `);
 
+  // Migration: Add quiet hours columns to automations
+  const automationsCols = db.query("PRAGMA table_info(automations)").all() as { name: string }[];
+  const hasQuietStart = automationsCols.some(c => c.name === 'quiet_start');
+  if (!hasQuietStart) {
+    db.run('ALTER TABLE automations ADD COLUMN quiet_start TEXT');
+    db.run('ALTER TABLE automations ADD COLUMN quiet_end TEXT');
+  }
+
   // Automation pending confirmations (Telegram prompts awaiting response)
   db.run(`
     CREATE TABLE IF NOT EXISTS automation_pending (
@@ -778,6 +786,8 @@ export interface Automation {
   actions: string; // JSON array
   telegram_prompt: string | null;
   telegram_action_yes: string | null;
+  quiet_start: string | null; // HH:MM format
+  quiet_end: string | null; // HH:MM format
   created_at: string;
 }
 
@@ -812,8 +822,8 @@ export function getAutomation(id: number): Automation | null {
 export function createAutomation(automation: Omit<Automation, 'id' | 'created_at'>): Automation {
   const database = getDb();
   const result = database.run(
-    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes, quiet_start, quiet_end)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       automation.name,
       automation.enabled ?? 1,
@@ -823,6 +833,8 @@ export function createAutomation(automation: Omit<Automation, 'id' | 'created_at
       automation.actions,
       automation.telegram_prompt,
       automation.telegram_action_yes,
+      automation.quiet_start,
+      automation.quiet_end,
     ]
   );
   return getAutomation(Number(result.lastInsertRowid))!;
@@ -841,6 +853,8 @@ export function updateAutomation(id: number, updates: Partial<Omit<Automation, '
   if (updates.actions !== undefined) { fields.push('actions = ?'); values.push(updates.actions); }
   if (updates.telegram_prompt !== undefined) { fields.push('telegram_prompt = ?'); values.push(updates.telegram_prompt); }
   if (updates.telegram_action_yes !== undefined) { fields.push('telegram_action_yes = ?'); values.push(updates.telegram_action_yes); }
+  if (updates.quiet_start !== undefined) { fields.push('quiet_start = ?'); values.push(updates.quiet_start); }
+  if (updates.quiet_end !== undefined) { fields.push('quiet_end = ?'); values.push(updates.quiet_end); }
 
   if (fields.length === 0) return getAutomation(id);
 
