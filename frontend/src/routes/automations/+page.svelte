@@ -498,7 +498,7 @@
                       <select bind:value={action.value} class="bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
                         <option value="auto">Auto</option>
                         <option value="silent">Silent</option>
-                        <option value="favorite">Favorite (manual)</option>
+                        <option value="favorite">Manual</option>
                       </select>
                     {/if}
                   </div>
@@ -568,7 +568,7 @@
                       <select bind:value={action.value} class="bg-surface-recessed border border-stroke-default rounded-lg px-2 py-1.5 text-sm text-content-primary">
                         <option value="auto">Auto</option>
                         <option value="silent">Silent</option>
-                        <option value="favorite">Favorite (manual)</option>
+                        <option value="favorite">Manual</option>
                       </select>
                     {/if}
                   </div>
