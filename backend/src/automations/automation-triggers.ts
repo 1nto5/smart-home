@@ -6,28 +6,53 @@
 import { getDb, type Automation } from '../db/database';
 import { executeAutomationActions, type TriggerContext } from './automation-actions';
 
+interface QuietWindow {
+  start: string;
+  end: string;
+}
+
 /**
- * Check if current time is within the quiet window (automation should be suppressed)
+ * Check if current time is within any quiet window (automation should be suppressed)
  * Handles midnight crossing (e.g., 22:00-06:00)
  */
-function isInQuietWindow(quietStart: string | null, quietEnd: string | null): boolean {
-  if (!quietStart || !quietEnd) return false;
+function isInQuietWindow(quietWindowsJson: string | null): { inQuiet: boolean; window?: QuietWindow } {
+  if (!quietWindowsJson) return { inQuiet: false };
+
+  let windows: QuietWindow[];
+  try {
+    windows = JSON.parse(quietWindowsJson);
+  } catch {
+    return { inQuiet: false };
+  }
+
+  if (!Array.isArray(windows) || windows.length === 0) return { inQuiet: false };
 
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const [startH, startM] = quietStart.split(':').map(Number);
-  const [endH, endM] = quietEnd.split(':').map(Number);
-  const startMinutes = startH * 60 + startM;
-  const endMinutes = endH * 60 + endM;
+  for (const window of windows) {
+    if (!window.start || !window.end) continue;
 
-  if (startMinutes <= endMinutes) {
-    // Normal range (e.g., 06:00-08:00)
-    return currentMinutes >= startMinutes && currentMinutes < endMinutes;
-  } else {
-    // Crosses midnight (e.g., 22:00-06:00)
-    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    const [startH, startM] = window.start.split(':').map(Number);
+    const [endH, endM] = window.end.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    let isInWindow = false;
+    if (startMinutes <= endMinutes) {
+      // Normal range (e.g., 06:00-08:00)
+      isInWindow = currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    } else {
+      // Crosses midnight (e.g., 22:00-06:00)
+      isInWindow = currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    }
+
+    if (isInWindow) {
+      return { inQuiet: true, window };
+    }
   }
+
+  return { inQuiet: false };
 }
 
 /**
@@ -86,8 +111,9 @@ export async function evaluateSensorTrigger(
 
   // Execute each matching automation (skip if in quiet window)
   for (const automation of automations) {
-    if (isInQuietWindow(automation.quiet_start, automation.quiet_end)) {
-      console.log(`Automation "${automation.name}" skipped - in quiet window (${automation.quiet_start}-${automation.quiet_end})`);
+    const quietCheck = isInQuietWindow(automation.quiet_windows);
+    if (quietCheck.inQuiet) {
+      console.log(`Automation "${automation.name}" skipped - in quiet window (${quietCheck.window?.start}-${quietCheck.window?.end})`);
       continue;
     }
     try {
@@ -128,8 +154,9 @@ export async function evaluateAqiTrigger(currentAqi: number): Promise<void> {
     }
 
     if (shouldTrigger) {
-      if (isInQuietWindow(automation.quiet_start, automation.quiet_end)) {
-        console.log(`AQI automation "${automation.name}" skipped - in quiet window (${automation.quiet_start}-${automation.quiet_end})`);
+      const quietCheck = isInQuietWindow(automation.quiet_windows);
+      if (quietCheck.inQuiet) {
+        console.log(`AQI automation "${automation.name}" skipped - in quiet window (${quietCheck.window?.start}-${quietCheck.window?.end})`);
         continue;
       }
       console.log(`AQI trigger: ${currentAqi} ${condition} ${threshold}`);

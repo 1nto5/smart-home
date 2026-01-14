@@ -2,7 +2,7 @@
   import { browser } from '$app/environment';
   import { getAutomations, createAutomation, deleteAutomation, toggleAutomation, updateAutomation, getAutomationLog, getTuyaDevices, getHeaterPresets } from '$lib/api';
   import { Zap, Plus, Trash2, Power, Clock, Pencil, X, MessageCircle, DoorOpen, Thermometer, Volume2, Wind } from 'lucide-svelte';
-  import type { Automation, AutomationLog, TuyaDevice, HeaterPreset, AutomationAction } from '$lib/types';
+  import type { Automation, AutomationLog, TuyaDevice, HeaterPreset, AutomationAction, QuietWindow } from '$lib/types';
 
   let automations = $state<Automation[]>([]);
   let automationLog = $state<AutomationLog[]>([]);
@@ -22,9 +22,7 @@
   let formTelegramPrompt = $state('');
   let formTelegramActionYes = $state<AutomationAction[]>([]);
   let formUseTelegram = $state(false);
-  let formUseQuietHours = $state(false);
-  let formQuietStart = $state('');
-  let formQuietEnd = $state('');
+  let formQuietWindows = $state<QuietWindow[]>([]);
 
   // Load data on mount
   $effect(() => {
@@ -56,9 +54,7 @@
     formTelegramPrompt = '';
     formTelegramActionYes = [];
     formUseTelegram = false;
-    formUseQuietHours = false;
-    formQuietStart = '';
-    formQuietEnd = '';
+    formQuietWindows = [];
     editingId = null;
   }
 
@@ -91,9 +87,7 @@
       formTelegramActionYes = [];
     }
     formTelegramPrompt = automation.telegram_prompt || '';
-    formUseQuietHours = !!(automation.quiet_start && automation.quiet_end);
-    formQuietStart = automation.quiet_start || '';
-    formQuietEnd = automation.quiet_end || '';
+    formQuietWindows = automation.quiet_windows ? JSON.parse(automation.quiet_windows) : [];
     showForm = true;
   }
 
@@ -118,6 +112,14 @@
     formTelegramActionYes = formTelegramActionYes.filter((_, i) => i !== index);
   }
 
+  function addQuietWindow() {
+    formQuietWindows = [...formQuietWindows, { start: '06:00', end: '08:00' }];
+  }
+
+  function removeQuietWindow(index: number) {
+    formQuietWindows = formQuietWindows.filter((_, i) => i !== index);
+  }
+
   async function handleSubmit() {
     if (!formName.trim()) return;
     loading = true;
@@ -139,8 +141,7 @@
       telegram_action_yes: formUseTelegram && formTelegramActionYes.length > 0
         ? JSON.stringify(formTelegramActionYes)
         : null,
-      quiet_start: formUseQuietHours && formQuietStart ? formQuietStart : null,
-      quiet_end: formUseQuietHours && formQuietEnd ? formQuietEnd : null,
+      quiet_windows: formQuietWindows.length > 0 ? JSON.stringify(formQuietWindows) : null,
     };
 
     try {
@@ -246,11 +247,14 @@
                   {#if automation.telegram_prompt}
                     <MessageCircle class="w-4 h-4 text-accent" title="Telegram prompt" />
                   {/if}
-                  {#if automation.quiet_start && automation.quiet_end}
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning text-xs" title="Quiet hours">
-                      <Clock class="w-3 h-3" />
-                      {automation.quiet_start}-{automation.quiet_end}
-                    </span>
+                  {#if automation.quiet_windows}
+                    {@const windows = JSON.parse(automation.quiet_windows) as QuietWindow[]}
+                    {#each windows as window}
+                      <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning text-xs" title="Quiet window">
+                        <Clock class="w-3 h-3" />
+                        {window.start}-{window.end}
+                      </span>
+                    {/each}
                   {/if}
                 </div>
                 <div class="text-sm text-content-secondary flex flex-wrap items-center gap-2">
@@ -574,34 +578,43 @@
           </div>
         {/if}
 
-        <!-- Quiet Hours Toggle -->
-        <label class="flex items-center gap-3 p-3 rounded-lg bg-surface-recessed border border-stroke-subtle cursor-pointer">
-          <input type="checkbox" bind:checked={formUseQuietHours} class="w-4 h-4 accent-accent" />
-          <Clock class="w-5 h-5 text-warning" />
-          <span class="text-content-primary">Set quiet hours (do not trigger)</span>
-        </label>
-
-        {#if formUseQuietHours}
-          <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-            <div class="text-xs uppercase tracking-wider text-content-tertiary mb-2">Quiet Window</div>
+        <!-- Quiet Windows -->
+        <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+          <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <input
-                type="time"
-                bind:value={formQuietStart}
-                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
-              />
-              <span class="text-content-tertiary">to</span>
-              <input
-                type="time"
-                bind:value={formQuietEnd}
-                class="bg-surface-base border border-stroke-default rounded-lg px-3 py-2 text-content-primary"
-              />
+              <Clock class="w-4 h-4 text-warning" />
+              <span class="text-xs uppercase tracking-wider text-content-tertiary">Quiet Windows (do not trigger)</span>
+            </div>
+            <button onclick={addQuietWindow} class="text-xs text-accent hover:underline">+ Add window</button>
+          </div>
+          {#if formQuietWindows.length === 0}
+            <p class="text-sm text-content-tertiary">No quiet windows - automation always active</p>
+          {:else}
+            <div class="space-y-2">
+              {#each formQuietWindows as window, i}
+                <div class="flex items-center gap-2">
+                  <input
+                    type="time"
+                    bind:value={window.start}
+                    class="bg-surface-base border border-stroke-default rounded-lg px-3 py-1.5 text-content-primary text-sm"
+                  />
+                  <span class="text-content-tertiary text-sm">to</span>
+                  <input
+                    type="time"
+                    bind:value={window.end}
+                    class="bg-surface-base border border-stroke-default rounded-lg px-3 py-1.5 text-content-primary text-sm"
+                  />
+                  <button onclick={() => removeQuietWindow(i)} class="p-1 text-content-tertiary hover:text-error shrink-0">
+                    <X class="w-4 h-4" />
+                  </button>
+                </div>
+              {/each}
             </div>
             <p class="text-xs text-content-tertiary mt-2">
-              Automation won't trigger during this time (supports overnight, e.g., 22:00-06:00)
+              Supports overnight windows (e.g., 22:00-06:00)
             </p>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
 
       <div class="p-4 border-t border-stroke-subtle flex justify-end gap-3">

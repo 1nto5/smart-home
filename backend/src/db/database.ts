@@ -431,12 +431,20 @@ export function initDatabase(): Database {
     )
   `);
 
-  // Migration: Add quiet hours columns to automations
+  // Migration: Add quiet_windows column (replaces quiet_start/quiet_end)
   const automationsCols = db.query("PRAGMA table_info(automations)").all() as { name: string }[];
-  const hasQuietStart = automationsCols.some(c => c.name === 'quiet_start');
-  if (!hasQuietStart) {
-    db.run('ALTER TABLE automations ADD COLUMN quiet_start TEXT');
-    db.run('ALTER TABLE automations ADD COLUMN quiet_end TEXT');
+  const hasQuietWindows = automationsCols.some(c => c.name === 'quiet_windows');
+  if (!hasQuietWindows) {
+    db.run('ALTER TABLE automations ADD COLUMN quiet_windows TEXT');
+    // Migrate existing quiet_start/quiet_end data
+    const hasQuietStart = automationsCols.some(c => c.name === 'quiet_start');
+    if (hasQuietStart) {
+      db.run(`
+        UPDATE automations
+        SET quiet_windows = json_array(json_object('start', quiet_start, 'end', quiet_end))
+        WHERE quiet_start IS NOT NULL AND quiet_end IS NOT NULL
+      `);
+    }
   }
 
   // Automation pending confirmations (Telegram prompts awaiting response)
@@ -786,8 +794,7 @@ export interface Automation {
   actions: string; // JSON array
   telegram_prompt: string | null;
   telegram_action_yes: string | null;
-  quiet_start: string | null; // HH:MM format
-  quiet_end: string | null; // HH:MM format
+  quiet_windows: string | null; // JSON array of {start: string, end: string}
   created_at: string;
 }
 
@@ -822,8 +829,8 @@ export function getAutomation(id: number): Automation | null {
 export function createAutomation(automation: Omit<Automation, 'id' | 'created_at'>): Automation {
   const database = getDb();
   const result = database.run(
-    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes, quiet_start, quiet_end)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes, quiet_windows)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       automation.name,
       automation.enabled ?? 1,
@@ -833,8 +840,7 @@ export function createAutomation(automation: Omit<Automation, 'id' | 'created_at
       automation.actions,
       automation.telegram_prompt,
       automation.telegram_action_yes,
-      automation.quiet_start,
-      automation.quiet_end,
+      automation.quiet_windows,
     ]
   );
   return getAutomation(Number(result.lastInsertRowid))!;
@@ -853,8 +859,7 @@ export function updateAutomation(id: number, updates: Partial<Omit<Automation, '
   if (updates.actions !== undefined) { fields.push('actions = ?'); values.push(updates.actions); }
   if (updates.telegram_prompt !== undefined) { fields.push('telegram_prompt = ?'); values.push(updates.telegram_prompt); }
   if (updates.telegram_action_yes !== undefined) { fields.push('telegram_action_yes = ?'); values.push(updates.telegram_action_yes); }
-  if (updates.quiet_start !== undefined) { fields.push('quiet_start = ?'); values.push(updates.quiet_start); }
-  if (updates.quiet_end !== undefined) { fields.push('quiet_end = ?'); values.push(updates.quiet_end); }
+  if (updates.quiet_windows !== undefined) { fields.push('quiet_windows = ?'); values.push(updates.quiet_windows); }
 
   if (fields.length === 0) return getAutomation(id);
 
