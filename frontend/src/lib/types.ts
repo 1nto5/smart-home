@@ -124,7 +124,7 @@ export interface AirPurifierStatus {
   temperature?: number;
   filter_life?: number;
   fan_speed?: number;
-  led_brightness?: 'bright' | 'dim' | 'off';
+  led_brightness?: number; // 0-8 (0=off, 8=brightest)
 }
 
 // Heater presets and schedules

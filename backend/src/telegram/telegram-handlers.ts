@@ -568,18 +568,19 @@ async function handlePurifierAction(
   // LED brightness submenu
   if (subAction === 'led_menu') {
     const status = await getPurifierStatus();
-    const currentLevel = status?.led_brightness ?? 'bright';
+    const currentLevel = status?.led_brightness ?? 8;
     const menu = purifierLedKeyboard(currentLevel);
     await editMessage(chatId, messageId, menu.text, menu.keyboard);
     return;
   }
 
-  // Set LED brightness
+  // Set LED brightness (0=off, 4=dim, 8=bright)
   if (subAction === 'led' && param) {
-    success = await setLedBrightness(param as 'bright' | 'dim' | 'off');
-    const levelNames: Record<string, string> = { bright: 'Bright', dim: 'Dim', off: 'Off' };
-    actionName = `LED: ${levelNames[param] || param}`;
-    const menu = purifierLedKeyboard(param);
+    const level = parseInt(param, 10);
+    success = await setLedBrightness(level);
+    const levelNames: Record<number, string> = { 0: 'Off', 4: 'Dim', 8: 'Bright' };
+    actionName = `LED: ${levelNames[level] || level}`;
+    const menu = purifierLedKeyboard(level);
     const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
     return;
