@@ -445,24 +445,26 @@ Select speed:`;
 
 /**
  * Air purifier LED brightness control keyboard
+ * Uses numeric values: 0=off, 4=dim, 8=bright
  */
-export function purifierLedKeyboard(currentLevel: string): { text: string; keyboard: InlineKeyboard } {
-  const levelNames: Record<string, string> = { bright: 'Bright', dim: 'Dim', off: 'Off' };
+export function purifierLedKeyboard(currentLevel: number): { text: string; keyboard: InlineKeyboard } {
+  const levelNames: Record<number, string> = { 0: 'Off', 4: 'Dim', 8: 'Bright' };
+  const displayLevel = levelNames[currentLevel] || `${currentLevel}`;
   const text = `🌬️ <b>Air Purifier - LED Brightness</b>
 
-Current: <b>${levelNames[currentLevel] || currentLevel}</b>
+Current: <b>${displayLevel}</b>
 
 Select brightness:`;
 
-  const levels = ['bright', 'dim', 'off'] as const;
-  const icons: Record<string, string> = { bright: '☀️', dim: '🔅', off: '🌑' };
+  const levels = [8, 4, 0] as const; // bright, dim, off
+  const icons: Record<number, string> = { 8: '☀️', 4: '🔅', 0: '🌑' };
 
   return {
     text,
     keyboard: {
       inline_keyboard: [
         levels.map(level => ({
-          text: level === currentLevel ? `[${icons[level]} ${levelNames[level]}]` : `${icons[level]} ${levelNames[level]}`,
+          text: currentLevel === level ? `[${icons[level]} ${levelNames[level]}]` : `${icons[level]} ${levelNames[level]}`,
           callback_data: `purifier:led:${level}`,
         })),
         [{ text: '« Back to Purifier', callback_data: 'menu:purifier' }],

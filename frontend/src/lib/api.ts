@@ -220,7 +220,7 @@ export async function getAirPurifierStatus(): Promise<AirPurifierStatus> {
 }
 
 export async function controlAirPurifier(
-  cmd: { power?: boolean; mode?: string; fan_speed?: number }
+  cmd: { power?: boolean; mode?: string; fan_speed?: number; led_brightness?: number }
 ): Promise<{ success: boolean }> {
   return fetcher('/purifier/control', {
     method: 'POST',

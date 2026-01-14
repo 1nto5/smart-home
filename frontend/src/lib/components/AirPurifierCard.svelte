@@ -2,7 +2,7 @@
   import { controlAirPurifier } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus, Sun, SunDim, SunMoon } from 'lucide-svelte';
+  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus, Sun } from 'lucide-svelte';
   import { debounce } from '$lib/debounce';
 
   let { compact = false }: { compact?: boolean } = $props();
@@ -13,14 +13,14 @@
   let optimisticPower = $state<boolean | null>(null);
   let optimisticMode = $state<string | null>(null);
   let optimisticFanSpeed = $state<number | null>(null);
-  let optimisticLedBrightness = $state<string | null>(null);
+  let optimisticLedBrightness = $state<number | null>(null);
   let isPowerPending = $state(false);
 
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
   let displayFanSpeed = $derived(optimisticFanSpeed ?? status?.fan_speed ?? 300);
-  let displayLedBrightness = $derived(optimisticLedBrightness ?? status?.led_brightness ?? 'bright');
+  let displayLedBrightness = $derived(optimisticLedBrightness ?? status?.led_brightness ?? 8);
 
   async function togglePower() {
     const newPower = !displayPower;
@@ -50,16 +50,22 @@
     }
   }
 
-  async function setLedBrightness(level: string) {
-    const oldLevel = displayLedBrightness;
-    optimisticLedBrightness = level;
+  // Debounced LED brightness control
+  const [sendLedBrightnessDebounced] = debounce(async (level: number) => {
     try {
       await controlAirPurifier({ led_brightness: level });
       await store.refreshAirPurifier();
+      optimisticLedBrightness = null;
     } catch (e) {
       console.error(e);
-      optimisticLedBrightness = oldLevel;
+      optimisticLedBrightness = null;
     }
+  }, 300);
+
+  function handleLedBrightnessInput(level: number) {
+    const clamped = Math.max(0, Math.min(8, Math.round(level)));
+    optimisticLedBrightness = clamped;
+    sendLedBrightnessDebounced(clamped);
   }
 
   // Debounced fan speed control
@@ -81,8 +87,9 @@
     sendFanSpeedDebounced(clamped);
   }
 
-  // Calculate slider position (300=0%, 2200=100%)
-  let sliderPercent = $derived(((displayFanSpeed - 300) / 1900) * 100);
+  // Calculate slider positions
+  let fanSliderPercent = $derived(((displayFanSpeed - 300) / 1900) * 100);
+  let ledSliderPercent = $derived((displayLedBrightness / 8) * 100);
 
   function aqiColor(aqi: number): string {
     if (aqi <= 50) return 'text-success';
@@ -112,12 +119,6 @@
   ];
 
   const modeLabels: Record<string, string> = { auto: 'Auto', silent: 'Night', favorite: 'Manual' };
-
-  const ledLevels = [
-    { value: 'bright', label: 'Bright', icon: Sun },
-    { value: 'dim', label: 'Dim', icon: SunDim },
-    { value: 'off', label: 'Off', icon: SunMoon },
-  ];
 </script>
 
 <!-- Card -->
@@ -234,11 +235,11 @@
               <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
                 <div
                   class="absolute inset-y-0 left-0 bg-device-air-text/30 transition-all duration-150"
-                  style="width: {sliderPercent}%"
+                  style="width: {fanSliderPercent}%"
                 ></div>
                 <div
                   class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-air-text shadow-[0_0_10px_var(--color-air-glow)] transition-all duration-150"
-                  style="left: clamp(8px, calc({sliderPercent}% - 8px + 8px), calc(100% - 8px))"
+                  style="left: clamp(8px, calc({fanSliderPercent}% - 8px + 8px), calc(100% - 8px))"
                 ></div>
                 <input
                   type="range"
@@ -263,18 +264,47 @@
 
         <!-- LED Brightness -->
         <div>
-          <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">LED Brightness</p>
-          <div class="grid grid-cols-3 gap-2">
-            {#each ledLevels as level}
-              <button
-                onclick={() => setLedBrightness(level.value)}
-                class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium
-                       {displayLedBrightness === level.value ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
-              >
-                <svelte:component this={level.icon} class="w-5 h-5" />
-                {level.label}
-              </button>
-            {/each}
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs text-content-tertiary uppercase tracking-wider">LED Brightness</span>
+            <span class="font-display text-lg text-device-air-text neon-text-subtle flex items-center gap-1.5">
+              <Sun class="w-4 h-4" />
+              {displayLedBrightness === 0 ? 'Off' : displayLedBrightness}
+            </span>
+          </div>
+          <div class="flex gap-2 items-center">
+            <button
+              onclick={() => handleLedBrightnessInput(displayLedBrightness - 1)}
+              disabled={displayLedBrightness <= 0}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Minus class="w-5 h-5" />
+            </button>
+            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
+              <div
+                class="absolute inset-y-0 left-0 bg-device-air-text/30 transition-all duration-150"
+                style="width: {ledSliderPercent}%"
+              ></div>
+              <div
+                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-air-text shadow-[0_0_10px_var(--color-air-glow)] transition-all duration-150"
+                style="left: clamp(8px, calc({ledSliderPercent}% - 8px + 8px), calc(100% - 8px))"
+              ></div>
+              <input
+                type="range"
+                min="0"
+                max="8"
+                step="1"
+                value={displayLedBrightness}
+                oninput={(e) => handleLedBrightnessInput(parseInt(e.currentTarget.value))}
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <button
+              onclick={() => handleLedBrightnessInput(displayLedBrightness + 1)}
+              disabled={displayLedBrightness >= 8}
+              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Plus class="w-5 h-5" />
+            </button>
           </div>
         </div>
 

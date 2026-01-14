@@ -60,7 +60,7 @@ interface PurifierStatus {
   filter_life: number;
   fan_speed?: number;
   motor_rpm?: number;
-  led_brightness?: 'bright' | 'dim' | 'off';
+  led_brightness?: number; // 0-8 (0=off, 8=brightest)
 }
 
 export function broadcastPurifierStatus(status: PurifierStatus): boolean {

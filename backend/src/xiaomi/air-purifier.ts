@@ -15,21 +15,8 @@ interface PurifierStatus {
   aqi: number;
   filter_life: number;
   fan_speed?: number;
-  led_brightness?: 'bright' | 'dim' | 'off';
+  led_brightness?: number; // 0-8 (0=off, 8=brightest)
 }
-
-// LED brightness mapping (siid 7, piid 2 for mb4)
-const LED_MAP: Record<number, 'bright' | 'dim' | 'off'> = {
-  0: 'off',
-  1: 'dim',
-  2: 'bright',
-};
-
-const LED_TO_VALUE: Record<string, number> = {
-  off: 0,
-  dim: 1,
-  bright: 2,
-};
 
 // MiOT mode mapping
 const MODE_MAP: Record<number, string> = {
@@ -99,7 +86,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
       { siid: 3, piid: 4 },  // pm2.5
       { siid: 4, piid: 3 },  // filter life % (piid 3 works for this device)
-      { siid: 7, piid: 2 },  // LED brightness (0=bright, 1=dim, 2=off)
+      { siid: 7, piid: 2 },  // LED brightness (0-8, 0=off, 8=brightest)
       { siid: 9, piid: 1 },  // motor_speed (current RPM)
       { siid: 9, piid: 3 },  // favorite_rpm (set RPM)
     ]);
@@ -120,7 +107,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       filter_life: getValue(4, 3) ?? 0,
       fan_speed: favoriteRpm ?? 300,  // RPM value (300-2200)
       motor_rpm: getValue(9, 1),  // actual current RPM
-      led_brightness: LED_MAP[ledValue] ?? 'bright',
+      led_brightness: ledValue ?? 8,
     };
     broadcastPurifierStatus(status);
     return status;
@@ -201,22 +188,21 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
 }
 
 /**
- * Set LED brightness (bright, dim, off)
+ * Set LED brightness (0-8, 0=off, 8=brightest)
  */
-export async function setLedBrightness(level: 'bright' | 'dim' | 'off'): Promise<boolean> {
+export async function setLedBrightness(level: number): Promise<boolean> {
   if (!purifierConnection) {
     await connectPurifier();
   }
   if (!purifierConnection) return false;
 
-  const ledValue = LED_TO_VALUE[level];
-  if (ledValue === undefined) return false;
+  const clamped = Math.max(0, Math.min(8, Math.round(level)));
 
   try {
     await purifierConnection.call('set_properties', [
-      { siid: 7, piid: 2, value: ledValue }
+      { siid: 7, piid: 2, value: clamped }
     ]);
-    console.log(`Air Purifier: LED brightness set to ${level}`);
+    console.log(`Air Purifier: LED brightness set to ${clamped}`);
     return true;
   } catch (error: any) {
     console.error('Failed to set LED brightness:', error.message);
