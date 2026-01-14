@@ -181,7 +181,7 @@
       case 'set_heater_temp': return `Heater → ${action.value}°C`;
       case 'purifier_off': return 'Purifier OFF';
       case 'purifier_on': return 'Purifier ON';
-      case 'purifier_mode': return `Purifier → ${action.value}`;
+      case 'purifier_mode': return `Purifier → ${action.value === 'favorite' ? 'manual' : action.value}`;
       case 'soundbar_off': return 'Soundbar OFF';
       case 'soundbar_on': return 'Soundbar ON';
       case 'telegram_prompt': return 'Ask Telegram';
