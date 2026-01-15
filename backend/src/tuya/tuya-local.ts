@@ -1,6 +1,6 @@
 import TuyAPI from 'tuyapi';
 import { getDb, recordContactChange, getLastContactState, recordSensorReading } from '../db/database';
-import { triggerAlarm } from '../notifications/alarm-service';
+import { triggerAlarm, sendDoorOpenNotification } from '../notifications/alarm-service';
 import { evaluateSensorTrigger } from '../automations/automation-triggers';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
 
@@ -79,9 +79,14 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
       evaluateSensorTrigger(device.id, device.name, isOpen ? 'open' : 'closed');
 
       // Trigger door alarm (only creates if alarm is armed, handled inside triggerAlarm)
+      // or send door open notification with device controls (when alarm is not armed)
       if (isOpen) {
         triggerAlarm('door', device.id, device.name).catch((err) => {
           console.error('Failed to trigger door alarm:', err);
+        });
+        // Also send door open notification (only if alarm is NOT armed)
+        sendDoorOpenNotification(device.name).catch((err) => {
+          console.error('Failed to send door open notification:', err);
         });
       }
     }

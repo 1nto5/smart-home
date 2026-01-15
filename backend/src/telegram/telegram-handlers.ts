@@ -145,6 +145,15 @@ export async function handleCallbackQuery(
       case 'auto':
         await handleAutomationCallback(args, chatId, messageId);
         break;
+      case 'door_heater':
+        await handleDoorHeaterAction(args, chatId, messageId);
+        break;
+      case 'door_soundbar':
+        await handleDoorSoundbarAction(args, chatId, messageId);
+        break;
+      case 'door_purifier':
+        await handleDoorPurifierAction(args, chatId, messageId);
+        break;
     }
   } catch (error: any) {
     console.error('Callback handler error:', error.message);
@@ -797,6 +806,69 @@ async function handleWeatherAction(
   // For refresh or any action, just show updated weather data
   const result = weatherKeyboard();
   await editMessage(chatId, messageId, result.text, result.keyboard);
+}
+
+/**
+ * Handle door notification heater actions
+ */
+async function handleDoorHeaterAction(
+  args: string[],
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  const presetId = args[0] || 'comfort';
+  console.log(`Telegram (door notification): Applying heater preset ${presetId}`);
+  const result = await applyPresetToAllHeaters(presetId);
+  const totalCount = result.success.length + result.pending.length + result.failed.length;
+  const presetName = presetId === 'comfort' ? 'Comfort' : 'Off';
+  const text = `✅ Heater <b>${presetName}</b> applied to ${result.success.length}/${totalCount} heaters`;
+  await sendMessage(chatId, text);
+}
+
+/**
+ * Handle door notification soundbar actions
+ */
+async function handleDoorSoundbarAction(
+  args: string[],
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  const [action] = args;
+  const db = getDb();
+  const soundbars = db.query('SELECT id FROM yamaha_devices').all() as { id: string }[];
+
+  let anySuccess = false;
+  const on = action === 'on';
+
+  for (const sb of soundbars) {
+    const result = await setSoundbarPower(sb.id, on);
+    if (result) anySuccess = true;
+  }
+
+  const actionName = on ? 'ON' : 'OFF';
+  const text = anySuccess
+    ? `✅ Soundbar turned <b>${actionName}</b>`
+    : `❌ Failed to turn soundbar ${actionName}`;
+  await sendMessage(chatId, text);
+}
+
+/**
+ * Handle door notification purifier actions
+ */
+async function handleDoorPurifierAction(
+  args: string[],
+  chatId: number,
+  messageId: number
+): Promise<void> {
+  const [action] = args;
+  const on = action === 'on';
+  const success = await setPurifierPower(on);
+
+  const actionName = on ? 'ON' : 'OFF';
+  const text = success
+    ? `✅ Purifier turned <b>${actionName}</b>`
+    : `❌ Failed to turn purifier ${actionName}`;
+  await sendMessage(chatId, text);
 }
 
 /**

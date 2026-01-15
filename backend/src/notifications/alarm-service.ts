@@ -27,6 +27,28 @@ function acknowledgeKeyboard(alarmId: number) {
 }
 
 /**
+ * Quick action keyboard for door open notifications (when alarm is not armed)
+ */
+function doorOpenKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        { text: '🔥 Comfort', callback_data: 'door_heater:comfort' },
+        { text: '❄️ Heat Off', callback_data: 'door_heater:off' },
+      ],
+      [
+        { text: '🔊 Sound ON', callback_data: 'door_soundbar:on' },
+        { text: '🔇 Sound OFF', callback_data: 'door_soundbar:off' },
+      ],
+      [
+        { text: '🌬️ Purifier ON', callback_data: 'door_purifier:on' },
+        { text: '💨 Purifier OFF', callback_data: 'door_purifier:off' },
+      ],
+    ],
+  };
+}
+
+/**
  * Format timestamp for display
  */
 function formatTime(timestamp: string): string {
@@ -145,4 +167,43 @@ export async function triggerAlarm(
   }
 
   return alarmId;
+}
+
+/**
+ * Send door open notification with quick action buttons (when alarm is NOT armed)
+ * This allows quick control of heating and devices when entering home
+ */
+export async function sendDoorOpenNotification(
+  deviceName: string
+): Promise<boolean> {
+  const config = getTelegramConfig();
+  if (!config.enabled || !config.bot_token || !config.chat_id) {
+    return false;
+  }
+
+  // Check if alarm is armed - if so, don't send this notification (alarm notification will be sent instead)
+  const alarmConfig = getAlarmConfig();
+  if (alarmConfig.armed) {
+    return false;
+  }
+
+  const now = new Date();
+  const time = now.toLocaleString('en-GB', {
+    timeZone: 'Europe/Warsaw',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const message = `🚪 <b>Door Opened</b>
+
+Sensor: <b>${translateDeviceName(deviceName)}</b>
+Time: ${time}
+
+Quick actions:`;
+
+  const success = await sendMessage(config.chat_id, message, doorOpenKeyboard());
+  if (success) {
+    console.log(`🚪 Door open notification sent: ${deviceName}`);
+  }
+  return success;
 }
