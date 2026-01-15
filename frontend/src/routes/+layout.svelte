@@ -5,6 +5,8 @@
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
   import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw, Workflow } from 'lucide-svelte';
+  import Toaster from '$lib/components/Toaster.svelte';
+  import { notify } from '$lib/toast.svelte';
   import type { ComponentType } from 'svelte';
   import { getAlarmStatus, armAlarm, disarmAlarm } from '$lib/api';
 
@@ -36,12 +38,15 @@
       if (alarmArmed) {
         const status = await disarmAlarm();
         alarmArmed = status.armed;
+        notify.success('Alarm disarmed');
       } else {
         const status = await armAlarm();
         alarmArmed = status.armed;
+        notify.success('Alarm armed');
       }
     } catch (e) {
       console.error('Failed to toggle alarm:', e);
+      notify.error('Alarm toggle failed');
     } finally {
       alarmLoading = false;
     }
@@ -169,3 +174,5 @@
     </div>
   </nav>
 </div>
+
+<Toaster />
