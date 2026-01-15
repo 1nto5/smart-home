@@ -2,6 +2,7 @@
   import { store } from '$lib/stores.svelte';
   import { getPresets, applyPreset, createSchedule, deleteSchedule, toggleSchedule, clearPendingActions, updateLampPreset, createLampPreset, deleteLampPreset } from '$lib/api';
   import { Sun, Moon, Power, Lightbulb, Clock, Plus, Trash2, Play, X, Zap, AlertCircle, Pencil } from 'lucide-svelte';
+  import { showApplyResult, notify } from '$lib/toast.svelte';
   import { browser } from '$app/environment';
   import type { Preset, ApplyResult, Schedule } from '$lib/types';
   import type { ComponentType } from 'svelte';
@@ -68,9 +69,11 @@
     applyResult = null;
     try {
       applyResult = await applyPreset(name);
+      showApplyResult(applyResult, presets[name]?.name || name);
       store.refreshPending();
     } catch (e) {
       console.error(e);
+      notify.error(`Failed: ${name}`);
     }
     applyingPreset = null;
   }
