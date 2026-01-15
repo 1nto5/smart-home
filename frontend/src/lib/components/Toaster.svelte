@@ -23,7 +23,7 @@
   }
 </script>
 
-<div class="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none">
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 md:top-16 md:bottom-auto md:left-4 md:translate-x-0 z-50 flex flex-col gap-2 items-center md:items-start pointer-events-none">
   {#each toasts as toast (toast.id)}
     {@const Icon = getIcon(toast.type)}
     <div
