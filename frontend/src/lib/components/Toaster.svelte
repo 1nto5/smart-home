@@ -23,7 +23,7 @@
   }
 </script>
 
-<div class="fixed bottom-20 md:bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+<div class="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none">
   {#each toasts as toast (toast.id)}
     {@const Icon = getIcon(toast.type)}
     <div
@@ -36,17 +36,17 @@
 </div>
 
 <style>
-  @keyframes slide-in {
+  @keyframes slide-up {
     from {
-      transform: translateX(100%);
+      transform: translateY(1rem);
       opacity: 0;
     }
     to {
-      transform: translateX(0);
+      transform: translateY(0);
       opacity: 1;
     }
   }
   .animate-slide-in {
-    animation: slide-in 0.2s ease-out;
+    animation: slide-up 0.2s ease-out;
   }
 </style>
