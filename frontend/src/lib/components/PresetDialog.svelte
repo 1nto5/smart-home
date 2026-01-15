@@ -6,6 +6,7 @@
   import { getSimplifiedName } from '$lib/translations';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Play, Trash2, RotateCcw } from 'lucide-svelte';
+  import { showApplyResult, notify } from '$lib/toast.svelte';
 
   let {
     preset,
@@ -107,10 +108,12 @@
   async function handleApply() {
     loading = true;
     try {
-      await applyHeaterPreset(preset.id);
+      const result = await applyHeaterPreset(preset.id);
+      showApplyResult(result, preset.name);
       await store.refreshPendingHeater();
     } catch (e) {
       console.error(e);
+      notify.error(`Failed: ${preset.name}`);
     }
     loading = false;
   }

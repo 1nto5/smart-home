@@ -6,6 +6,7 @@
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Power, Sun, Moon, Sparkles, Minus, Plus } from 'lucide-svelte';
+  import { notify } from '$lib/toast.svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(lamp.name));
@@ -111,9 +112,11 @@
         }
         await controlLamp(lamp.id, { brightness: preset.brightness, color_temp: preset.colorTemp });
       }
+      notify.success(`${preset.label} applied`);
       refreshStatus();
     } catch (e) {
       console.error(e);
+      notify.error(`${preset.label} failed`);
       activePreset = null;
       refreshStatus();
     }
