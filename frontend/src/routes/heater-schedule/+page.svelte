@@ -118,7 +118,7 @@
     loading = false;
   }
 
-  async function handleApplyPreset(id: string, retries = 2) {
+  async function handleApplyPreset(id: string) {
     loading = true;
     const name = getPresetName(id);
     const loadingId = notify.loading(`Applying ${name}...`);
@@ -130,12 +130,6 @@
     } catch (e: any) {
       console.error(e);
       dismissToast(loadingId);
-      // Retry on 502 errors (backend timeout)
-      if (retries > 0 && e?.message?.includes('502')) {
-        notify.warning(`Retrying ${name}...`);
-        loading = false;
-        return handleApplyPreset(id, retries - 1);
-      }
       notify.error(`Failed: ${name}`);
     }
     loading = false;
