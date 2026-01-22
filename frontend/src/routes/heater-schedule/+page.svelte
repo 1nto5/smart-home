@@ -2,7 +2,7 @@
   import { store } from '$lib/stores.svelte';
   import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices } from '$lib/api';
   import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame, Pencil } from 'lucide-svelte';
-  import { showApplyResult, notify } from '$lib/toast.svelte';
+  import { showApplyResult, notify, dismissToast } from '$lib/toast.svelte';
   import type { HeaterPreset, HeaterSchedule, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
   import PresetDialog from '$lib/components/PresetDialog.svelte';
@@ -120,13 +120,17 @@
 
   async function handleApplyPreset(id: string) {
     loading = true;
+    const name = getPresetName(id);
+    const loadingId = notify.loading(`Applying ${name}...`);
     try {
       const result = await applyHeaterPreset(id);
-      showApplyResult(result, getPresetName(id));
+      dismissToast(loadingId);
+      showApplyResult(result, name);
       await store.refreshPendingHeater();
     } catch (e) {
       console.error(e);
-      notify.error(`Failed: ${getPresetName(id)}`);
+      dismissToast(loadingId);
+      notify.error(`Failed: ${name}`);
     }
     loading = false;
   }
