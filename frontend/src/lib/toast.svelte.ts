@@ -1,6 +1,6 @@
 import type { ApplyResult } from './types';
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export type ToastType = 'success' | 'error' | 'warning' | 'info' | 'loading';
 
 export interface Toast {
   id: number;
@@ -14,9 +14,16 @@ let toasts = $state<Toast[]>([]);
 function addToast(message: string, type: ToastType, duration = 3000) {
   const id = nextId++;
   toasts.push({ id, message, type });
-  setTimeout(() => {
-    toasts = toasts.filter(t => t.id !== id);
-  }, duration);
+  if (duration > 0) {
+    setTimeout(() => {
+      toasts = toasts.filter(t => t.id !== id);
+    }, duration);
+  }
+  return id;
+}
+
+export function dismissToast(id: number) {
+  toasts = toasts.filter(t => t.id !== id);
 }
 
 export function getToasts() {
@@ -39,4 +46,5 @@ export const notify = {
   error: (msg: string) => addToast(msg, 'error'),
   warning: (msg: string) => addToast(msg, 'warning'),
   info: (msg: string) => addToast(msg, 'info'),
+  loading: (msg: string) => addToast(msg, 'loading', 0),
 };
