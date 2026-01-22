@@ -230,34 +230,34 @@ export async function controlAirPurifier(
 
 // Heater presets
 export async function getHeaterPresets(): Promise<HeaterPreset[]> {
-  return fetcher('/heater-presets');
+  return fetcher('/heater/presets');
 }
 
 export async function updateHeaterPreset(id: string, target_temp: number): Promise<HeaterPreset> {
-  return fetcher(`/heater-presets/${id}`, {
+  return fetcher(`/heater/presets/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ target_temp }),
   });
 }
 
 export async function applyHeaterPreset(id: string): Promise<ApplyResult> {
-  return fetcher(`/heater-presets/${id}/apply`, { method: 'POST' });
+  return fetcher(`/heater/presets/${id}/apply`, { method: 'POST' });
 }
 
 export async function createHeaterPreset(id: string, name: string, target_temp: number): Promise<HeaterPreset> {
-  return fetcher('/heater-presets', {
+  return fetcher('/heater/presets', {
     method: 'POST',
     body: JSON.stringify({ id, name, target_temp }),
   });
 }
 
 export async function deleteHeaterPreset(id: string): Promise<{ success: boolean }> {
-  return fetcher(`/heater-presets/${id}`, { method: 'DELETE' });
+  return fetcher(`/heater/presets/${id}`, { method: 'DELETE' });
 }
 
 // Per-device heater preset temps
 export async function getPresetDeviceTemps(presetId: string): Promise<HeaterPresetDevice[]> {
-  return fetcher(`/heater-presets/${presetId}/devices`);
+  return fetcher(`/heater/presets/${presetId}/devices`);
 }
 
 export async function setPresetDeviceTemp(
@@ -265,9 +265,9 @@ export async function setPresetDeviceTemp(
   deviceId: string,
   target_temp: number
 ): Promise<HeaterPresetDevice> {
-  return fetcher(`/heater-presets/${presetId}/devices/${deviceId}`, {
-    method: 'PUT',
-    body: JSON.stringify({ target_temp }),
+  return fetcher(`/heater/presets/${presetId}/devices`, {
+    method: 'POST',
+    body: JSON.stringify({ device_id: deviceId, target_temp }),
   });
 }
 
@@ -275,34 +275,34 @@ export async function deletePresetDeviceTemp(
   presetId: string,
   deviceId: string
 ): Promise<{ success: boolean }> {
-  return fetcher(`/heater-presets/${presetId}/devices/${deviceId}`, { method: 'DELETE' });
+  return fetcher(`/heater/presets/${presetId}/devices/${deviceId}`, { method: 'DELETE' });
 }
 
 // Heater schedules
 export async function getHeaterSchedules(): Promise<HeaterSchedule[]> {
-  return fetcher('/heater-schedules');
+  return fetcher('/heater/schedules');
 }
 
 export async function createHeaterSchedule(name: string, preset_id: string, time: string): Promise<HeaterSchedule> {
-  return fetcher('/heater-schedules', {
+  return fetcher('/heater/schedules', {
     method: 'POST',
     body: JSON.stringify({ name, preset_id, time }),
   });
 }
 
 export async function deleteHeaterSchedule(id: number): Promise<{ success: boolean }> {
-  return fetcher(`/heater-schedules/${id}`, { method: 'DELETE' });
+  return fetcher(`/heater/schedules/${id}`, { method: 'DELETE' });
 }
 
 export async function toggleHeaterSchedule(id: number): Promise<HeaterSchedule> {
-  return fetcher(`/heater-schedules/${id}/toggle`, { method: 'PATCH' });
+  return fetcher(`/heater/schedules/${id}/toggle`, { method: 'PATCH' });
 }
 
 export async function updateHeaterSchedule(
   id: number,
   updates: { name?: string; preset_id?: string; time?: string }
 ): Promise<HeaterSchedule> {
-  return fetcher(`/heater-schedules/${id}`, {
+  return fetcher(`/heater/schedules/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(updates),
   });
@@ -310,16 +310,16 @@ export async function updateHeaterSchedule(
 
 // Pending heater actions
 export async function getPendingHeaterActions(): Promise<PendingHeaterAction[]> {
-  return fetcher('/pending-heater-actions');
+  return fetcher('/heater/pending-actions');
 }
 
 export async function clearPendingHeaterActions(): Promise<{ success: boolean }> {
-  return fetcher('/pending-heater-actions', { method: 'DELETE' });
+  return fetcher('/heater/pending-actions', { method: 'DELETE' });
 }
 
 // Heater override (vacation/pause mode)
 export async function getHeaterOverride(): Promise<HeaterOverride> {
-  return fetcher('/heater-override');
+  return fetcher('/heater/override');
 }
 
 export async function setHeaterOverride(
@@ -327,7 +327,7 @@ export async function setHeaterOverride(
   mode: 'pause' | 'fixed',
   fixed_temp?: number
 ): Promise<HeaterOverride> {
-  return fetcher('/heater-override', {
+  return fetcher('/heater/override', {
     method: 'POST',
     body: JSON.stringify({ enabled, mode, fixed_temp }),
   });
