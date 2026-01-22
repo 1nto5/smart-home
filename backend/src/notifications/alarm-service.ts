@@ -48,6 +48,11 @@ async function sendAlarmNotification(alarm: ActiveAlarm): Promise<boolean> {
     return false;
   }
 
+  // Check door_alerts for door alarms
+  if (alarm.alarm_type === 'door' && !config.door_alerts) {
+    return false;
+  }
+
   const isFlood = alarm.alarm_type === 'flood';
   const emoji = isFlood ? '🚨🚨🚨' : '🚪🚨🚨';
   const title = isFlood ? 'FLOOD ALARM ACTIVE!' : 'DOOR ALARM ACTIVE!';
@@ -123,10 +128,11 @@ export async function triggerAlarm(
     return null;
   }
 
-  // For door alarms, check if alarm system is armed
+  // For door alarms, check if alarm is armed and door_alerts enabled
   if (alarmType === 'door') {
     const alarmConfig = getAlarmConfig();
-    if (!alarmConfig.armed) {
+    const telegramConfig = getTelegramConfig();
+    if (!alarmConfig.armed || !telegramConfig.door_alerts) {
       return null;
     }
   }
