@@ -85,8 +85,13 @@ heater.post('/presets/:id/apply', async (c) => {
     return c.json({ error: `Invalid preset: ${presetId}` }, 400);
   }
 
-  const result = await applyPresetToAllHeaters(presetId);
-  return c.json(result);
+  try {
+    const result = await applyPresetToAllHeaters(presetId);
+    return c.json(result);
+  } catch (error: any) {
+    console.error(`Error applying preset ${presetId}:`, error);
+    return c.json({ success: [], pending: [], failed: [], error: error.message }, 500);
+  }
 });
 
 // === PRESET DEVICE TEMPS ===
