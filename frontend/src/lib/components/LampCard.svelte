@@ -147,12 +147,14 @@
     <button
       onclick={togglePower}
       disabled={!isOnline}
+      aria-label="{displayPower ? 'Turn off' : 'Turn on'} {displayName}"
+      aria-pressed={displayPower}
       class="power-btn glow-lights {displayPower ? 'power-btn-on' : ''}
              {status?.moonlight_mode && displayPower ? 'glow-audio' : ''}
              disabled:opacity-40 disabled:cursor-not-allowed"
       class:pulse-ring={isPowerPending}
     >
-      <Power class="w-4 h-4" />
+      <Power class="w-4 h-4" aria-hidden="true" />
     </button>
 
     <!-- Info -->
@@ -262,7 +264,12 @@
                   max="100"
                   value={displayBrightness}
                   oninput={(e) => handleBrightnessInput(parseInt(e.currentTarget.value))}
-                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  aria-label="Brightness"
+                  aria-valuemin={1}
+                  aria-valuemax={100}
+                  aria-valuenow={displayBrightness}
+                  aria-valuetext="{displayBrightness}%"
+                  class="absolute inset-0 w-full h-full slider-accessible cursor-pointer"
                 />
               </div>
               <button
@@ -299,7 +306,12 @@
                   step="100"
                   value={displayColorTemp}
                   oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
-                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  aria-label="Color temperature"
+                  aria-valuemin={1700}
+                  aria-valuemax={6500}
+                  aria-valuenow={displayColorTemp}
+                  aria-valuetext="{displayColorTemp} Kelvin"
+                  class="absolute inset-0 w-full h-full slider-accessible cursor-pointer"
                 />
               </div>
               <button

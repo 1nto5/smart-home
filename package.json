@@ -1,0 +1,20 @@
+{
+  "name": "smart-home",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,svelte,json,css,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,svelte,json,css,html}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-svelte": "^2.46.1",
+    "prettier": "^3.4.2",
+    "prettier-plugin-svelte": "^3.3.3",
+    "svelte-eslint-parser": "^0.43.0",
+    "typescript-eslint": "^8.20.0"
+  }
+}

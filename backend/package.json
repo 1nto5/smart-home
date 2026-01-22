@@ -10,10 +10,12 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
     "@tuyapi/cloud": "^0.6.2",
     "hono": "^4.11.3",
     "miio": "^0.15.6",
     "tuyapi": "^7.7.1",
-    "yeelight-platform": "^1.0.10"
+    "yeelight-platform": "^1.0.10",
+    "zod": "^4.3.5"
   }
 }

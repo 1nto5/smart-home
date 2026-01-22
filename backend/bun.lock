@@ -5,11 +5,13 @@
     "": {
       "name": "backend",
       "dependencies": {
+        "@hono/zod-validator": "^0.7.6",
         "@tuyapi/cloud": "^0.6.2",
         "hono": "^4.11.3",
         "miio": "^0.15.6",
         "tuyapi": "^7.7.1",
         "yeelight-platform": "^1.0.10",
+        "zod": "^4.3.5",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -37,6 +39,8 @@
     "@babel/traverse": ["@babel/traverse@7.0.0-beta.44", "", { "dependencies": { "@babel/code-frame": "7.0.0-beta.44", "@babel/generator": "7.0.0-beta.44", "@babel/helper-function-name": "7.0.0-beta.44", "@babel/helper-split-export-declaration": "7.0.0-beta.44", "@babel/types": "7.0.0-beta.44", "babylon": "7.0.0-beta.44", "debug": "^3.1.0", "globals": "^11.1.0", "invariant": "^2.2.0", "lodash": "^4.2.0" } }, "sha512-UHuDz8ukQkJCDASKHf+oDt3FVUzFd+QYfuBIsiNu/4+/ix6pP/C+uQZJ6K1oEfbCMv/IKWbgDEh7fcsnIE5AtA=="],
 
     "@babel/types": ["@babel/types@7.0.0-beta.44", "", { "dependencies": { "esutils": "^2.0.2", "lodash": "^4.2.0", "to-fast-properties": "^2.0.0" } }, "sha512-5eTV4WRmqbaFM3v9gHAIljEQJU4Ssc6fxL61JN+Oe2ga/BwyjzjamwkCVVAQjHGuAX8i0BWo42dshL8eO5KfLQ=="],
+
+    "@hono/zod-validator": ["@hono/zod-validator@0.7.6", "", { "peerDependencies": { "hono": ">=3.9.0", "zod": "^3.25.0 || ^4.0.0" } }, "sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw=="],
 
     "@sindresorhus/is": ["@sindresorhus/is@4.6.0", "", {}, "sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw=="],
 
@@ -407,6 +411,8 @@
     "yargs-parser": ["yargs-parser@8.1.0", "", { "dependencies": { "camelcase": "^4.1.0" } }, "sha512-yP+6QqN8BmrgW2ggLtTbdrOyBNSI7zBa4IykmiV5R1wl1JWNxQvWhMfMdmzIYtKU7oP3OOInY/tl2ov3BDjnJQ=="],
 
     "yeelight-platform": ["yeelight-platform@1.0.10", "", { "dependencies": { "babel-eslint": "^8.2.6" } }, "sha512-6wxDRycn4FjBI1o9Bd3pRs/snsfZxv1M4pTBagECM95iM4qUpWVPYyqV1cz24yqFyeFpBi5Yqil6YvgzxxF5KQ=="],
+
+    "zod": ["zod@4.3.5", "", {}, "sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g=="],
 
     "@babel/traverse/debug": ["debug@3.2.7", "", { "dependencies": { "ms": "^2.1.1" } }, "sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ=="],
 
