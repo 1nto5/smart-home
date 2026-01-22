@@ -118,7 +118,7 @@
     loading = false;
   }
 
-  async function handleApplyPreset(id: string) {
+  async function handleApplyPreset(id: string, retries = 2) {
     loading = true;
     const name = getPresetName(id);
     const loadingId = notify.loading(`Applying ${name}...`);
@@ -127,9 +127,15 @@
       dismissToast(loadingId);
       showApplyResult(result, name);
       await store.refreshPendingHeater();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       dismissToast(loadingId);
+      // Retry on 502 errors (backend timeout)
+      if (retries > 0 && e?.message?.includes('502')) {
+        notify.warning(`Retrying ${name}...`);
+        loading = false;
+        return handleApplyPreset(id, retries - 1);
+      }
       notify.error(`Failed: ${name}`);
     }
     loading = false;
