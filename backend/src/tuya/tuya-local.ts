@@ -16,6 +16,10 @@ const connections = new Map<string, DeviceConnection>();
 // Gateway info (all Zigbee devices go through this)
 const GATEWAY_ID = 'bf889f95067d327853rwzw';
 
+// Reconnect state
+let reconnectTimeout: Timer | null = null;
+const RECONNECT_DELAY_MS = 5000;
+
 interface TuyaDevice {
   id: string;
   name: string;
@@ -222,6 +226,15 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
   device.on('disconnected', () => {
     console.log(`Disconnected from ${dbDevice.name} (${deviceId})`);
     connection.connected = false;
+
+    // Auto-reconnect for gateway
+    if (deviceId === GATEWAY_ID && !reconnectTimeout) {
+      console.log(`🔌 Scheduling gateway reconnect in ${RECONNECT_DELAY_MS / 1000}s...`);
+      reconnectTimeout = setTimeout(async () => {
+        reconnectTimeout = null;
+        await reconnectGateway();
+      }, RECONNECT_DELAY_MS);
+    }
   });
 
   device.on('error', (error: Error) => {
@@ -448,4 +461,28 @@ export async function testGatewayConnection(): Promise<boolean> {
   }
 
   return false;
+}
+
+/**
+ * Get gateway connection status
+ */
+export function getGatewayConnectionStatus(): boolean {
+  const conn = connections.get(GATEWAY_ID);
+  return conn?.connected ?? false;
+}
+
+/**
+ * Reconnect to gateway
+ */
+export async function reconnectGateway(): Promise<boolean> {
+  console.log('🔌 Attempting gateway reconnect...');
+
+  // Disconnect existing connection if any
+  disconnectDevice(GATEWAY_ID);
+
+  // Wait a moment before reconnecting
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  const conn = await connectDevice(GATEWAY_ID);
+  return conn?.connected ?? false;
 }

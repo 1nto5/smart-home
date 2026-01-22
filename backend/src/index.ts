@@ -1,9 +1,13 @@
+import { notifyError } from './notifications/error-notification';
+
 // Global error handlers to prevent crashes from async errors
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err.message);
+  notifyError({ component: 'Backend', error: err, severity: 'critical' });
 });
 process.on('unhandledRejection', (reason: any) => {
   console.error('Unhandled rejection:', reason?.message || reason);
+  notifyError({ component: 'Backend', error: reason?.message || reason, severity: 'warning' });
 });
 
 import { Hono } from 'hono';
@@ -23,8 +27,11 @@ import {
   getHomeStatus,
 } from './db/database';
 import { sendTestTelegram } from './notifications/telegram-service';
-import { startTelegramBot } from './telegram/telegram-bot';
-import { startAlarmNotificationLoop } from './notifications/alarm-service';
+import { startTelegramBot, stopTelegramBot } from './telegram/telegram-bot';
+import { startAlarmNotificationLoop, stopAlarmNotificationLoop } from './notifications/alarm-service';
+import { getHealthStatus } from './health/health-service';
+import { startGatewayWatchdog, stopGatewayWatchdog } from './tuya/gateway-watchdog';
+import { closeDatabase } from './db/database';
 import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from './tuya/tuya-api';
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus, connectDevice, disconnectAll } from './tuya/tuya-local';
 import {
@@ -129,6 +136,23 @@ startTelegramBot();
 // Start alarm notification loop (persistent notifications)
 startAlarmNotificationLoop();
 
+// Start gateway watchdog
+startGatewayWatchdog();
+
+// Graceful shutdown handler
+async function shutdown(signal: string) {
+  console.log(`${signal} received, shutting down...`);
+  stopTelegramBot();
+  stopAlarmNotificationLoop();
+  stopGatewayWatchdog();
+  disconnectAll();
+  closeDatabase();
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
 // Polish → English translation for device names
 const plToEn: Record<string, string> = {
   'drzwi': 'Door', 'kuchnia': 'Kitchen', 'salon': 'Living room', 'sypialnia': 'Bedroom',
@@ -140,8 +164,10 @@ function translateName(name: string): string {
 }
 
 // Health check
-app.get('/api/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (c) => {
+  const health = await getHealthStatus();
+  const statusCode = health.status === 'unhealthy' ? 503 : 200;
+  return c.json(health, statusCode);
 });
 
 // Get all devices

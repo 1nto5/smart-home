@@ -1,0 +1,87 @@
+import { getTelegramConfig, logTelegram } from '../db/database';
+
+type Severity = 'critical' | 'warning';
+
+interface ErrorNotification {
+  component: string;
+  error: Error | string;
+  severity: Severity;
+}
+
+// Cooldown map: component -> last notification timestamp
+const cooldownMap = new Map<string, number>();
+const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Send error notification via Telegram
+ */
+export async function notifyError({ component, error, severity }: ErrorNotification): Promise<boolean> {
+  const config = getTelegramConfig();
+
+  // Check if Telegram is configured and error alerts enabled
+  if (!config.enabled || !config.bot_token || !config.chat_id) {
+    return false;
+  }
+
+  // Check error_alerts setting
+  if (!config.error_alerts) {
+    return false;
+  }
+
+  // Check cooldown
+  const lastNotify = cooldownMap.get(component);
+  if (lastNotify && Date.now() - lastNotify < COOLDOWN_MS) {
+    console.log(`Error alert for ${component} in cooldown, skipping`);
+    return false;
+  }
+
+  const emoji = severity === 'critical' ? '🔴' : '🟡';
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Warsaw' });
+
+  const message = `${emoji} <b>${component} Error</b>
+
+${errorMessage}
+
+Time: ${timestamp}`;
+
+  try {
+    const url = `https://api.telegram.org/bot${config.bot_token}/sendMessage`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: config.chat_id,
+        text: message,
+        parse_mode: 'HTML',
+      }),
+    });
+
+    const data = await response.json() as { ok: boolean; description?: string };
+
+    // Update cooldown
+    cooldownMap.set(component, Date.now());
+
+    // Log the notification
+    logTelegram(
+      `error_${severity}`,
+      config.chat_id,
+      message,
+      data.ok ? 'sent' : 'failed',
+      undefined,
+      component,
+      data.ok ? undefined : data.description
+    );
+
+    if (data.ok) {
+      console.log(`Error alert sent: ${component} (${severity})`);
+    } else {
+      console.error(`Failed to send error alert: ${data.description}`);
+    }
+
+    return data.ok;
+  } catch (err: any) {
+    console.error('Error sending notification:', err.message);
+    return false;
+  }
+}

@@ -2,6 +2,9 @@ FROM oven/bun:1-alpine
 
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Copy package files first for better caching
 COPY backend/package.json ./
 RUN bun install
@@ -13,5 +16,8 @@ COPY backend/ ./
 RUN mkdir -p /app/data
 
 EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:3001/api/health || exit 1
 
 CMD ["bun", "run", "src/index.ts"]
