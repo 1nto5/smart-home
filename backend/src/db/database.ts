@@ -357,6 +357,12 @@ export function initDatabase(): Database {
     db.run('INSERT INTO telegram_config (id, enabled, cooldown_minutes) VALUES (1, 0, 5)');
   }
 
+  // Migration: Add error_alerts column to telegram_config
+  const telegramCols = db.query("PRAGMA table_info(telegram_config)").all() as { name: string }[];
+  if (!telegramCols.some(c => c.name === 'error_alerts')) {
+    db.run('ALTER TABLE telegram_config ADD COLUMN error_alerts INTEGER DEFAULT 1');
+  }
+
   // Telegram notification log
   db.run(`
     CREATE TABLE IF NOT EXISTS telegram_log (
@@ -575,6 +581,7 @@ export interface TelegramConfig {
   chat_id: string | null;
   flood_alerts: boolean;
   door_alerts: boolean;
+  error_alerts: boolean;
   cooldown_minutes: number;
   updated_at: string;
 }
@@ -588,6 +595,7 @@ export function getTelegramConfig(): TelegramConfig {
     chat_id: result.chat_id,
     flood_alerts: result.flood_alerts === 1,
     door_alerts: result.door_alerts === 1,
+    error_alerts: result.error_alerts !== 0, // default true
     cooldown_minutes: result.cooldown_minutes,
     updated_at: result.updated_at,
   };
@@ -617,6 +625,10 @@ export function updateTelegramConfig(config: Partial<Omit<TelegramConfig, 'updat
   if (config.door_alerts !== undefined) {
     updates.push('door_alerts = ?');
     values.push(config.door_alerts ? 1 : 0);
+  }
+  if (config.error_alerts !== undefined) {
+    updates.push('error_alerts = ?');
+    values.push(config.error_alerts ? 1 : 0);
   }
   if (config.cooldown_minutes !== undefined) {
     updates.push('cooldown_minutes = ?');
