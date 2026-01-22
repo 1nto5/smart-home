@@ -102,3 +102,14 @@ export function translateRoom(room: string | null): string {
   if (!room) return 'Unassigned';
   return roomTranslations[room] || room;
 }
+
+// Simple name translation (backwards compatible with existing code)
+const plToEn: Record<string, string> = {
+  'drzwi': 'Door', 'kuchnia': 'Kitchen', 'salon': 'Living room', 'sypialnia': 'Bedroom',
+  'łazienka': 'Bathroom', 'okno': 'Window', 'balkon': 'Balcony', 'przedpokój': 'Hallway',
+  'garaż': 'Garage', 'biuro': 'Office', 'pokój': 'Room'
+};
+
+export function translateName(name: string): string {
+  return plToEn[name.toLowerCase()] || translateDeviceName(name);
+}

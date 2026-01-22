@@ -120,11 +120,13 @@
     <!-- Valve status indicator -->
     <div
       class="power-btn {valve === 'opened' ? 'power-btn-on glow-climate-heat' : 'glow-climate-cool'}"
+      role="img"
+      aria-label="{valve === 'opened' ? 'Heating active' : 'Idle'}"
     >
       {#if valve === 'opened'}
-        <Flame class="w-4 h-4" />
+        <Flame class="w-4 h-4" aria-hidden="true" />
       {:else}
-        <Snowflake class="w-4 h-4" />
+        <Snowflake class="w-4 h-4" aria-hidden="true" />
       {/if}
     </div>
 
@@ -175,6 +177,7 @@
           <button
             onclick={() => adjustTemp(-0.5)}
             disabled={targetTemp !== null && targetTemp <= 5}
+            aria-label="Decrease temperature"
             class="w-14 h-14 rounded-full glow-climate-cool power-btn-on text-2xl font-medium
                    hover:scale-105 disabled:opacity-40 transition-all"
           >−</button>
@@ -213,6 +216,7 @@
           <button
             onclick={() => adjustTemp(0.5)}
             disabled={targetTemp !== null && targetTemp >= 30}
+            aria-label="Increase temperature"
             class="w-14 h-14 rounded-full glow-climate-heat power-btn-on text-2xl font-medium
                    hover:scale-105 disabled:opacity-40 transition-all"
           >+</button>

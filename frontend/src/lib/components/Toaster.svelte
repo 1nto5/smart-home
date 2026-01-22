@@ -23,13 +23,19 @@
   }
 </script>
 
-<div class="fixed bottom-20 left-1/2 -translate-x-1/2 md:top-4 md:bottom-auto md:left-auto md:right-4 md:translate-x-0 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none">
+<div
+  role="region"
+  aria-live="polite"
+  aria-label="Notifications"
+  class="fixed bottom-20 left-1/2 -translate-x-1/2 md:top-4 md:bottom-auto md:left-auto md:right-4 md:translate-x-0 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none"
+>
   {#each toasts as toast (toast.id)}
     {@const Icon = getIcon(toast.type)}
     <div
+      role="alert"
       class="flex items-center gap-3 px-4 py-3 rounded-lg border backdrop-blur-sm shadow-lg animate-slide-in pointer-events-auto {getColors(toast.type)}"
     >
-      <Icon class="w-4 h-4 shrink-0" />
+      <Icon class="w-4 h-4 shrink-0" aria-hidden="true" />
       <span class="text-sm font-medium text-content-primary">{toast.message}</span>
     </div>
   {/each}

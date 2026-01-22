@@ -4,17 +4,19 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw, Workflow } from 'lucide-svelte';
+  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw, Workflow, WifiOff } from 'lucide-svelte';
   import Toaster from '$lib/components/Toaster.svelte';
   import { notify } from '$lib/toast.svelte';
   import type { ComponentType } from 'svelte';
   import { getAlarmStatus, armAlarm, disarmAlarm } from '$lib/api';
+  import { initOfflineSupport, getOfflineState } from '$lib/offline.svelte';
 
   let { children } = $props();
 
   let alarmArmed = $state(false);
   let alarmLoading = $state(false);
   let isRefreshing = $state(false);
+  let offlineState = $derived(getOfflineState());
 
   async function handleRefresh() {
     isRefreshing = true;
@@ -55,6 +57,7 @@
   $effect(() => {
     if (browser) {
       theme.init();
+      initOfflineSupport();
       store.initWebSocket();
       store.refreshAll();
       loadAlarmStatus();
@@ -151,6 +154,17 @@
       </div>
     </nav>
   </header>
+
+  <!-- Offline Indicator -->
+  {#if !offlineState.isOnline}
+    <div
+      role="alert"
+      class="bg-warning/20 border-b border-warning/40 px-4 py-2 flex items-center justify-center gap-2 text-sm text-warning"
+    >
+      <WifiOff class="w-4 h-4" aria-hidden="true" />
+      <span>You're offline. Changes will sync when connected.</span>
+    </div>
+  {/if}
 
   <!-- Main Content -->
   <main class="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6">

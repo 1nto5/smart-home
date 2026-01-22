@@ -1,0 +1,12 @@
+export { default as devicesRoutes } from './devices';
+export { default as xiaomiRoutes } from './xiaomi';
+export { default as yamahaRoutes } from './yamaha';
+export { default as roborockRoutes } from './roborock';
+export { default as presetsRoutes } from './presets';
+export { default as heaterRoutes } from './heater';
+export { default as sensorsRoutes } from './sensors';
+export { default as automationsRoutes } from './automations';
+export { default as alarmRoutes } from './alarm';
+export { default as telegramRoutes } from './telegram';
+export { default as adminRoutes } from './admin';
+export { default as purifierRoutes } from './purifier';
