@@ -226,8 +226,8 @@
       <!-- Quick Presets -->
       <div>
         <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Quick Set</p>
-        <div class="grid grid-cols-4 gap-2">
-          {#each [15, 18, 21, 24] as temp}
+        <div class="grid grid-cols-5 gap-2">
+          {#each [5, 15, 18, 21, 24] as temp}
             <button
               onclick={() => setTempDirect(temp)}
               class="py-3 rounded-lg transition-all font-medium
