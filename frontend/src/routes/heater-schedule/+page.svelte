@@ -2,7 +2,7 @@
   import { store } from '$lib/stores.svelte';
   import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices } from '$lib/api';
   import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame, Pencil } from 'lucide-svelte';
-  import { showApplyResult, notify, dismissToast } from '$lib/toast.svelte';
+  import { showApplyResult, notify } from '$lib/toast.svelte';
   import type { HeaterPreset, HeaterSchedule, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
   import PresetDialog from '$lib/components/PresetDialog.svelte';
@@ -12,6 +12,7 @@
   let newPresetId = $state('night');
   let newTime = $state('22:00');
   let loading = $state(false);
+  let applyingPresetId = $state<string | null>(null);
 
   // TRV devices for dialog
   let trvDevices = $state<TuyaDevice[]>([]);
@@ -119,20 +120,16 @@
   }
 
   async function handleApplyPreset(id: string) {
-    loading = true;
-    const name = getPresetName(id);
-    const loadingId = notify.loading(`Applying ${name}...`);
+    applyingPresetId = id;
     try {
       const result = await applyHeaterPreset(id);
-      dismissToast(loadingId);
-      showApplyResult(result, name);
+      showApplyResult(result, getPresetName(id));
       await store.refreshPendingHeater();
     } catch (e: any) {
       console.error(e);
-      dismissToast(loadingId);
-      notify.error(`Failed: ${name}`);
+      notify.error(`Failed: ${getPresetName(id)}`);
     }
-    loading = false;
+    applyingPresetId = null;
   }
 
   function getPresetName(presetId: string): string {
@@ -229,11 +226,14 @@
             <div class="flex items-center gap-1.5">
               <button
                 onclick={() => handleApplyPreset(preset.id)}
-                disabled={loading}
-                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50"
+                disabled={applyingPresetId !== null}
+                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50 relative"
                 title="Apply to all heaters"
               >
-                <Play class="w-4 h-4" />
+                <Play class="w-4 h-4 {applyingPresetId === preset.id ? 'animate-spin' : ''}" />
+                {#if applyingPresetId === preset.id}
+                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                {/if}
               </button>
               <button
                 onclick={() => openPresetDialog(preset)}
