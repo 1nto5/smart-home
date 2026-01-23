@@ -31,6 +31,9 @@ const TRV_DPS = {
   TEMP_SCALE: 10, // multiply by 10 when sending (21°C = 210)
 };
 
+// Result of applying temp to a single heater
+type HeaterApplyResult = 'success' | 'offline' | 'failed';
+
 /**
  * Get all heater schedules
  */
@@ -144,12 +147,13 @@ function getAllTrvIds(): string[] {
 
 /**
  * Apply a specific temperature to a single TRV
+ * Returns: 'success' | 'offline' | 'failed'
  */
-export async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<boolean> {
+export async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<HeaterApplyResult> {
   try {
     const status = await getDeviceStatus(deviceId);
     if (!status) {
-      return false; // TRV is offline
+      return 'offline'; // TRV is offline
     }
 
     const tempValue = Math.round(targetTemp * TRV_DPS.TEMP_SCALE);
@@ -158,23 +162,24 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
     if (success) {
       console.log(`Set ${deviceId} to ${targetTemp}°C`);
       broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
+      return 'success';
     }
 
-    return success;
+    return 'failed'; // command failed (timeout/error)
   } catch (error: any) {
     console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, error.message);
-    return false;
+    return 'failed';
   }
 }
 
 /**
  * Apply preset to a single TRV (uses per-device temp if set, otherwise preset default)
  */
-export async function applyPresetToHeater(deviceId: string, presetId: string): Promise<boolean> {
+export async function applyPresetToHeater(deviceId: string, presetId: string): Promise<HeaterApplyResult> {
   const preset = getHeaterPreset(presetId);
   if (!preset) {
     console.error(`Invalid heater preset: ${presetId}`);
-    return false;
+    return 'failed';
   }
 
   // Get effective temp for this device (may be per-device or preset default)
@@ -193,23 +198,31 @@ export async function applyFixedTempToAllHeaters(targetTemp: number): Promise<Ap
     failed: [],
   };
 
-  for (const trvId of trvIds) {
-    const success = await applyTempToHeater(trvId, targetTemp);
+  // Process all TRVs in parallel
+  const results = await Promise.all(
+    trvIds.map(async (trvId) => {
+      const status = await applyTempToHeater(trvId, targetTemp);
+      return { trvId, status };
+    })
+  );
 
-    if (success) {
+  for (const { trvId, status } of results) {
+    if (status === 'success') {
       result.success.push(trvId);
-    } else {
+    } else if (status === 'offline') {
       result.pending.push(trvId);
+    } else {
+      result.failed.push(trvId);
     }
   }
 
-  console.log(`Applied fixed temp ${targetTemp}°C: ${result.success.length} ok, ${result.pending.length} offline`);
+  console.log(`Applied fixed temp ${targetTemp}°C: ${result.success.length} ok, ${result.pending.length} offline, ${result.failed.length} failed`);
   return result;
 }
 
 /**
  * Apply preset to all TRVs (global schedule)
- * Returns results: which TRVs succeeded, which are pending (offline)
+ * Returns results: which TRVs succeeded, which are pending (offline), which failed
  */
 export async function applyPresetToAllHeaters(
   presetId: string,
@@ -228,21 +241,30 @@ export async function applyPresetToAllHeaters(
     return result;
   }
 
-  for (const trvId of trvIds) {
-    const success = await applyPresetToHeater(trvId, presetId);
+  // Process all TRVs in parallel
+  const results = await Promise.all(
+    trvIds.map(async (trvId) => {
+      const status = await applyPresetToHeater(trvId, presetId);
+      return { trvId, status };
+    })
+  );
 
-    if (success) {
+  for (const { trvId, status } of results) {
+    if (status === 'success') {
       result.success.push(trvId);
-    } else {
-      // TRV offline - create pending action
+    } else if (status === 'offline') {
+      // TRV offline - create pending action for retry
       createPendingHeaterAction(trvId, presetId, scheduleId);
       result.pending.push(trvId);
+    } else {
+      // Command failed (timeout/error)
+      result.failed.push(trvId);
     }
   }
 
   // Track current heater preset
   setHeaterPreset(presetId);
 
-  console.log(`Applied heater preset "${preset.name}": ${result.success.length} ok, ${result.pending.length} pending`);
+  console.log(`Applied heater preset "${preset.name}": ${result.success.length} ok, ${result.pending.length} pending, ${result.failed.length} failed`);
   return result;
 }

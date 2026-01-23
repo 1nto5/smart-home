@@ -20,6 +20,24 @@ const GATEWAY_ID = 'bf889f95067d327853rwzw';
 let reconnectTimeout: Timer | null = null;
 const RECONNECT_DELAY_MS = 5000;
 
+// Timeout for TuyAPI operations (prevents hanging requests)
+const TUYA_OPERATION_TIMEOUT_MS = 5000;
+
+/**
+ * Wrap a promise with a timeout
+ */
+async function withTimeout<T>(promise: Promise<T>, ms: number, op: string): Promise<T> {
+  let timeoutId: Timer;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${op} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timeoutId!);
+  }
+}
+
 interface TuyaDevice {
   id: string;
   name: string;
@@ -289,7 +307,11 @@ export async function getDeviceStatus(deviceId: string): Promise<Record<string, 
     const cid = getCid(dbDevice);
 
     try {
-      const status = await gatewayConn.device.get({ cid, schema: true });
+      const status = await withTimeout(
+        gatewayConn.device.get({ cid, schema: true }),
+        TUYA_OPERATION_TIMEOUT_MS,
+        `getDeviceStatus(${dbDevice.name})`
+      );
       if (status?.dps) {
         saveDeviceHistory(deviceId, status.dps);
       }
@@ -307,7 +329,11 @@ export async function getDeviceStatus(deviceId: string): Promise<Record<string, 
     if (!conn) return null;
 
     try {
-      const status = await conn.device.get({ schema: true });
+      const status = await withTimeout(
+        conn.device.get({ schema: true }),
+        TUYA_OPERATION_TIMEOUT_MS,
+        `getDeviceStatus(${dbDevice.name})`
+      );
       if (status?.dps) {
         conn.lastStatus = status.dps;
         saveDeviceHistory(deviceId, status.dps);
@@ -352,11 +378,11 @@ export async function sendDeviceCommand(
 
     try {
       // Send command to subdevice via gateway
-      await gatewayConn.device.set({
-        dps,
-        set: value,
-        cid,
-      });
+      await withTimeout(
+        gatewayConn.device.set({ dps, set: value, cid }),
+        TUYA_OPERATION_TIMEOUT_MS,
+        `sendDeviceCommand(${dbDevice.name})`
+      );
       console.log(`Set ${dbDevice.name} (${cid}) via gateway: dps ${dps} = ${value}`);
       return true;
     } catch (error: any) {
@@ -372,7 +398,11 @@ export async function sendDeviceCommand(
     if (!conn) return false;
 
     try {
-      await conn.device.set({ dps, set: value });
+      await withTimeout(
+        conn.device.set({ dps, set: value }),
+        TUYA_OPERATION_TIMEOUT_MS,
+        `sendDeviceCommand(${dbDevice.name})`
+      );
       console.log(`Set ${dbDevice.name} dps ${dps} = ${value}`);
       return true;
     } catch (error: any) {
