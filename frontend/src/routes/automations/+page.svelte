@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { getAutomations, createAutomation, deleteAutomation, toggleAutomation, updateAutomation, getAutomationLog, getTuyaDevices, getHeaterPresets } from '$lib/api';
-  import { Zap, Plus, Trash2, Power, Clock, Pencil, X, MessageCircle, DoorOpen, Thermometer, Volume2, Wind } from 'lucide-svelte';
+  import { Zap, Plus, Trash2, Power, Clock, Pencil, X, MessageCircle, DoorOpen, Thermometer, Volume2, Wind, Save } from 'lucide-svelte';
   import type { Automation, AutomationLog, TuyaDevice, HeaterPreset, AutomationAction, QuietWindow } from '$lib/types';
 
   let automations = $state<Automation[]>([]);
@@ -624,9 +624,13 @@
         <button
           onclick={handleSubmit}
           disabled={loading || !formName.trim() || (!formUseTelegram && formActions.length === 0) || (formUseTelegram && formTelegramActionYes.length === 0)}
-          class="px-4 py-2 rounded-lg glow-automation power-btn-automation font-semibold disabled:opacity-50 transition-all"
+          class="relative px-4 py-2 rounded-lg glow-automation power-btn-automation font-semibold disabled:opacity-50 transition-all flex items-center gap-2"
         >
+          <Save class="w-4 h-4 {loading ? 'animate-spin' : ''}" />
           {editingId ? 'Save' : 'Create'}
+          {#if loading}
+            <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+          {/if}
         </button>
       </div>
     </div>

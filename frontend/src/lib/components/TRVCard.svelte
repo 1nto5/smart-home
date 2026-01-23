@@ -15,6 +15,7 @@
   let optimisticTemp = $state<number | null>(null);
   let isPending = $state(false);
   let hasError = $state(false);
+  let pendingPreset = $state<number | null>(null);
 
   // Edit mode
   let isEditing = $state(false);
@@ -55,6 +56,7 @@
       console.error(e);
       hasError = true;
       optimisticTemp = previousTemp;
+      pendingPreset = null;
       setTimeout(() => (hasError = false), 3000);
     }
   }
@@ -71,6 +73,7 @@
       console.error(e);
     }
     isPending = false;
+    pendingPreset = null;
   }
 
   function adjustTemp(delta: number) {
@@ -80,8 +83,9 @@
     sendTempDebounced(newTemp);
   }
 
-  function setTempDirect(temp: number) {
+  function setTempDirect(temp: number, fromPreset: boolean = false) {
     optimisticTemp = temp;
+    if (fromPreset) pendingPreset = temp;
     cancelDebounce();
     sendTemperature(temp);
   }
@@ -229,11 +233,15 @@
         <div class="grid grid-cols-5 gap-2">
           {#each [5, 15, 18, 21, 24] as temp}
             <button
-              onclick={() => setTempDirect(temp)}
-              class="py-3 rounded-lg transition-all font-medium
+              onclick={() => setTempDirect(temp, true)}
+              disabled={pendingPreset !== null}
+              class="py-3 rounded-lg transition-all font-medium relative disabled:opacity-50
                      {targetTemp === temp ? 'glow-climate-heat power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
             >
               {temp}°
+              {#if pendingPreset === temp}
+                <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+              {/if}
             </button>
           {/each}
         </div>

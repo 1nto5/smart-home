@@ -5,7 +5,7 @@
   import { store } from '$lib/stores.svelte';
   import { getSimplifiedName } from '$lib/translations';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Play, Trash2, RotateCcw } from 'lucide-svelte';
+  import { Play, Trash2, RotateCcw, Check } from 'lucide-svelte';
   import { showApplyResult, notify } from '$lib/toast.svelte';
 
   let {
@@ -20,7 +20,15 @@
     onclose: () => void;
   } = $props();
 
-  let loading = $state(false);
+  // Per-action pending states
+  let savingDefault = $state(false);
+  let savingDeviceId = $state<string | null>(null);
+  let resettingDeviceId = $state<string | null>(null);
+  let applyingPreset = $state(false);
+  let deletingPreset = $state(false);
+
+  // Computed loading state for disabling
+  let loading = $derived(savingDefault || savingDeviceId !== null || resettingDeviceId !== null || applyingPreset || deletingPreset);
 
   // Default temp editing
   let isEditingDefault = $state(false);
@@ -59,7 +67,7 @@
   }
 
   async function saveDefaultTemp() {
-    loading = true;
+    savingDefault = true;
     try {
       await updateHeaterPreset(preset.id, defaultTempValue);
       await store.refreshHeaterPresets();
@@ -67,7 +75,7 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    savingDefault = false;
   }
 
   function adjustDefaultTemp(delta: number) {
@@ -82,7 +90,7 @@
   }
 
   async function saveDeviceTemp(deviceId: string) {
-    loading = true;
+    savingDeviceId = deviceId;
     try {
       await setPresetDeviceTemp(preset.id, deviceId, deviceTempValue);
       await loadDeviceTemps();
@@ -90,23 +98,23 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    savingDeviceId = null;
   }
 
   async function resetDeviceTemp(deviceId: string) {
-    loading = true;
+    resettingDeviceId = deviceId;
     try {
       await deletePresetDeviceTemp(preset.id, deviceId);
       await loadDeviceTemps();
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    resettingDeviceId = null;
   }
 
   // Actions
   async function handleApply() {
-    loading = true;
+    applyingPreset = true;
     try {
       const result = await applyHeaterPreset(preset.id);
       showApplyResult(result, preset.name);
@@ -115,12 +123,12 @@
       console.error(e);
       notify.error(`Failed: ${preset.name}`);
     }
-    loading = false;
+    applyingPreset = false;
   }
 
   async function handleDelete() {
     if (!confirm(`Delete preset "${preset.name}"? This will also delete any schedules using this preset.`)) return;
-    loading = true;
+    deletingPreset = true;
     try {
       await deleteHeaterPreset(preset.id);
       await store.refreshHeaterPresets();
@@ -129,7 +137,7 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    deletingPreset = false;
   }
 </script>
 
@@ -206,9 +214,13 @@
                   <button
                     onclick={() => saveDeviceTemp(device.id)}
                     disabled={loading}
-                    class="text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded disabled:opacity-50 hover:bg-success/30 transition-colors"
+                    class="relative text-xs px-2 py-1 bg-success/20 text-success border border-success/30 rounded disabled:opacity-50 hover:bg-success/30 transition-colors flex items-center gap-1"
                   >
+                    <Check class="w-3 h-3 {savingDeviceId === device.id ? 'animate-spin' : ''}" />
                     Save
+                    {#if savingDeviceId === device.id}
+                      <div class="absolute inset-0 rounded border-2 border-current animate-glow"></div>
+                    {/if}
                   </button>
                   <button
                     onclick={() => editingDeviceId = null}
@@ -227,10 +239,13 @@
                     <button
                       onclick={() => resetDeviceTemp(device.id)}
                       disabled={loading}
-                      class="p-1.5 rounded bg-surface-elevated border border-stroke-subtle text-content-tertiary hover:text-content-secondary transition-colors disabled:opacity-50"
+                      class="relative p-1.5 rounded bg-surface-elevated border border-stroke-subtle text-content-tertiary hover:text-content-secondary transition-colors disabled:opacity-50"
                       title="Reset to default"
                     >
-                      <RotateCcw class="w-3 h-3" />
+                      <RotateCcw class="w-3 h-3 {resettingDeviceId === device.id ? 'animate-spin' : ''}" />
+                      {#if resettingDeviceId === device.id}
+                        <div class="absolute inset-0 rounded border-2 border-current animate-glow"></div>
+                      {/if}
                     </button>
                   {/if}
                 {/if}
@@ -246,17 +261,23 @@
       <button
         onclick={handleApply}
         disabled={loading}
-        class="flex-1 py-3 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] disabled:opacity-50 transition-all"
+        class="relative flex-1 py-3 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] disabled:opacity-50 transition-all"
       >
-        <Play class="w-4 h-4" />
+        <Play class="w-4 h-4 {applyingPreset ? 'animate-spin' : ''}" />
         Apply
+        {#if applyingPreset}
+          <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+        {/if}
       </button>
       <button
         onclick={handleDelete}
         disabled={loading}
-        class="px-6 py-3 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:bg-error/10 hover:text-error hover:border-error/30 disabled:opacity-50 transition-all"
+        class="relative px-6 py-3 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:bg-error/10 hover:text-error hover:border-error/30 disabled:opacity-50 transition-all"
       >
-        <Trash2 class="w-4 h-4" />
+        <Trash2 class="w-4 h-4 {deletingPreset ? 'animate-spin' : ''}" />
+        {#if deletingPreset}
+          <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+        {/if}
       </button>
     </div>
   </div>
