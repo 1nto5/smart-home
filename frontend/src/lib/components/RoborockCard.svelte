@@ -4,7 +4,7 @@
   import { store } from '$lib/stores.svelte';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { VolumeX, Volume2, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin, Minus, Plus } from 'lucide-svelte';
+  import { VolumeX, Volume2, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin, Minus, Plus, RotateCcw } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   let { status, compact = false }: { status: RoborockStatus | null; compact?: boolean } = $props();
@@ -287,10 +287,11 @@
           ] as action}
             <button
               onclick={() => sendCommand(action.cmd)}
-              class="py-4 rounded-xl text-sm font-medium relative transition-all flex flex-col items-center gap-1.5
+              disabled={pendingCommand !== null}
+              class="py-4 rounded-xl text-sm font-medium relative transition-all flex flex-col items-center gap-1.5 disabled:opacity-50
                      {action.glow} power-btn-on hover:scale-[1.02]"
             >
-              <svelte:component this={action.icon} class="w-5 h-5" />
+              <svelte:component this={action.icon} class="w-5 h-5 {pendingCommand === action.cmd ? 'animate-spin' : ''}" />
               {action.label}
               {#if pendingCommand === action.cmd}
                 <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
@@ -302,9 +303,11 @@
         <!-- Find Button -->
         <button
           onclick={() => sendCommand('find')}
-          class="w-full py-3 rounded-xl bg-surface-recessed border border-stroke-default text-content-secondary text-sm font-medium relative
-                 hover:border-stroke-strong transition-all"
+          disabled={pendingCommand !== null}
+          class="w-full py-3 rounded-xl bg-surface-recessed border border-stroke-default text-content-secondary text-sm font-medium relative disabled:opacity-50
+                 hover:border-stroke-strong transition-all flex items-center justify-center gap-2"
         >
+          <MapPin class="w-4 h-4 {pendingCommand === 'find' ? 'animate-spin' : ''}" />
           Find Robot
           {#if pendingCommand === 'find'}
             <div class="absolute inset-0 rounded-xl border-2 border-accent animate-glow"></div>
@@ -318,10 +321,11 @@
             {#each FAN_MODES as fan}
               <button
                 onclick={() => handleFanSpeed(fan.mode)}
-                class="py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1
+                disabled={pendingFanMode !== null}
+                class="py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1 disabled:opacity-50
                        {displayFanPower === fan.mode ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={fan.icon} class="w-4 h-4" />
+                <svelte:component this={fan.icon} class="w-4 h-4 {pendingFanMode === fan.mode ? 'animate-spin' : ''}" />
                 {fan.name}
                 {#if pendingFanMode === fan.mode}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
@@ -338,10 +342,11 @@
             {#each MOP_MODES as mop}
               <button
                 onclick={() => handleMopMode(mop.mode)}
-                class="py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1
+                disabled={pendingMopMode !== null}
+                class="py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1 disabled:opacity-50
                        {displayMopMode === mop.mode ? 'glow-sensors power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <div class="flex items-center justify-center gap-0.5">
+                <div class="flex items-center justify-center gap-0.5 {pendingMopMode === mop.mode ? 'animate-spin' : ''}">
                   {#if mop.count}
                     {#each Array(mop.count) as _}
                       <svelte:component this={mop.icon} class="w-3 h-3" />
@@ -379,9 +384,11 @@
             {#if selectedRooms.size > 0}
               <button
                 onclick={cleanSelectedRooms}
-                class="w-full mt-3 py-3 rounded-xl glow-sensors power-btn-on text-sm font-medium relative
-                       hover:scale-[1.02] transition-all"
+                disabled={cleaningRooms}
+                class="w-full mt-3 py-3 rounded-xl glow-sensors power-btn-on text-sm font-medium relative disabled:opacity-50
+                       hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
               >
+                <Play class="w-4 h-4 {cleaningRooms ? 'animate-spin' : ''}" />
                 Clean {selectedRooms.size} room{selectedRooms.size > 1 ? 's' : ''}
                 {#if cleaningRooms}
                   <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
@@ -453,9 +460,14 @@
                       <span class="text-content-tertiary">{Math.round(item.time / 3600)}h</span>
                       <button
                         onclick={() => handleResetConsumable(item.key)}
-                        class="text-[10px] px-1.5 py-0.5 rounded bg-surface-recessed hover:bg-stroke-default text-content-secondary uppercase tracking-wider {resettingConsumable === item.key ? 'opacity-50' : ''}"
+                        disabled={resettingConsumable !== null}
+                        class="relative text-[10px] px-1.5 py-0.5 rounded bg-surface-recessed hover:bg-stroke-default text-content-secondary uppercase tracking-wider flex items-center gap-1 disabled:opacity-50"
                       >
+                        <RotateCcw class="w-2.5 h-2.5 {resettingConsumable === item.key ? 'animate-spin' : ''}" />
                         Reset
+                        {#if resettingConsumable === item.key}
+                          <div class="absolute inset-0 rounded border border-current animate-glow"></div>
+                        {/if}
                       </button>
                     </div>
                   </div>

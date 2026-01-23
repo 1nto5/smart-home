@@ -11,7 +11,11 @@
   let newName = $state('');
   let newPresetId = $state('night');
   let newTime = $state('22:00');
-  let loading = $state(false);
+  // Per-action pending states
+  let creatingPreset = $state(false);
+  let creatingSchedule = $state(false);
+  let deletingPresetId = $state<string | null>(null);
+  let loading = $derived(creatingPreset || creatingSchedule || deletingPresetId !== null);
   let applyingPresetId = $state<string | null>(null);
 
   // TRV devices for dialog
@@ -56,7 +60,7 @@
 
   async function handleCreate() {
     if (!newName.trim()) return;
-    loading = true;
+    creatingSchedule = true;
     try {
       await createHeaterSchedule(newName.trim(), newPresetId, newTime);
       newName = '';
@@ -64,7 +68,7 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    creatingSchedule = false;
   }
 
   async function handleDelete(id: number) {
@@ -90,7 +94,7 @@
 
   async function handleCreatePreset() {
     if (!createPresetIdVal.trim() || !createPresetName.trim()) return;
-    loading = true;
+    creatingPreset = true;
     try {
       const id = createPresetIdVal.trim().toLowerCase().replace(/\s+/g, '-');
       await createHeaterPreset(id, createPresetName.trim(), createPresetTemp);
@@ -103,12 +107,12 @@
       console.error(e);
       alert(e.message || 'Failed to create preset');
     }
-    loading = false;
+    creatingPreset = false;
   }
 
   async function handleDeletePreset(id: string) {
     if (!confirm(`Delete preset "${id}"? This will also delete any schedules using this preset.`)) return;
-    loading = true;
+    deletingPresetId = id;
     try {
       await deleteHeaterPreset(id);
       await store.refreshHeaterPresets();
@@ -116,7 +120,7 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    deletingPresetId = null;
   }
 
   async function handleApplyPreset(id: string) {
@@ -197,9 +201,13 @@
             <button
               onclick={handleCreatePreset}
               disabled={loading || !createPresetIdVal.trim() || !createPresetName.trim()}
-              class="px-4 py-2.5 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider disabled:opacity-50 transition-all"
+              class="relative px-4 py-2.5 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider disabled:opacity-50 transition-all flex items-center gap-2"
             >
+              <Plus class="w-4 h-4 {creatingPreset ? 'animate-spin' : ''}" />
               Create
+              {#if creatingPreset}
+                <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+              {/if}
             </button>
             <button
               onclick={() => showNewPresetForm = false}
@@ -244,10 +252,14 @@
               </button>
               <button
                 onclick={() => handleDeletePreset(preset.id)}
-                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                disabled={deletingPresetId !== null}
+                class="relative p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
                 title="Delete preset"
               >
-                <Trash2 class="w-4 h-4" />
+                <Trash2 class="w-4 h-4 {deletingPresetId === preset.id ? 'animate-spin' : ''}" />
+                {#if deletingPresetId === preset.id}
+                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                {/if}
               </button>
             </div>
           </div>
@@ -304,10 +316,14 @@
         <button
           onclick={handleCreate}
           disabled={loading || !newName.trim()}
-          class="px-5 py-2.5 rounded-lg font-semibold uppercase tracking-wider transition-all w-full sm:w-auto
+          class="relative px-5 py-2.5 rounded-lg font-semibold uppercase tracking-wider transition-all w-full sm:w-auto flex items-center justify-center gap-2
                  {!loading && newName.trim() ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary'}"
         >
+          <Plus class="w-4 h-4 {creatingSchedule ? 'animate-spin' : ''}" />
           Add
+          {#if creatingSchedule}
+            <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+          {/if}
         </button>
       </div>
     </div>

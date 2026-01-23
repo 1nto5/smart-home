@@ -15,6 +15,7 @@
   let optimisticFanSpeed = $state<number | null>(null);
   let optimisticLedBrightness = $state<number | null>(null);
   let isPowerPending = $state(false);
+  let pendingMode = $state<string | null>(null);
 
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
@@ -40,6 +41,7 @@
   async function setMode(mode: string) {
     const oldMode = displayMode;
     optimisticMode = mode;
+    pendingMode = mode;
     try {
       await controlAirPurifier({ mode });
       await store.refreshAirPurifier();
@@ -48,6 +50,7 @@
       console.error(e);
       optimisticMode = oldMode;
     }
+    pendingMode = null;
   }
 
   // Debounced LED brightness control
@@ -134,12 +137,14 @@
     <!-- Power toggle -->
     <button
       onclick={(e) => { e.stopPropagation(); togglePower(); }}
-      disabled={!status}
-      class="power-btn glow-air {displayPower ? 'power-btn-on' : ''}
+      disabled={!status || isPowerPending}
+      class="power-btn glow-air relative {displayPower ? 'power-btn-on' : ''}
              disabled:opacity-40 disabled:cursor-not-allowed"
-      class:pulse-ring={isPowerPending}
     >
-      <Wind class="w-4 h-4" />
+      <Wind class="w-4 h-4 {isPowerPending ? 'animate-spin' : ''}" />
+      {#if isPowerPending}
+        <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+      {/if}
     </button>
 
     <!-- Info -->
@@ -180,15 +185,16 @@
       <!-- Power Button -->
       <button
         onclick={togglePower}
-        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden
+        disabled={isPowerPending}
+        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden disabled:opacity-50
                {displayPower ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
       >
         <span class="relative z-10 flex items-center justify-center gap-2">
-          <Power class="w-5 h-5" />
+          <Power class="w-5 h-5 {isPowerPending ? 'animate-spin' : ''}" />
           {displayPower ? 'Power Off' : 'Power On'}
         </span>
         {#if isPowerPending}
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+          <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
         {/if}
       </button>
 
@@ -207,11 +213,15 @@
             {#each modes as mode}
               <button
                 onclick={() => setMode(mode.value)}
-                class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium
+                disabled={pendingMode !== null}
+                class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium relative disabled:opacity-50
                        {displayMode === mode.value ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={mode.icon} class="w-5 h-5" />
+                <svelte:component this={mode.icon} class="w-5 h-5 {pendingMode === mode.value ? 'animate-spin' : ''}" />
                 {mode.label}
+                {#if pendingMode === mode.value}
+                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                {/if}
               </button>
             {/each}
           </div>

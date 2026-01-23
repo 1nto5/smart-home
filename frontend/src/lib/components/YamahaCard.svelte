@@ -15,6 +15,8 @@
   // Optimistic state
   let optimisticPower = $state<'on' | 'standby' | null>(null);
   let isPowerPending = $state(false);
+  let pendingInput = $state<string | null>(null);
+  let pendingProgram = $state<string | null>(null);
 
   // Local slider state
   let previewVolume = $state<number | null>(null);
@@ -108,6 +110,7 @@
 
   async function setInput(input: string) {
     const oldInput = status?.input;
+    pendingInput = input;
     if (status) status = { ...status, input };
     try {
       await controlYamaha(device.id, { input });
@@ -115,10 +118,12 @@
       console.error(e);
       if (status && oldInput) status = { ...status, input: oldInput };
     }
+    pendingInput = null;
   }
 
   async function setSoundProgram(program: string) {
     const oldProgram = status?.sound_program;
+    pendingProgram = program;
     if (status) status = { ...status, sound_program: program };
     try {
       await controlYamaha(device.id, { sound_program: program });
@@ -126,6 +131,7 @@
       console.error(e);
       if (status && oldProgram) status = { ...status, sound_program: oldProgram };
     }
+    pendingProgram = null;
   }
 
   async function toggleClearVoice() {
@@ -170,12 +176,14 @@
     <!-- Power toggle -->
     <button
       onclick={(e) => { e.stopPropagation(); togglePower(); }}
-      disabled={!status}
-      class="power-btn glow-audio {displayPower === 'on' ? 'power-btn-on' : ''}
+      disabled={!status || isPowerPending}
+      class="power-btn glow-audio relative {displayPower === 'on' ? 'power-btn-on' : ''}
              disabled:opacity-40 disabled:cursor-not-allowed"
-      class:pulse-ring={isPowerPending}
     >
-      <Volume2 class="w-4 h-4" />
+      <Volume2 class="w-4 h-4 {isPowerPending ? 'animate-spin' : ''}" />
+      {#if isPowerPending}
+        <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+      {/if}
     </button>
 
     <!-- Info -->
@@ -209,15 +217,16 @@
       <!-- Power Button -->
       <button
         onclick={togglePower}
-        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden
+        disabled={isPowerPending}
+        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden disabled:opacity-50
                {displayPower === 'on' ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
       >
         <span class="relative z-10 flex items-center justify-center gap-2">
-          <Power class="w-5 h-5" />
+          <Power class="w-5 h-5 {isPowerPending ? 'animate-spin' : ''}" />
           {displayPower === 'on' ? 'Power Off' : 'Power On'}
         </span>
         {#if isPowerPending}
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+          <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
         {/if}
       </button>
 
@@ -322,11 +331,15 @@
             {#each inputs as inp}
               <button
                 onclick={() => setInput(inp.id)}
-                class="py-3 rounded-lg transition-all flex items-center justify-center gap-2 font-medium
+                disabled={pendingInput !== null}
+                class="py-3 rounded-lg transition-all flex items-center justify-center gap-2 font-medium relative disabled:opacity-50
                        {status.input === inp.id ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={inp.icon} class="w-4 h-4" />
+                <svelte:component this={inp.icon} class="w-4 h-4 {pendingInput === inp.id ? 'animate-spin' : ''}" />
                 {inp.label}
+                {#if pendingInput === inp.id}
+                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                {/if}
               </button>
             {/each}
           </div>
@@ -339,10 +352,14 @@
             {#each soundPrograms as prog}
               <button
                 onclick={() => setSoundProgram(prog.id)}
-                class="py-2.5 text-sm rounded-lg transition-all font-medium
+                disabled={pendingProgram !== null}
+                class="py-2.5 text-sm rounded-lg transition-all font-medium relative disabled:opacity-50
                        {status.sound_program === prog.id ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
                 {prog.label}
+                {#if pendingProgram === prog.id}
+                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                {/if}
               </button>
             {/each}
           </div>

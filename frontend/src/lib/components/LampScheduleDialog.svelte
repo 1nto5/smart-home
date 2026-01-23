@@ -17,7 +17,10 @@
     onclose: () => void;
   } = $props();
 
-  let loading = $state(false);
+  // Per-action pending states
+  let saving = $state(false);
+  let deleting = $state(false);
+  let loading = $derived(saving || deleting);
 
   // Form state
   let editName = $state(schedule.name);
@@ -35,7 +38,7 @@
 
   async function handleSave() {
     if (!editName.trim()) return;
-    loading = true;
+    saving = true;
     try {
       await updateSchedule(schedule.id, {
         name: editName.trim(),
@@ -47,12 +50,12 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    saving = false;
   }
 
   async function handleDelete() {
     if (!confirm(`Delete schedule "${schedule.name}"?`)) return;
-    loading = true;
+    deleting = true;
     try {
       await deleteSchedule(schedule.id);
       await store.refreshSchedules();
@@ -60,7 +63,7 @@
     } catch (e) {
       console.error(e);
     }
-    loading = false;
+    deleting = false;
   }
 </script>
 
@@ -111,17 +114,23 @@
       <button
         onclick={handleSave}
         disabled={loading || !editName.trim()}
-        class="flex-1 py-3 rounded-lg glow-accent power-btn-on font-semibold uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] disabled:opacity-50 transition-all"
+        class="relative flex-1 py-3 rounded-lg glow-accent power-btn-on font-semibold uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] disabled:opacity-50 transition-all"
       >
-        <Save class="w-4 h-4" />
+        <Save class="w-4 h-4 {saving ? 'animate-spin' : ''}" />
         Save
+        {#if saving}
+          <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+        {/if}
       </button>
       <button
         onclick={handleDelete}
         disabled={loading}
-        class="px-6 py-3 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:bg-error/10 hover:text-error hover:border-error/30 disabled:opacity-50 transition-all"
+        class="relative px-6 py-3 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:bg-error/10 hover:text-error hover:border-error/30 disabled:opacity-50 transition-all"
       >
-        <Trash2 class="w-4 h-4" />
+        <Trash2 class="w-4 h-4 {deleting ? 'animate-spin' : ''}" />
+        {#if deleting}
+          <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+        {/if}
       </button>
     </div>
   </div>

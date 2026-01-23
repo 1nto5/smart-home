@@ -146,15 +146,17 @@
     <!-- Power toggle button -->
     <button
       onclick={togglePower}
-      disabled={!isOnline}
+      disabled={!isOnline || isPowerPending}
       aria-label="{displayPower ? 'Turn off' : 'Turn on'} {displayName}"
       aria-pressed={displayPower}
-      class="power-btn glow-lights {displayPower ? 'power-btn-on' : ''}
+      class="power-btn glow-lights relative {displayPower ? 'power-btn-on' : ''}
              {status?.moonlight_mode && displayPower ? 'glow-audio' : ''}
              disabled:opacity-40 disabled:cursor-not-allowed"
-      class:pulse-ring={isPowerPending}
     >
-      <Power class="w-4 h-4" aria-hidden="true" />
+      <Power class="w-4 h-4 {isPowerPending ? 'animate-spin' : ''}" aria-hidden="true" />
+      {#if isPowerPending}
+        <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+      {/if}
     </button>
 
     <!-- Info -->
@@ -200,14 +202,16 @@
       <!-- Large Power Button -->
       <button
         onclick={togglePower}
-        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden
+        disabled={isPowerPending}
+        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden flex items-center justify-center gap-2 disabled:opacity-50
                {displayPower
                  ? (status.moonlight_mode ? 'glow-audio power-btn-on' : 'glow-lights power-btn-on')
                  : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
       >
+        <Power class="w-4 h-4 relative z-10 {isPowerPending ? 'animate-spin' : ''}" />
         <span class="relative z-10">{displayPower ? 'Power Off' : 'Power On'}</span>
         {#if isPowerPending}
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+          <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
         {/if}
       </button>
 
@@ -220,12 +224,13 @@
               {@const active = isPresetActive(preset) || activePreset === preset.id}
               <button
                 onclick={() => applyPreset(preset)}
-                class="py-3 px-2 rounded-lg transition-all flex flex-col items-center gap-1.5 relative
+                disabled={activePreset !== null}
+                class="py-3 px-2 rounded-lg transition-all flex flex-col items-center gap-1.5 relative disabled:opacity-50
                        {active
                          ? (preset.moonlight ? 'glow-audio power-btn-on' : 'glow-lights power-btn-on')
                          : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={preset.icon} class="w-4 h-4" />
+                <svelte:component this={preset.icon} class="w-4 h-4 {activePreset === preset.id ? 'animate-spin' : ''}" />
                 <span class="text-xs font-medium">{preset.label}</span>
                 {#if activePreset === preset.id}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
