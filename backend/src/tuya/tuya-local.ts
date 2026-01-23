@@ -21,7 +21,7 @@ let reconnectTimeout: Timer | null = null;
 const RECONNECT_DELAY_MS = 5000;
 
 // Timeout for TuyAPI operations (prevents hanging requests)
-const TUYA_OPERATION_TIMEOUT_MS = 5000;
+const TUYA_OPERATION_TIMEOUT_MS = 15000;
 
 /**
  * Wrap a promise with a timeout
