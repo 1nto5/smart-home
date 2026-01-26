@@ -119,25 +119,29 @@ export function getDbStats(): DbStats {
   };
 }
 
-// Scheduled maintenance - call this from a timer
+// Scheduled maintenance - runs on startup + every 24h
 let maintenanceInterval: ReturnType<typeof setInterval> | null = null;
+
+function runMaintenance(): void {
+  console.log('[maintenance] Running scheduled cleanup...');
+  try {
+    const result = cleanupOldData();
+    console.log(`[maintenance] Cleanup complete: ${result.totalDeleted} records deleted in ${result.duration}ms`);
+  } catch (error: any) {
+    console.error('[maintenance] Cleanup failed:', error.message);
+  }
+}
 
 export function startMaintenanceScheduler(): void {
   if (maintenanceInterval) return;
 
-  const runMaintenance = () => {
-    const now = new Date();
-    // Run at 3 AM
-    if (now.getHours() === 3 && now.getMinutes() === 0) {
-      console.log('[maintenance] Running scheduled cleanup...');
-      const result = cleanupOldData();
-      console.log(`[maintenance] Cleanup complete: ${result.totalDeleted} records deleted in ${result.duration}ms`);
-    }
-  };
+  // Run immediately on startup
+  runMaintenance();
 
-  // Check every minute
-  maintenanceInterval = setInterval(runMaintenance, 60 * 1000);
-  console.log('[maintenance] Scheduler started (runs daily at 3:00 AM)');
+  // Then run every 24 hours
+  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+  maintenanceInterval = setInterval(runMaintenance, TWENTY_FOUR_HOURS);
+  console.log('[maintenance] Scheduler started (runs every 24h)');
 }
 
 export function stopMaintenanceScheduler(): void {
