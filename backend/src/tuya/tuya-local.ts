@@ -18,7 +18,9 @@ const GATEWAY_ID = 'bf889f95067d327853rwzw';
 
 // Reconnect state
 let reconnectTimeout: Timer | null = null;
+let reconnectAttempts = 0;
 const RECONNECT_DELAY_MS = 5000;
+const MAX_RECONNECT_ATTEMPTS = 10;
 
 // Timeout for TuyAPI operations (prevents hanging requests)
 const TUYA_OPERATION_TIMEOUT_MS = 15000;
@@ -239,15 +241,24 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
   device.on('connected', () => {
     console.log(`Connected to ${dbDevice.name} (${deviceId})`);
     connection.connected = true;
+    // Reset reconnect attempts on successful connection
+    if (deviceId === GATEWAY_ID) {
+      reconnectAttempts = 0;
+    }
   });
 
   device.on('disconnected', () => {
     console.log(`Disconnected from ${dbDevice.name} (${deviceId})`);
     connection.connected = false;
 
-    // Auto-reconnect for gateway
+    // Auto-reconnect for gateway (with max retry limit)
     if (deviceId === GATEWAY_ID && !reconnectTimeout) {
-      console.log(`🔌 Scheduling gateway reconnect in ${RECONNECT_DELAY_MS / 1000}s...`);
+      if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.error(`🔌 Gateway reconnect failed after ${MAX_RECONNECT_ATTEMPTS} attempts, giving up`);
+        return;
+      }
+      reconnectAttempts++;
+      console.log(`🔌 Scheduling gateway reconnect in ${RECONNECT_DELAY_MS / 1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
       reconnectTimeout = setTimeout(async () => {
         reconnectTimeout = null;
         await reconnectGateway();
@@ -268,7 +279,11 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
 
       // If this is the gateway and data has cid, it's a subdevice event
       if (deviceId === GATEWAY_ID && data.cid) {
-        handleSubdeviceEvent(data.cid, data.dps);
+        try {
+          handleSubdeviceEvent(data.cid, data.dps);
+        } catch (error: any) {
+          console.error(`Subdevice event handler error for cid ${data.cid}:`, error.message);
+        }
       }
     }
   });
