@@ -3,6 +3,7 @@ import { getDb, recordContactChange, getLastContactState, recordSensorReading } 
 import { triggerAlarm } from '../notifications/alarm-service';
 import { evaluateSensorTrigger } from '../automations/automation-triggers';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
+import { discoverTuyaGatewayIp } from './tuya-discover';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -294,6 +295,12 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
     return connection;
   } catch (error: any) {
     console.error(`Failed to connect to ${deviceId}:`, error.message);
+
+    // Trigger IP discovery for gateway on connection failure
+    if (dbDevice.category === 'wfcon') {
+      discoverTuyaGatewayIp(dbDevice.id, dbDevice.local_key).catch(() => {});
+    }
+
     return null;
   }
 }
