@@ -1,13 +1,16 @@
-# Smart Home Deployment Script
-# Updates and restarts all services
+# Smart Home Deployment Script (Native Windows Services)
+# Updates and restarts services
 
 param(
     [switch]$NoPull,
-    [switch]$NoBuild,
     [switch]$BackendOnly,
-    [switch]$RoborockOnly
+    [switch]$RoborockOnly,
+    [switch]$FrontendOnly,
+    [string]$BunPath = "$env:USERPROFILE\.bun\bin\bun.exe",
+    [string]$PythonPath = "C:\Python311\python.exe"
 )
 
+$ErrorActionPreference = "Stop"
 $projectDir = "C:\SmartHome"
 $logFile = "$projectDir\logs\deploy.log"
 
@@ -30,55 +33,114 @@ if (-not $NoPull) {
     }
 }
 
-# Determine which services to rebuild
-$services = @()
-if ($BackendOnly) {
-    $services = @("backend")
-} elseif ($RoborockOnly) {
-    $services = @("roborock")
-} else {
-    $services = @("frontend", "backend", "roborock")
+# Determine which services to update
+$updateBackend = -not $RoborockOnly -and -not $FrontendOnly
+$updateRoborock = -not $BackendOnly -and -not $FrontendOnly
+$updateFrontend = -not $BackendOnly -and -not $RoborockOnly
+
+# Update Backend
+if ($updateBackend) {
+    Write-Log "Stopping SmartHome-Backend..."
+    nssm stop SmartHome-Backend 2>$null
+
+    Write-Log "Installing backend dependencies..."
+    Set-Location "$projectDir\backend"
+    & $BunPath install
+    if ($LASTEXITCODE -ne 0) {
+        Write-Log "Backend deps install failed!"
+        exit 1
+    }
+
+    Write-Log "Starting SmartHome-Backend..."
+    nssm start SmartHome-Backend
 }
 
-# Build containers
-if (-not $NoBuild) {
-    Write-Log "Building containers: $($services -join ', ')..."
-    docker compose build $services
+# Update Roborock
+if ($updateRoborock) {
+    Write-Log "Stopping SmartHome-Roborock..."
+    nssm stop SmartHome-Roborock 2>$null
+
+    Write-Log "Installing roborock dependencies..."
+    Set-Location "$projectDir\roborock-bridge"
+    & $PythonPath -m pip install -r requirements.txt --quiet
     if ($LASTEXITCODE -ne 0) {
-        Write-Log "Build failed!"
+        Write-Log "Roborock deps install failed!"
         exit 1
+    }
+
+    Write-Log "Starting SmartHome-Roborock..."
+    nssm start SmartHome-Roborock
+}
+
+# Update Frontend
+if ($updateFrontend) {
+    Write-Log "Stopping SmartHome-Frontend..."
+    nssm stop SmartHome-Frontend 2>$null
+
+    Write-Log "Building frontend..."
+    Set-Location "$projectDir\frontend"
+    & $BunPath install
+    & $BunPath run build
+    if ($LASTEXITCODE -ne 0) {
+        Write-Log "Frontend build failed!"
+        exit 1
+    }
+
+    Write-Log "Starting SmartHome-Frontend..."
+    nssm start SmartHome-Frontend
+}
+
+# Wait for services to start
+Write-Log "Waiting for services..."
+Start-Sleep -Seconds 5
+
+# Verify services
+Write-Log "Verifying services..."
+$services = @()
+if ($updateBackend) { $services += "SmartHome-Backend" }
+if ($updateRoborock) { $services += "SmartHome-Roborock" }
+if ($updateFrontend) { $services += "SmartHome-Frontend" }
+
+$allOk = $true
+foreach ($svc in $services) {
+    $status = (Get-Service $svc -ErrorAction SilentlyContinue).Status
+    if ($status -eq "Running") {
+        Write-Log "$svc is running"
+    } else {
+        Write-Log "WARNING: $svc is $status"
+        $allOk = $false
     }
 }
 
-# Restart services
-Write-Log "Restarting services: $($services -join ', ')..."
-docker compose up -d $services
-if ($LASTEXITCODE -ne 0) {
-    Write-Log "Restart failed!"
+# Health check endpoints
+if ($updateBackend) {
+    try {
+        $response = Invoke-RestMethod -Uri "http://localhost:3001/api/health" -TimeoutSec 10
+        Write-Log "Backend health: OK"
+    } catch {
+        Write-Log "WARNING: Backend health check failed - $_"
+        $allOk = $false
+    }
+}
+
+if ($updateRoborock) {
+    try {
+        $response = Invoke-RestMethod -Uri "http://localhost:3002/status" -TimeoutSec 10
+        Write-Log "Roborock health: OK"
+    } catch {
+        Write-Log "WARNING: Roborock health check failed - $_"
+        $allOk = $false
+    }
+}
+
+Set-Location $projectDir
+
+if ($allOk) {
+    Write-Log "Deployment complete!"
+} else {
+    Write-Log "Deployment complete with warnings"
     exit 1
 }
 
-# Wait for health checks
-Write-Log "Waiting for services to be healthy..."
-Start-Sleep -Seconds 10
-
-# Verify services
-$healthy = $true
-foreach ($service in $services) {
-    $status = docker compose ps $service --format json | ConvertFrom-Json
-    if ($status.Health -ne "healthy" -and $status.State -ne "running") {
-        Write-Log "WARNING: $service is not healthy: $($status.Health)"
-        $healthy = $false
-    } else {
-        Write-Log "$service is running"
-    }
-}
-
-if ($healthy) {
-    Write-Log "Deployment complete!"
-} else {
-    Write-Log "Deployment complete with warnings - check service health"
-}
-
-# Show container status
-docker compose ps
+# Show service status
+Get-Service SmartHome-* | Format-Table Name, Status

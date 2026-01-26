@@ -1,6 +1,7 @@
 import { Database } from 'bun:sqlite';
 import { config } from '../config';
 import path from 'path';
+import { mkdirSync, existsSync } from 'fs';
 
 let db: Database | null = null;
 
@@ -14,9 +15,11 @@ export function getDb(): Database {
 export function initDatabase(): Database {
   const dbPath = path.resolve(__dirname, '../../', config.db.path);
 
-  // Ensure directory exists
+  // Ensure directory exists (cross-platform)
   const dir = path.dirname(dbPath);
-  Bun.spawnSync(['mkdir', '-p', dir]);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
 
   db = new Database(dbPath);
 
