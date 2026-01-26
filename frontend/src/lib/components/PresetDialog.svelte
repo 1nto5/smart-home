@@ -56,7 +56,7 @@
     const custom = presetDeviceTemps.find(d => d.device_id === deviceId);
     return custom
       ? { temp: custom.target_temp, isCustom: true }
-      : { temp: preset.target_temp, isCustom: false };
+      : { temp: defaultTempValue, isCustom: false };
   }
 
   // Default temp functions
@@ -78,9 +78,17 @@
     savingDefault = false;
   }
 
-  function adjustDefaultTemp(delta: number) {
+  async function adjustDefaultTemp(delta: number) {
     const newTemp = Math.max(5, Math.min(30, defaultTempValue + delta));
     defaultTempValue = newTemp;
+    savingDefault = true;
+    try {
+      await updateHeaterPreset(preset.id, newTemp);
+      await store.refreshHeaterPresets();
+    } catch (e) {
+      console.error(e);
+    }
+    savingDefault = false;
   }
 
   // Per-device temp functions
@@ -175,7 +183,7 @@
               class="font-display text-3xl w-28 text-center text-device-climate-heat-text neon-text-subtle hover:scale-105 transition-transform cursor-text"
               title="Click to edit"
             >
-              {preset.target_temp}°C
+              {defaultTempValue}°C
             </button>
           {/if}
         </div>
@@ -191,7 +199,7 @@
     <!-- Per-device Overrides -->
     <div>
       <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">
-        Per-device Overrides <span class="text-content-secondary">(override {preset.target_temp}°C)</span>
+        Per-device Overrides <span class="text-content-secondary">(override {defaultTempValue}°C)</span>
       </p>
       {#if trvDevices.length === 0}
         <p class="text-sm text-content-tertiary">No TRV devices found</p>
