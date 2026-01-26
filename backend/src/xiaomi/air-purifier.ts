@@ -6,6 +6,7 @@
 import miio from 'miio';
 import { getDb } from '../db/database';
 import { broadcastPurifierStatus } from '../ws/device-broadcast';
+import { findAndUpdateDeviceIp } from './xiaomi-discover';
 
 let purifierConnection: any = null;
 
@@ -61,6 +62,10 @@ export async function connectPurifier(): Promise<boolean> {
     return true;
   } catch (error: any) {
     console.error('Failed to connect to Air Purifier:', error.message);
+    // Trigger IP discovery async (don't wait)
+    if (device?.id) {
+      findAndUpdateDeviceIp(device.id).catch(() => {});
+    }
     return false;
   }
 }
