@@ -3,7 +3,7 @@
  * - Retries pending actions for offline lamps every 30 seconds
  * - Refreshes sensor and TRV statuses every 5 minutes (local API)
  * - Fast-polls door sensors every 5 seconds (local API)
- * - Cleans up old history records daily
+ * - Cleans up old history records every 6 months
  */
 
 import { getPendingActions, removePendingAction, incrementRetryCount } from './pending-service';
@@ -17,14 +17,11 @@ import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
 import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automation-triggers';
 import { getPurifierStatus } from '../xiaomi/air-purifier';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
-import { refreshDeviceIps } from '../xiaomi/xiaomi-discover';
-import { discoverTuyaGatewayIp } from '../tuya/tuya-discover';
 
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
 let sensorRefreshCounter = 0;
 let cleanupCounter = 0;
-let ipDiscoveryCounter = 0;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = 'bf889f95067d327853rwzw';
@@ -266,27 +263,6 @@ export async function startPoller(): Promise<void> {
       }
     }
 
-    // Daily IP discovery (every 24 hours = 2880 iterations of 30s)
-    ipDiscoveryCounter++;
-    if (ipDiscoveryCounter >= 2880) {
-      ipDiscoveryCounter = 0;
-
-      // Xiaomi devices
-      refreshDeviceIps().then(changes => {
-        if (changes.size > 0) {
-          console.log(`📡 Daily IP discovery: ${changes.size} Xiaomi device(s) updated`);
-        }
-      }).catch(e => console.error('Xiaomi IP discovery error:', e.message));
-
-      // Tuya gateway
-      const db = getDb();
-      const gateway = db.query("SELECT id, local_key FROM devices WHERE category = 'wfcon'").get() as any;
-      if (gateway) {
-        discoverTuyaGatewayIp(gateway.id, gateway.local_key).catch(e =>
-          console.error('Tuya gateway discovery error:', e.message)
-        );
-      }
-    }
 
     // Process pending lamp actions
     const pendingLamps = getPendingActions();
