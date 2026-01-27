@@ -5,7 +5,6 @@
 
 import miio from 'miio';
 import { getDb } from '../db/database';
-import { findAndUpdateDeviceIp } from './xiaomi-discover';
 
 interface LampConnection {
   device: any;
@@ -18,8 +17,6 @@ const connections = new Map<string, LampConnection>();
 // Track failed connection attempts to reduce retry spam
 const failedAttempts = new Map<string, number>();
 const RETRY_COOLDOWN = 60_000; // Wait 60s before retrying failed connection
-// Track devices with pending IP recovery
-const pendingIpRecovery = new Set<string>();
 
 /**
  * Invalidate connection for device (call after IP change)
@@ -92,19 +89,8 @@ export async function connectLamp(deviceId: string): Promise<LampConnection | nu
   } catch (error: any) {
     failedAttempts.set(deviceId, Date.now()); // Set cooldown
     console.error(`Failed to connect to ${deviceId}:`, error.message);
-
-    // Trigger IP discovery if not already in progress
-    if (!pendingIpRecovery.has(deviceId)) {
-      pendingIpRecovery.add(deviceId);
-      findAndUpdateDeviceIp(deviceId).then(newIp => {
-        pendingIpRecovery.delete(deviceId);
-        if (newIp) {
-          invalidateConnection(deviceId);
-          failedAttempts.delete(deviceId); // Clear cooldown for immediate retry
-        }
-      }).catch(() => pendingIpRecovery.delete(deviceId));
-    }
-
+    // Note: IP discovery is handled by daily scheduled task in poller.ts
+    // We don't auto-discover here since lamps are often intentionally powered off
     return null;
   }
 }
