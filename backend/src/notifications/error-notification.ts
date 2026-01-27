@@ -12,6 +12,13 @@ interface ErrorNotification {
 const cooldownMap = new Map<string, number>();
 const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
+// Transient errors that should be suppressed (they recover automatically)
+const SUPPRESSED_ERRORS = [
+  'handshake needed',
+  'handshake timeout',
+  'Call to device timed out',
+];
+
 /**
  * Send error notification via Telegram
  */
@@ -28,6 +35,12 @@ export async function notifyError({ component, error, severity }: ErrorNotificat
     return false;
   }
 
+  // Filter out transient errors that recover automatically
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  if (SUPPRESSED_ERRORS.some(pattern => errorMessage.includes(pattern))) {
+    return false;
+  }
+
   // Check cooldown
   const lastNotify = cooldownMap.get(component);
   if (lastNotify && Date.now() - lastNotify < COOLDOWN_MS) {
@@ -36,7 +49,6 @@ export async function notifyError({ component, error, severity }: ErrorNotificat
   }
 
   const emoji = severity === 'critical' ? '🔴' : '🟡';
-  const errorMessage = error instanceof Error ? error.message : String(error);
   const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Warsaw' });
 
   const message = `${emoji} <b>${component} Error</b>

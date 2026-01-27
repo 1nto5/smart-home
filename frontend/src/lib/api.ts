@@ -36,6 +36,18 @@ export async function controlLamp(
   });
 }
 
+export async function discoverLampIp(deviceId?: string): Promise<{
+  success: boolean;
+  discovered: number;
+  updates: Array<{ id: string; name: string; old_ip: string; new_ip: string }>;
+  message: string;
+}> {
+  return fetcher('/xiaomi/discover', {
+    method: 'POST',
+    body: JSON.stringify(deviceId ? { device_id: deviceId } : {}),
+  });
+}
+
 // Roborock
 export async function getRoborockStatus(): Promise<RoborockStatus> {
   return fetcher('/roborock/status');

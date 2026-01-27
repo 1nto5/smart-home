@@ -1,11 +1,11 @@
 <script lang="ts">
   import type { Lamp } from '$lib/types';
-  import { controlLamp, getLampStatus } from '$lib/api';
+  import { controlLamp, getLampStatus, discoverLampIp } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Power, Sun, Moon, Sparkles, Minus, Plus } from 'lucide-svelte';
+  import { Power, Sun, Moon, Sparkles, Minus, Plus, Search } from 'lucide-svelte';
   import { notify } from '$lib/toast.svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
@@ -22,6 +22,9 @@
   // Local slider state for preview
   let previewBrightness = $state<number | null>(null);
   let previewColorTemp = $state<number | null>(null);
+
+  // IP discovery state
+  let isDiscovering = $state(false);
 
   // Display values (preview or actual) - only show as on if lamp is online
   let displayPower = $derived(isOnline ? (optimisticPower ?? status?.power ?? false) : false);
@@ -131,6 +134,27 @@
     const tempMatch = Math.abs((status?.color_temp ?? 0) - preset.colorTemp) <= 200;
     return brightMatch && tempMatch;
   }
+
+  async function discoverIp() {
+    isDiscovering = true;
+    try {
+      const result = await discoverLampIp(lamp.id);
+      if (result.updates.length > 0) {
+        const update = result.updates[0];
+        notify.success(`IP updated: ${update.new_ip}`);
+        // Reload lamps to get new IP
+        store.fetchLamps();
+      } else if (result.discovered > 0) {
+        notify.info('Device found, IP unchanged');
+      } else {
+        notify.warning('Device not found on network');
+      }
+    } catch (e) {
+      console.error(e);
+      notify.error('Discovery failed');
+    }
+    isDiscovering = false;
+  }
 </script>
 
 <!-- Card -->
@@ -197,6 +221,22 @@
         {/if}
       </span>
     </div>
+
+    {#if !isOnline}
+      <!-- Offline: show discover button prominently -->
+      <button
+        onclick={discoverIp}
+        disabled={isDiscovering}
+        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2
+               bg-surface-recessed border border-stroke-default text-content-secondary hover:border-accent hover:text-accent disabled:opacity-50"
+      >
+        <Search class="w-4 h-4 {isDiscovering ? 'animate-spin' : ''}" />
+        <span>{isDiscovering ? 'Scanning...' : 'Discover IP'}</span>
+      </button>
+      <p class="text-xs text-content-tertiary text-center">
+        Make sure the lamp is powered on, then scan the network to find its new IP address.
+      </p>
+    {/if}
 
     {#if isOnline && status}
       <!-- Large Power Button -->
@@ -344,7 +384,17 @@
       <div class="pt-4 border-t border-stroke-subtle space-y-2">
         <div class="flex justify-between items-center">
           <span class="text-xs text-content-tertiary uppercase tracking-wider">IP Address</span>
-          <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">{lamp.ip}</span>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs text-accent px-2 py-1 rounded bg-accent/10">{lamp.ip}</span>
+            <button
+              onclick={discoverIp}
+              disabled={isDiscovering}
+              title="Scan network for new IP"
+              class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:text-accent hover:border-accent transition-all disabled:opacity-50"
+            >
+              <Search class="w-3.5 h-3.5 {isDiscovering ? 'animate-spin' : ''}" />
+            </button>
+          </div>
         </div>
       </div>
     {/if}
