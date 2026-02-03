@@ -39,7 +39,7 @@ const WATCHDOG_TIMEOUT_MS = 30000; // 30 seconds
 async function getUpdates(botToken: string, offset: number): Promise<TelegramUpdate[]> {
   try {
     const url = `https://api.telegram.org/bot${botToken}/getUpdates?offset=${offset}&timeout=5`;
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, {}, TIMEOUTS.TELEGRAM);
     const data = await response.json() as { ok: boolean; result: TelegramUpdate[] };
 
     if (data.ok) {
@@ -212,11 +212,11 @@ export async function sendMessage(
       body.reply_markup = replyMarkup;
     }
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    });
+    }, TIMEOUTS.TELEGRAM);
 
     const data = await response.json() as { ok: boolean };
     return data.ok;
@@ -251,11 +251,11 @@ export async function editMessage(
       body.reply_markup = replyMarkup;
     }
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    });
+    }, TIMEOUTS.TELEGRAM);
 
     const data = await response.json() as { ok: boolean };
     return data.ok;
@@ -277,14 +277,14 @@ export async function answerCallbackQuery(
 
   try {
     const url = `https://api.telegram.org/bot${config.bot_token}/answerCallbackQuery`;
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         callback_query_id: callbackQueryId,
         text,
       }),
-    });
+    }, TIMEOUTS.TELEGRAM);
 
     const data = await response.json() as { ok: boolean };
     return data.ok;
