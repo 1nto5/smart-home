@@ -1,4 +1,11 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import {
+  LampPresetSchema,
+  LampPresetUpdateSchema,
+  LampScheduleSchema,
+  LampScheduleUpdateSchema,
+} from '../validation/schemas';
 import {
   isValidPreset,
   getLampPresets,
@@ -36,16 +43,11 @@ presets.get('/', (c) => {
 });
 
 // Create preset
-presets.post('/', async (c) => {
-  const body = await c.req.json();
-  const { id, name, brightness, color_temp, power } = body;
-
-  if (!id || !name || brightness === undefined || color_temp === undefined) {
-    return c.json({ error: 'id, name, brightness, and color_temp are required' }, 400);
-  }
+presets.post('/', zValidator('json', LampPresetSchema), async (c) => {
+  const { id, name, brightness, color_temp, power } = c.req.valid('json');
 
   try {
-    const preset = createLampPreset(id, name, brightness, color_temp, power ?? true);
+    const preset = createLampPreset(id, name, brightness, color_temp, power);
     refreshLampPresetsCache();
     return c.json(preset);
   } catch (e: unknown) {
@@ -55,13 +57,9 @@ presets.post('/', async (c) => {
 });
 
 // Update preset
-presets.patch('/:id', async (c) => {
+presets.patch('/:id', zValidator('json', LampPresetUpdateSchema), async (c) => {
   const id = c.req.param('id');
-  const body = await c.req.json();
-
-  if (body.brightness === undefined || body.color_temp === undefined) {
-    return c.json({ error: 'brightness and color_temp required' }, 400);
-  }
+  const body = c.req.valid('json');
 
   const updated = updateLampPreset(id, body.brightness, body.color_temp, body.power ?? true);
   if (!updated) {
@@ -114,12 +112,8 @@ presets.get('/schedules/list', (c) => {
 });
 
 // Create schedule
-presets.post('/schedules', async (c) => {
-  const body = await c.req.json();
-
-  if (!body.name || !body.preset || !body.time) {
-    return c.json({ error: 'name, preset, and time required' }, 400);
-  }
+presets.post('/schedules', zValidator('json', LampScheduleSchema), async (c) => {
+  const body = c.req.valid('json');
 
   if (!isValidPreset(body.preset)) {
     return c.json({ error: `Invalid preset: ${body.preset}` }, 400);
@@ -152,9 +146,9 @@ presets.patch('/schedules/:id/toggle', (c) => {
 });
 
 // Update schedule
-presets.patch('/schedules/:id', async (c) => {
+presets.patch('/schedules/:id', zValidator('json', LampScheduleUpdateSchema), async (c) => {
   const id = parseInt(c.req.param('id'));
-  const body = await c.req.json();
+  const body = c.req.valid('json');
 
   try {
     const schedule = updateSchedule(id, {

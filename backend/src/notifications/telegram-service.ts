@@ -256,14 +256,14 @@ Time: ${new Date().toLocaleString('en-GB')}`;
 /**
  * Send test message
  */
-export async function sendTestTelegram(): Promise<{ success: boolean; error?: string }> {
+export async function sendTestTelegram(customMessage?: string): Promise<{ success: boolean; error?: string }> {
   const config = getTelegramConfig();
 
   if (!config.bot_token || !config.chat_id) {
     return { success: false, error: 'Telegram config incomplete' };
   }
 
-  const message = `✅ <b>Test Smart Home</b>
+  const message = customMessage || `✅ <b>Test Smart Home</b>
 
 Telegram configuration working correctly.
 Time: ${new Date().toLocaleString('en-GB')}`;

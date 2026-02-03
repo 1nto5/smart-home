@@ -5,6 +5,7 @@
 
 import miio from 'miio';
 import { getDb } from '../db/database';
+import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 
 interface LampConnection {
   device: any;
@@ -99,16 +100,21 @@ export async function connectLamp(deviceId: string): Promise<LampConnection | nu
  * Get lamp status (using raw miio calls)
  */
 export async function getLampStatus(deviceId: string): Promise<Record<string, any> | null> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return null;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+
   try {
-    // Yeelight uses get_prop with property names
-    // Include active_mode (0=day, 1=moonlight) and nl_br (night light brightness) for ceiling lights
-    const props = await conn.device.call('get_prop', ['power', 'bright', 'ct', 'color_mode', 'rgb', 'active_mode', 'nl_br']);
+    const props = await circuit.execute(async () => {
+      // Yeelight uses get_prop with property names
+      // Include active_mode (0=day, 1=moonlight) and nl_br (night light brightness) for ceiling lights
+      return lamp.device.call('get_prop', ['power', 'bright', 'ct', 'color_mode', 'rgb', 'active_mode', 'nl_br']);
+    });
 
     const status = {
       power: props[0] === 'on',
@@ -120,11 +126,15 @@ export async function getLampStatus(deviceId: string): Promise<Record<string, an
       moonlight_brightness: parseInt(props[6]) || 0,
     };
 
-    conn.lastStatus = status;
+    lamp.lastStatus = status;
     return status;
   } catch (error: any) {
-    console.error(`Failed to get status for ${deviceId}:`, error.message);
-    return conn.lastStatus || null;
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to get status for ${deviceId}:`, error.message);
+    }
+    return lamp.lastStatus || null;
   }
 }
 
@@ -132,18 +142,27 @@ export async function getLampStatus(deviceId: string): Promise<Record<string, an
  * Set lamp power
  */
 export async function setLampPower(deviceId: string, on: boolean): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+
   try {
-    await conn.device.call('set_power', [on ? 'on' : 'off', 'smooth', 500]);
+    await circuit.execute(async () => {
+      return lamp.device.call('set_power', [on ? 'on' : 'off', 'smooth', 500]);
+    });
     console.log(`Set ${deviceId} power: ${on}`);
     return true;
   } catch (error: any) {
-    console.error(`Failed to set power for ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to set power for ${deviceId}:`, error.message);
+    }
     return false;
   }
 }
@@ -152,18 +171,27 @@ export async function setLampPower(deviceId: string, on: boolean): Promise<boole
  * Toggle lamp power
  */
 export async function toggleLamp(deviceId: string): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+
   try {
-    await conn.device.call('toggle', []);
+    await circuit.execute(async () => {
+      return lamp.device.call('toggle', []);
+    });
     console.log(`Toggled ${deviceId}`);
     return true;
   } catch (error: any) {
-    console.error(`Failed to toggle ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to toggle ${deviceId}:`, error.message);
+    }
     return false;
   }
 }
@@ -172,19 +200,28 @@ export async function toggleLamp(deviceId: string): Promise<boolean> {
  * Set lamp brightness (1-100)
  */
 export async function setLampBrightness(deviceId: string, brightness: number): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+  const level = Math.max(1, Math.min(100, brightness));
+
   try {
-    const level = Math.max(1, Math.min(100, brightness));
-    await conn.device.call('set_bright', [level, 'smooth', 500]);
+    await circuit.execute(async () => {
+      return lamp.device.call('set_bright', [level, 'smooth', 500]);
+    });
     console.log(`Set ${deviceId} brightness: ${level}%`);
     return true;
   } catch (error: any) {
-    console.error(`Failed to set brightness for ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to set brightness for ${deviceId}:`, error.message);
+    }
     return false;
   }
 }
@@ -193,18 +230,27 @@ export async function setLampBrightness(deviceId: string, brightness: number): P
  * Set lamp color temperature (1700-6500K typically)
  */
 export async function setLampColorTemp(deviceId: string, kelvin: number): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+
   try {
-    await conn.device.call('set_ct_abx', [kelvin, 'smooth', 500]);
+    await circuit.execute(async () => {
+      return lamp.device.call('set_ct_abx', [kelvin, 'smooth', 500]);
+    });
     console.log(`Set ${deviceId} color temp: ${kelvin}K`);
     return true;
   } catch (error: any) {
-    console.error(`Failed to set color temp for ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to set color temp for ${deviceId}:`, error.message);
+    }
     return false;
   }
 }
@@ -213,21 +259,30 @@ export async function setLampColorTemp(deviceId: string, kelvin: number): Promis
  * Set lamp RGB color
  */
 export async function setLampColor(deviceId: string, r: number, g: number, b: number): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+
   try {
-    if (conn.device.setColor) {
-      await conn.device.setColor({ red: r, green: g, blue: b });
+    if (lamp.device.setColor) {
+      await circuit.execute(async () => {
+        return lamp.device.setColor({ red: r, green: g, blue: b });
+      });
       console.log(`Set ${deviceId} color: rgb(${r},${g},${b})`);
       return true;
     }
     return false;
   } catch (error: any) {
-    console.error(`Failed to set color for ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to set color for ${deviceId}:`, error.message);
+    }
     return false;
   }
 }
@@ -237,26 +292,34 @@ export async function setLampColor(deviceId: string, r: number, g: number, b: nu
  * Mode 5 activates the hardware night light mode which reaches lower brightness
  */
 export async function setLampMoonlight(deviceId: string, brightness?: number): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
-  try {
-    // set_power with mode=5 enables moonlight mode
-    await conn.device.call('set_power', ['on', 'smooth', 500, 5]);
-    console.log(`Set ${deviceId} to moonlight mode`);
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
 
-    // Optionally set moonlight brightness using set_scene
-    if (brightness !== undefined) {
-      const level = Math.max(1, Math.min(100, brightness));
-      await conn.device.call('set_scene', ['nightlight', level]);
-      console.log(`Set ${deviceId} moonlight brightness: ${level}%`);
-    }
+  try {
+    await circuit.execute(async () => {
+      // set_power with mode=5 enables moonlight mode
+      await lamp.device.call('set_power', ['on', 'smooth', 500, 5]);
+
+      // Optionally set moonlight brightness using set_scene
+      if (brightness !== undefined) {
+        const level = Math.max(1, Math.min(100, brightness));
+        await lamp.device.call('set_scene', ['nightlight', level]);
+      }
+    });
+    console.log(`Set ${deviceId} to moonlight mode${brightness !== undefined ? ` (brightness: ${brightness}%)` : ''}`);
     return true;
   } catch (error: any) {
-    console.error(`Failed to set moonlight mode for ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to set moonlight mode for ${deviceId}:`, error.message);
+    }
     return false;
   }
 }
@@ -266,19 +329,28 @@ export async function setLampMoonlight(deviceId: string, brightness?: number): P
  * Mode 1 activates normal daylight mode
  */
 export async function setLampDaylightMode(deviceId: string): Promise<boolean> {
-  let conn = connections.get(deviceId);
+  let conn: LampConnection | null | undefined = connections.get(deviceId);
   if (!conn?.connected) {
     conn = await connectLamp(deviceId);
   }
   if (!conn) return false;
 
+  const circuit = deviceCircuits.xiaomiLamp();
+  const lamp = conn; // Capture for closure
+
   try {
-    // set_power with mode=1 enables normal mode
-    await conn.device.call('set_power', ['on', 'smooth', 500, 1]);
+    await circuit.execute(async () => {
+      // set_power with mode=1 enables normal mode
+      return lamp.device.call('set_power', ['on', 'smooth', 500, 1]);
+    });
     console.log(`Set ${deviceId} to daylight mode`);
     return true;
   } catch (error: any) {
-    console.error(`Failed to set daylight mode for ${deviceId}:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
+    } else {
+      console.error(`Failed to set daylight mode for ${deviceId}:`, error.message);
+    }
     return false;
   }
 }

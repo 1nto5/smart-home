@@ -3,12 +3,12 @@
  * - Retries pending actions for offline lamps every 30 seconds
  * - Refreshes sensor and TRV statuses every 5 minutes (local API)
  * - Fast-polls door sensors every 5 seconds (local API)
- * - Cleans up old history records every 6 months
+ * Note: History cleanup is handled by maintenance.ts scheduler
  */
 
 import { getPendingHeaterActions, removePendingHeaterAction, incrementHeaterRetryCount } from './heater-pending-service';
 import { applyPresetToHeater } from './heater-schedule-service';
-import { getDb, cleanupOldHistory, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
+import { getDb, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
 import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
 import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automation-triggers';
@@ -19,60 +19,9 @@ import { config } from '../config';
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
 let sensorRefreshCounter = 0;
-let cleanupCounter = 0;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = config.tuya.gatewayId;
-
-// Convert cloud API status to DPS format for sensors
-function sensorStatusToDps(status: Array<{ code: string; value: any }>): Record<string, any> {
-  const dps: Record<string, any> = {};
-  for (const item of status) {
-    switch (item.code) {
-      case 'watersensor_state':
-        dps['1'] = item.value === 'normal' ? '2' : '1';
-        break;
-      case 'battery_percentage':
-        dps['4'] = item.value;
-        break;
-      case 'doorcontact_state':
-        dps['101'] = item.value;
-        break;
-      case 'battery_value':
-        dps['103'] = item.value;
-        break;
-    }
-  }
-  return dps;
-}
-
-// Convert cloud API status to DPS format for TRVs
-function trvStatusToDps(status: Array<{ code: string; value: any }>): Record<string, any> {
-  const dps: Record<string, any> = {};
-  for (const item of status) {
-    switch (item.code) {
-      case 'mode':
-        dps['2'] = item.value;
-        break;
-      case 'work_state':
-        dps['3'] = item.value;
-        break;
-      case 'temp_set':
-        dps['4'] = item.value;
-        break;
-      case 'temp_current':
-        dps['5'] = item.value;
-        break;
-      case 'child_lock':
-        dps['6'] = item.value;
-        break;
-      case 'battery_percentage':
-        dps['7'] = item.value;
-        break;
-    }
-  }
-  return dps;
-}
 
 // Refresh weather station (wsdcg) - temperature/humidity via local API
 async function refreshWeatherStationStatuses(): Promise<void> {
@@ -249,16 +198,6 @@ export async function startPoller(): Promise<void> {
       refreshSensorStatuses().catch(e => console.error('Sensor refresh error:', e.message));
       refreshTrvStatuses().catch(e => console.error('TRV refresh error:', e.message));
       pollAqi().catch(e => console.error('AQI poll error:', e.message));
-    }
-
-    // Daily cleanup (every 24 hours = 2880 iterations of 30s)
-    cleanupCounter++;
-    if (cleanupCounter >= 2880) {
-      cleanupCounter = 0;
-      const deleted = cleanupOldHistory(180); // 6 months retention
-      if (deleted > 0) {
-        console.log(`🧹 Cleaned up ${deleted} old history records`);
-      }
     }
 
     // Process pending heater actions (lamps use online-trigger instead)

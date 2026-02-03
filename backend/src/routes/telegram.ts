@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { TelegramConfigSchema, TelegramTestSchema } from '../validation/schemas';
 import { getTelegramConfig, updateTelegramConfig, getTelegramLog } from '../db/database';
 import { sendTestTelegram } from '../notifications/telegram-service';
 
@@ -14,8 +16,8 @@ telegram.get('/config', (c) => {
 });
 
 // Update Telegram config
-telegram.patch('/config', async (c) => {
-  const body = await c.req.json();
+telegram.patch('/config', zValidator('json', TelegramConfigSchema), async (c) => {
+  const body = c.req.valid('json');
   const config = updateTelegramConfig(body);
 
   console.log('Telegram config updated:', {
@@ -34,8 +36,8 @@ telegram.patch('/config', async (c) => {
 });
 
 // Send test message
-telegram.post('/test', async (c) => {
-  const body = await c.req.json().catch(() => ({}));
+telegram.post('/test', zValidator('json', TelegramTestSchema), async (c) => {
+  const body = c.req.valid('json');
   const message = body.message || '🏠 Test message from Smart Home';
 
   const result = await sendTestTelegram(message);

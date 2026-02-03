@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { AirPurifierControlSchema } from '../validation/schemas';
 import {
   getPurifierStatus,
   setPurifierPower,
@@ -19,8 +21,8 @@ purifier.get('/status', async (c) => {
 });
 
 // Control air purifier
-purifier.post('/control', async (c) => {
-  const body = await c.req.json();
+purifier.post('/control', zValidator('json', AirPurifierControlSchema), async (c) => {
+  const body = c.req.valid('json');
   const results: Record<string, boolean> = {};
 
   if (body.power !== undefined) {

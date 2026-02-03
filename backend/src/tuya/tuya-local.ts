@@ -5,6 +5,7 @@ import { evaluateSensorTrigger } from '../automations/automation-triggers';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
 import { discoverTuyaGatewayIp } from './tuya-discover';
 import { config } from '../config';
+import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -316,55 +317,72 @@ export async function getDeviceStatus(deviceId: string): Promise<Record<string, 
     return null;
   }
 
+  const circuit = deviceCircuits.tuyaLocal();
+
   // All devices except gateway (wfcon) are Zigbee subdevices
   const isSubdevice = dbDevice.category !== 'wfcon';
 
   if (isSubdevice) {
     // Get status through gateway
-    let gatewayConn = connections.get(GATEWAY_ID);
+    let gatewayConn: DeviceConnection | null | undefined = connections.get(GATEWAY_ID);
     if (!gatewayConn?.connected) {
       gatewayConn = await connectDevice(GATEWAY_ID);
     }
     if (!gatewayConn) return null;
 
     const cid = getCid(dbDevice);
+    const gw = gatewayConn; // Capture for closure
 
     try {
-      const status = await withTimeout(
-        gatewayConn.device.get({ cid, schema: true }),
-        TUYA_OPERATION_TIMEOUT_MS,
-        `getDeviceStatus(${dbDevice.name})`
-      );
+      const status = await circuit.execute(async () => {
+        return withTimeout(
+          gw.device.get({ cid, schema: true }),
+          TUYA_OPERATION_TIMEOUT_MS,
+          `getDeviceStatus(${dbDevice.name})`
+        ) as Promise<{ dps?: Record<string, any> } | null>;
+      });
       if (status?.dps) {
         saveDeviceHistory(deviceId, status.dps);
       }
       return status;
     } catch (error: any) {
-      console.error(`Failed to get status for ${dbDevice.name}:`, error.message);
+      if (error instanceof CircuitOpenError) {
+        console.warn(`Circuit open for tuya-local: ${error.message}`);
+      } else {
+        console.error(`Failed to get status for ${dbDevice.name}:`, error.message);
+      }
       return null;
     }
   } else {
     // Direct connection
-    let conn = connections.get(deviceId);
+    let conn: DeviceConnection | null | undefined = connections.get(deviceId);
     if (!conn?.connected) {
       conn = await connectDevice(deviceId);
     }
     if (!conn) return null;
 
+    const device = conn; // Capture for closure
+
     try {
-      const status = await withTimeout(
-        conn.device.get({ schema: true }),
-        TUYA_OPERATION_TIMEOUT_MS,
-        `getDeviceStatus(${dbDevice.name})`
-      );
+      const status = await circuit.execute(async () => {
+        return withTimeout(
+          device.device.get({ schema: true }),
+          TUYA_OPERATION_TIMEOUT_MS,
+          `getDeviceStatus(${dbDevice.name})`
+        ) as Promise<{ dps?: Record<string, any> } | null>;
+      });
       if (status?.dps) {
-        conn.lastStatus = status.dps;
+        device.lastStatus = status.dps;
         saveDeviceHistory(deviceId, status.dps);
       }
       return status;
     } catch (error: any) {
-      console.error(`Failed to get status for ${dbDevice.name}:`, error.message);
-      return conn.lastStatus || null;
+      if (error instanceof CircuitOpenError) {
+        console.warn(`Circuit open for tuya-local: ${error.message}`);
+      } else {
+        console.error(`Failed to get status for ${dbDevice.name}:`, error.message);
+      }
+      return device.lastStatus || null;
     }
   }
 }
@@ -383,12 +401,14 @@ export async function sendDeviceCommand(
     return false;
   }
 
+  const circuit = deviceCircuits.tuyaLocal();
+
   // All devices except gateway (wfcon) are Zigbee subdevices
   const isSubdevice = dbDevice.category !== 'wfcon';
 
   if (isSubdevice) {
     // Connect to gateway and send to subdevice
-    let gatewayConn = connections.get(GATEWAY_ID);
+    let gatewayConn: DeviceConnection | null | undefined = connections.get(GATEWAY_ID);
     if (!gatewayConn?.connected) {
       gatewayConn = await connectDevice(GATEWAY_ID);
     }
@@ -398,63 +418,54 @@ export async function sendDeviceCommand(
     }
 
     const cid = getCid(dbDevice);
+    const gw = gatewayConn; // Capture for closure
 
     try {
-      // Send command to subdevice via gateway
-      await withTimeout(
-        gatewayConn.device.set({ dps, set: value, cid }),
-        TUYA_OPERATION_TIMEOUT_MS,
-        `sendDeviceCommand(${dbDevice.name})`
-      );
+      await circuit.execute(async () => {
+        return withTimeout(
+          gw.device.set({ dps, set: value, cid }),
+          TUYA_OPERATION_TIMEOUT_MS,
+          `sendDeviceCommand(${dbDevice.name})`
+        );
+      });
       console.log(`Set ${dbDevice.name} (${cid}) via gateway: dps ${dps} = ${value}`);
       return true;
     } catch (error: any) {
-      console.error(`Failed to send to subdevice ${dbDevice.name}:`, error.message);
+      if (error instanceof CircuitOpenError) {
+        console.warn(`Circuit open for tuya-local: ${error.message}`);
+      } else {
+        console.error(`Failed to send to subdevice ${dbDevice.name}:`, error.message);
+      }
       return false;
     }
   } else {
     // Direct connection for WiFi devices
-    let conn = connections.get(deviceId);
+    let conn: DeviceConnection | null | undefined = connections.get(deviceId);
     if (!conn?.connected) {
       conn = await connectDevice(deviceId);
     }
     if (!conn) return false;
 
+    const device = conn; // Capture for closure
+
     try {
-      await withTimeout(
-        conn.device.set({ dps, set: value }),
-        TUYA_OPERATION_TIMEOUT_MS,
-        `sendDeviceCommand(${dbDevice.name})`
-      );
+      await circuit.execute(async () => {
+        return withTimeout(
+          device.device.set({ dps, set: value }),
+          TUYA_OPERATION_TIMEOUT_MS,
+          `sendDeviceCommand(${dbDevice.name})`
+        );
+      });
       console.log(`Set ${dbDevice.name} dps ${dps} = ${value}`);
       return true;
     } catch (error: any) {
-      console.error(`Failed to send to ${dbDevice.name}:`, error.message);
+      if (error instanceof CircuitOpenError) {
+        console.warn(`Circuit open for tuya-local: ${error.message}`);
+      } else {
+        console.error(`Failed to send to ${dbDevice.name}:`, error.message);
+      }
       return false;
     }
-  }
-}
-
-/**
- * Send multiple commands
- */
-export async function sendDeviceCommands(
-  deviceId: string,
-  commands: Record<string, any>
-): Promise<boolean> {
-  let conn = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectDevice(deviceId);
-  }
-  if (!conn) return false;
-
-  try {
-    await conn.device.set({ multiple: true, data: commands });
-    console.log(`Set ${deviceId} dps:`, commands);
-    return true;
-  } catch (error: any) {
-    console.error(`Failed to send commands to ${deviceId}:`, error.message);
-    return false;
   }
 }
 
