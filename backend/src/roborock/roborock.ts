@@ -7,6 +7,7 @@ import { broadcastRoborockStatus } from '../ws/device-broadcast';
 import { config } from '../config';
 import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 import { getErrorMessage } from '../utils/errors';
+import { fetchWithTimeout, TIMEOUTS } from '../utils/fetch-timeout';
 
 // In Docker, use service name; locally use localhost
 const BRIDGE_URL = config.roborock.bridgeUrl;
@@ -55,7 +56,7 @@ export async function getStatus(): Promise<RoborockStatus | null> {
 
   try {
     return await circuit.execute(async () => {
-      const res = await fetch(`${BRIDGE_URL}/status`);
+      const res = await fetchWithTimeout(`${BRIDGE_URL}/status`, {}, TIMEOUTS.ROBOROCK);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const status = await res.json() as RoborockStatus;
       broadcastRoborockStatus(status);
@@ -79,11 +80,11 @@ async function sendCommand(cmd: string): Promise<boolean> {
 
   try {
     await circuit.execute(async () => {
-      const res = await fetch(`${BRIDGE_URL}/command`, {
+      const res = await fetchWithTimeout(`${BRIDGE_URL}/command`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cmd }),
-      });
+      }, TIMEOUTS.ROBOROCK);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
     });
     console.log(`Roborock: ${cmd}`);
@@ -138,7 +139,7 @@ export async function findMe(): Promise<boolean> {
  */
 export async function getCleanSummary(): Promise<CleanSummary | null> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/clean-summary`);
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/clean-summary`, {}, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as CleanSummary;
   } catch (error: unknown) {
@@ -152,7 +153,7 @@ export async function getCleanSummary(): Promise<CleanSummary | null> {
  */
 export async function getRooms(): Promise<RoomsResponse | null> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/rooms`);
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/rooms`, {}, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as RoomsResponse;
   } catch (error: unknown) {
@@ -166,7 +167,7 @@ export async function getRooms(): Promise<RoomsResponse | null> {
  */
 export async function getVolume(): Promise<{ volume: number } | null> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/volume`);
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/volume`, {}, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as { volume: number };
   } catch (error: unknown) {
