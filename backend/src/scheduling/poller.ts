@@ -6,9 +6,6 @@
  * - Cleans up old history records every 6 months
  */
 
-import { getPendingActions, removePendingAction, incrementRetryCount } from './pending-service';
-import { applyPresetToLamp } from './schedule-service';
-import type { PresetName } from './presets';
 import { getPendingHeaterActions, removePendingHeaterAction, incrementHeaterRetryCount } from './heater-pending-service';
 import { applyPresetToHeater } from './heater-schedule-service';
 import { getDb, cleanupOldHistory, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
@@ -263,30 +260,7 @@ export async function startPoller(): Promise<void> {
       }
     }
 
-
-    // Process pending lamp actions
-    const pendingLamps = getPendingActions();
-    if (pendingLamps.length > 0) {
-      console.log(`Poller: checking ${pendingLamps.length} pending lamp actions`);
-
-      for (const action of pendingLamps) {
-        try {
-          const success = await applyPresetToLamp(action.device_id, action.preset as PresetName);
-
-          if (success) {
-            removePendingAction(action.id);
-            console.log(`Applied pending ${action.preset} to lamp ${action.device_id}`);
-          } else {
-            incrementRetryCount(action.id);
-          }
-        } catch (error: any) {
-          console.error(`Poller error for lamp ${action.device_id}:`, error.message);
-          incrementRetryCount(action.id);
-        }
-      }
-    }
-
-    // Process pending heater actions
+    // Process pending heater actions (lamps use online-trigger instead)
     const pendingHeaters = getPendingHeaterActions();
     if (pendingHeaters.length > 0) {
       console.log(`Poller: checking ${pendingHeaters.length} pending heater actions`);

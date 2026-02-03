@@ -5,7 +5,6 @@
 
 import { getDb, setLampPreset } from '../db/database';
 import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
-import { createPendingAction } from './pending-service';
 import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
 
 export interface Schedule {
@@ -214,8 +213,7 @@ export async function applyPresetToAllLamps(
     if (success) {
       result.success.push(lampId);
     } else {
-      // Lamp offline - create pending action
-      createPendingAction(lampId, presetName, scheduleId);
+      // Lamp offline - online-trigger will apply correct preset when it comes back
       result.pending.push(lampId);
     }
   }
