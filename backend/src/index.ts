@@ -166,4 +166,6 @@ export default {
   port,
   fetch: app.fetch,
   websocket,
+  // Heater preset operations can take 30+ seconds with retries
+  idleTimeout: 60,
 };
