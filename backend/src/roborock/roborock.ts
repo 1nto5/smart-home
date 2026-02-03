@@ -4,9 +4,10 @@
  */
 
 import { broadcastRoborockStatus } from '../ws/device-broadcast';
+import { config } from '../config';
 
 // In Docker, use service name; locally use localhost
-const BRIDGE_URL = process.env.ROBOROCK_BRIDGE_URL || 'http://roborock:3002';
+const BRIDGE_URL = config.roborock.bridgeUrl;
 
 export interface RoborockStatus {
   state: string;

@@ -4,6 +4,7 @@ import { triggerAlarm } from '../notifications/alarm-service';
 import { evaluateSensorTrigger } from '../automations/automation-triggers';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
 import { discoverTuyaGatewayIp } from './tuya-discover';
+import { config } from '../config';
 
 interface DeviceConnection {
   device: TuyAPI;
@@ -15,7 +16,7 @@ interface DeviceConnection {
 const connections = new Map<string, DeviceConnection>();
 
 // Gateway info (all Zigbee devices go through this)
-const GATEWAY_ID = 'bf889f95067d327853rwzw';
+const GATEWAY_ID = config.tuya.gatewayId;
 
 // Reconnect state
 let reconnectTimeout: Timer | null = null;

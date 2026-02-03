@@ -14,6 +14,7 @@ import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
 import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automation-triggers';
 import { getPurifierStatus } from '../xiaomi/air-purifier';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
+import { config } from '../config';
 
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
@@ -21,7 +22,7 @@ let sensorRefreshCounter = 0;
 let cleanupCounter = 0;
 
 // Gateway ID for local Zigbee device access
-const GATEWAY_ID = 'bf889f95067d327853rwzw';
+const GATEWAY_ID = config.tuya.gatewayId;
 
 // Convert cloud API status to DPS format for sensors
 function sensorStatusToDps(status: Array<{ code: string; value: any }>): Record<string, any> {
