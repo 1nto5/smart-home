@@ -11,7 +11,7 @@ sensors.get('/history', (c) => {
   const deviceId = c.req.query('device_id');
   const from = c.req.query('from');
   const to = c.req.query('to');
-  const limit = parseInt(c.req.query('limit') || '100');
+  const limit = Math.min(parseInt(c.req.query('limit') || '100'), 1000);
 
   let query = 'SELECT * FROM sensor_history WHERE 1=1';
   const params: unknown[] = [];
@@ -103,7 +103,7 @@ sensors.get('/contacts/history', (c) => {
   const deviceId = c.req.query('device_id');
   const from = c.req.query('from');
   const to = c.req.query('to');
-  const limit = parseInt(c.req.query('limit') || '100');
+  const limit = Math.min(parseInt(c.req.query('limit') || '100'), 1000);
 
   let query = 'SELECT * FROM contact_history WHERE 1=1';
   const params: unknown[] = [];

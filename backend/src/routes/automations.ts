@@ -21,7 +21,7 @@ automations.get('/', (c) => {
 
 // Get automation log
 automations.get('/log', (c) => {
-  const limit = parseInt(c.req.query('limit') || '50');
+  const limit = Math.min(parseInt(c.req.query('limit') || '50'), 1000);
   const log = getAutomationLog(limit);
   return c.json(log);
 });

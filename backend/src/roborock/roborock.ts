@@ -6,6 +6,7 @@
 import { broadcastRoborockStatus } from '../ws/device-broadcast';
 import { config } from '../config';
 import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
+import { getErrorMessage } from '../utils/errors';
 
 // In Docker, use service name; locally use localhost
 const BRIDGE_URL = config.roborock.bridgeUrl;
@@ -60,11 +61,11 @@ export async function getStatus(): Promise<RoborockStatus | null> {
       broadcastRoborockStatus(status);
       return status;
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
       console.warn(`Circuit open for roborock: ${error.message}`);
     } else {
-      console.error('Roborock status error:', error.message);
+      console.error('Roborock status error:', getErrorMessage(error));
     }
     return null;
   }
@@ -87,11 +88,11 @@ async function sendCommand(cmd: string): Promise<boolean> {
     });
     console.log(`Roborock: ${cmd}`);
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
       console.warn(`Circuit open for roborock: ${error.message}`);
     } else {
-      console.error(`Roborock command ${cmd} error:`, error.message);
+      console.error(`Roborock command ${cmd} error:`, getErrorMessage(error));
     }
     return false;
   }
@@ -140,8 +141,8 @@ export async function getCleanSummary(): Promise<CleanSummary | null> {
     const res = await fetch(`${BRIDGE_URL}/clean-summary`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as CleanSummary;
-  } catch (error: any) {
-    console.error('Roborock clean-summary error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock clean-summary error:', getErrorMessage(error));
     return null;
   }
 }
@@ -154,8 +155,8 @@ export async function getRooms(): Promise<RoomsResponse | null> {
     const res = await fetch(`${BRIDGE_URL}/rooms`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as RoomsResponse;
-  } catch (error: any) {
-    console.error('Roborock rooms error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock rooms error:', getErrorMessage(error));
     return null;
   }
 }
@@ -168,8 +169,8 @@ export async function getVolume(): Promise<{ volume: number } | null> {
     const res = await fetch(`${BRIDGE_URL}/volume`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as { volume: number };
-  } catch (error: any) {
-    console.error('Roborock volume error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock volume error:', getErrorMessage(error));
     return null;
   }
 }
@@ -186,8 +187,8 @@ export async function setVolume(volume: number): Promise<boolean> {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
-  } catch (error: any) {
-    console.error('Roborock set-volume error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock set-volume error:', getErrorMessage(error));
     return false;
   }
 }
@@ -204,8 +205,8 @@ export async function setFanSpeed(mode: number): Promise<boolean> {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
-  } catch (error: any) {
-    console.error('Roborock set-fan-speed error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock set-fan-speed error:', getErrorMessage(error));
     return false;
   }
 }
@@ -222,8 +223,8 @@ export async function setMopMode(mode: number): Promise<boolean> {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
-  } catch (error: any) {
-    console.error('Roborock set-mop-mode error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock set-mop-mode error:', getErrorMessage(error));
     return false;
   }
 }
@@ -240,8 +241,8 @@ export async function cleanSegments(segments: number[]): Promise<boolean> {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
-  } catch (error: any) {
-    console.error('Roborock clean-segments error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock clean-segments error:', getErrorMessage(error));
     return false;
   }
 }
@@ -254,8 +255,8 @@ export async function getConsumables(): Promise<Consumables | null> {
     const res = await fetch(`${BRIDGE_URL}/consumables`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as Consumables;
-  } catch (error: any) {
-    console.error('Roborock consumables error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock consumables error:', getErrorMessage(error));
     return null;
   }
 }
@@ -272,8 +273,8 @@ export async function resetConsumable(consumable: string): Promise<boolean> {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
-  } catch (error: any) {
-    console.error('Roborock reset-consumable error:', error.message);
+  } catch (error: unknown) {
+    console.error('Roborock reset-consumable error:', getErrorMessage(error));
     return false;
   }
 }

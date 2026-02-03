@@ -1,140 +1,162 @@
 /**
- * Xiaomi Mi Smart LED Lamp control
- * Uses miio protocol for local WiFi control
+ * Yeelight LAN control (no token required)
+ * Uses TCP port 55443 with JSON commands
+ * Requires "LAN Control" enabled in Yeelight app
  */
 
-import miio from 'miio';
+import net from 'net';
 import { getDb } from '../db/database';
-import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 
-interface LampConnection {
-  device: any;
-  connected: boolean;
-  lastStatus: Record<string, any>;
+const YEELIGHT_PORT = 55443;
+const COMMAND_TIMEOUT = 5000;
+
+interface YeelightDevice {
+  id: string;
+  name: string;
+  ip: string;
+  model: string;
+  category: string;
 }
 
-// Store active connections
-const connections = new Map<string, LampConnection>();
-// Track failed connection attempts to reduce retry spam
+// Track last status for each device
+const lastStatuses = new Map<string, Record<string, any>>();
+// Track failed attempts for cooldown
 const failedAttempts = new Map<string, number>();
-const RETRY_COOLDOWN = 60_000; // Wait 60s before retrying failed connection
+const RETRY_COOLDOWN = 30_000;
+
+/**
+ * Get device from database
+ */
+function getDevice(deviceId: string): YeelightDevice | null {
+  const db = getDb();
+  return db.query('SELECT id, name, ip, model, category FROM xiaomi_devices WHERE id = ?').get(deviceId) as YeelightDevice | null;
+}
+
+/**
+ * Send command to Yeelight lamp via TCP
+ */
+async function sendCommand(ip: string, method: string, params: any[] = []): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const socket = new net.Socket();
+    socket.setTimeout(COMMAND_TIMEOUT);
+
+    const cmd = JSON.stringify({
+      id: Date.now(),
+      method,
+      params,
+    }) + '\r\n';
+
+    let responseData = '';
+
+    socket.connect(YEELIGHT_PORT, ip, () => {
+      socket.write(cmd);
+    });
+
+    socket.on('data', (data) => {
+      responseData += data.toString();
+      // Yeelight sends responses line by line
+      if (responseData.includes('\r\n')) {
+        const lines = responseData.split('\r\n').filter(l => l.trim());
+        for (const line of lines) {
+          try {
+            const json = JSON.parse(line);
+            // Check for result (success) or error
+            if (json.result !== undefined || json.error !== undefined) {
+              socket.destroy();
+              if (json.error) {
+                reject(new Error(json.error.message || 'Command failed'));
+              } else {
+                resolve(json.result);
+              }
+              return;
+            }
+            // Props notification (from toggle, etc)
+            if (json.method === 'props') {
+              socket.destroy();
+              resolve(json.params);
+              return;
+            }
+          } catch {
+            // Not valid JSON, continue reading
+          }
+        }
+      }
+    });
+
+    socket.on('timeout', () => {
+      socket.destroy();
+      reject(new Error('Connection timeout'));
+    });
+
+    socket.on('error', (err) => {
+      socket.destroy();
+      reject(err);
+    });
+
+    socket.on('close', () => {
+      // If we haven't resolved yet, reject
+      if (responseData === '') {
+        reject(new Error('Connection closed without response'));
+      }
+    });
+  });
+}
 
 /**
  * Invalidate connection for device (call after IP change)
  */
 export function invalidateConnection(deviceId: string): void {
-  const conn = connections.get(deviceId);
-  if (conn) {
-    try { conn.device.destroy(); } catch {}
-    connections.delete(deviceId);
-  }
+  lastStatuses.delete(deviceId);
   failedAttempts.delete(deviceId);
 }
 
-interface XiaomiDevice {
-  id: string;
-  name: string;
-  ip: string;
-  token: string;
-  model: string;
-  category: string;
-}
-
 /**
- * Get Xiaomi device from database
+ * Check if device is in cooldown
  */
-function getDevice(deviceId: string): XiaomiDevice | null {
-  const db = getDb();
-  return db.query('SELECT * FROM xiaomi_devices WHERE id = ?').get(deviceId) as XiaomiDevice | null;
-}
-
-/**
- * Connect to Xiaomi lamp
- */
-export async function connectLamp(deviceId: string): Promise<LampConnection | null> {
-  // Check existing connection
-  const existing = connections.get(deviceId);
-  if (existing?.connected) {
-    return existing;
-  }
-
-  // Check if we recently failed to connect (cooldown)
+function isInCooldown(deviceId: string): boolean {
   const lastFail = failedAttempts.get(deviceId);
   if (lastFail && Date.now() - lastFail < RETRY_COOLDOWN) {
-    return null; // Skip retry, still in cooldown
+    return true;
   }
-
-  const dbDevice = getDevice(deviceId);
-  if (!dbDevice || !dbDevice.token || !dbDevice.ip) {
-    console.error(`Device ${deviceId} not found or missing token/ip`);
-    return null;
-  }
-
-  try {
-    const device = await miio.device({
-      address: dbDevice.ip,
-      token: dbDevice.token,
-    });
-
-    const connection: LampConnection = {
-      device,
-      connected: true,
-      lastStatus: {},
-    };
-
-    connections.set(deviceId, connection);
-    failedAttempts.delete(deviceId); // Clear cooldown on success
-    console.log(`Connected to ${dbDevice.name} (${deviceId})`);
-
-    return connection;
-  } catch (error: any) {
-    failedAttempts.set(deviceId, Date.now()); // Set cooldown
-    console.error(`Failed to connect to ${deviceId}:`, error.message);
-    // Note: IP discovery is handled by daily scheduled task in poller.ts
-    // We don't auto-discover here since lamps are often intentionally powered off
-    return null;
-  }
+  return false;
 }
 
 /**
- * Get lamp status (using raw miio calls)
+ * Get lamp status
  */
 export async function getLampStatus(deviceId: string): Promise<Record<string, any> | null> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
+  if (isInCooldown(deviceId)) {
+    return lastStatuses.get(deviceId) || null;
   }
-  if (!conn) return null;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) {
+    console.error(`Device ${deviceId} not found or missing IP`);
+    return null;
+  }
 
   try {
-    const props = await circuit.execute(async () => {
-      // Yeelight uses get_prop with property names
-      // Include active_mode (0=day, 1=moonlight) and nl_br (night light brightness) for ceiling lights
-      return lamp.device.call('get_prop', ['power', 'bright', 'ct', 'color_mode', 'rgb', 'active_mode', 'nl_br']);
-    });
+    const props = await sendCommand(device.ip, 'get_prop', [
+      'power', 'bright', 'ct', 'color_mode', 'rgb', 'active_mode', 'nl_br'
+    ]);
 
     const status = {
       power: props[0] === 'on',
       brightness: parseInt(props[1]) || 0,
       color_temp: parseInt(props[2]) || 0,
-      color_mode: parseInt(props[3]) || 0, // 1=rgb, 2=ct, 3=hsv
+      color_mode: parseInt(props[3]) || 0,
       rgb: parseInt(props[4]) || 0,
       moonlight_mode: props[5] === '1' || props[5] === 1,
       moonlight_brightness: parseInt(props[6]) || 0,
     };
 
-    lamp.lastStatus = status;
+    lastStatuses.set(deviceId, status);
+    failedAttempts.delete(deviceId);
     return status;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to get status for ${deviceId}:`, error.message);
-    }
-    return lamp.lastStatus || null;
+    console.error(`Failed to get status for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
+    return lastStatuses.get(deviceId) || null;
   }
 }
 
@@ -142,27 +164,19 @@ export async function getLampStatus(deviceId: string): Promise<Record<string, an
  * Set lamp power
  */
 export async function setLampPower(deviceId: string, on: boolean): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
 
   try {
-    await circuit.execute(async () => {
-      return lamp.device.call('set_power', [on ? 'on' : 'off', 'smooth', 500]);
-    });
-    console.log(`Set ${deviceId} power: ${on}`);
+    await sendCommand(device.ip, 'set_power', [on ? 'on' : 'off', 'smooth', 500]);
+    console.log(`Set ${device.name} power: ${on}`);
+    failedAttempts.delete(deviceId);
     return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to set power for ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to set power for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
@@ -171,27 +185,19 @@ export async function setLampPower(deviceId: string, on: boolean): Promise<boole
  * Toggle lamp power
  */
 export async function toggleLamp(deviceId: string): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
 
   try {
-    await circuit.execute(async () => {
-      return lamp.device.call('toggle', []);
-    });
-    console.log(`Toggled ${deviceId}`);
+    await sendCommand(device.ip, 'toggle', []);
+    console.log(`Toggled ${device.name}`);
+    failedAttempts.delete(deviceId);
     return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to toggle ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to toggle ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
@@ -200,57 +206,42 @@ export async function toggleLamp(deviceId: string): Promise<boolean> {
  * Set lamp brightness (1-100)
  */
 export async function setLampBrightness(deviceId: string, brightness: number): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
+
   const level = Math.max(1, Math.min(100, brightness));
 
   try {
-    await circuit.execute(async () => {
-      return lamp.device.call('set_bright', [level, 'smooth', 500]);
-    });
-    console.log(`Set ${deviceId} brightness: ${level}%`);
+    await sendCommand(device.ip, 'set_bright', [level, 'smooth', 500]);
+    console.log(`Set ${device.name} brightness: ${level}%`);
+    failedAttempts.delete(deviceId);
     return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to set brightness for ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to set brightness for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
 
 /**
- * Set lamp color temperature (1700-6500K typically)
+ * Set lamp color temperature (1700-6500K)
  */
 export async function setLampColorTemp(deviceId: string, kelvin: number): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
 
   try {
-    await circuit.execute(async () => {
-      return lamp.device.call('set_ct_abx', [kelvin, 'smooth', 500]);
-    });
-    console.log(`Set ${deviceId} color temp: ${kelvin}K`);
+    await sendCommand(device.ip, 'set_ct_abx', [kelvin, 'smooth', 500]);
+    console.log(`Set ${device.name} color temp: ${kelvin}K`);
+    failedAttempts.delete(deviceId);
     return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to set color temp for ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to set color temp for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
@@ -259,119 +250,90 @@ export async function setLampColorTemp(deviceId: string, kelvin: number): Promis
  * Set lamp RGB color
  */
 export async function setLampColor(deviceId: string, r: number, g: number, b: number): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
+
+  const rgb = (r << 16) | (g << 8) | b;
 
   try {
-    if (lamp.device.setColor) {
-      await circuit.execute(async () => {
-        return lamp.device.setColor({ red: r, green: g, blue: b });
-      });
-      console.log(`Set ${deviceId} color: rgb(${r},${g},${b})`);
-      return true;
-    }
-    return false;
+    await sendCommand(device.ip, 'set_rgb', [rgb, 'smooth', 500]);
+    console.log(`Set ${device.name} color: rgb(${r},${g},${b})`);
+    failedAttempts.delete(deviceId);
+    return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to set color for ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to set color for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
 
 /**
- * Enable moonlight (night light) mode - ceiling lights only
- * Mode 5 activates the hardware night light mode which reaches lower brightness
+ * Enable moonlight mode (ceiling lights)
  */
 export async function setLampMoonlight(deviceId: string, brightness?: number): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
 
   try {
-    await circuit.execute(async () => {
-      // set_power with mode=5 enables moonlight mode
-      await lamp.device.call('set_power', ['on', 'smooth', 500, 5]);
+    // Mode 5 = moonlight/night mode
+    await sendCommand(device.ip, 'set_power', ['on', 'smooth', 500, 5]);
 
-      // Optionally set moonlight brightness using set_scene
-      if (brightness !== undefined) {
-        const level = Math.max(1, Math.min(100, brightness));
-        await lamp.device.call('set_scene', ['nightlight', level]);
-      }
-    });
-    console.log(`Set ${deviceId} to moonlight mode${brightness !== undefined ? ` (brightness: ${brightness}%)` : ''}`);
+    if (brightness !== undefined) {
+      const level = Math.max(1, Math.min(100, brightness));
+      await sendCommand(device.ip, 'set_scene', ['nightlight', level]);
+    }
+
+    console.log(`Set ${device.name} to moonlight mode${brightness !== undefined ? ` (${brightness}%)` : ''}`);
+    failedAttempts.delete(deviceId);
     return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to set moonlight mode for ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to set moonlight for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
 
 /**
- * Enable normal daylight mode - ceiling lights only
- * Mode 1 activates normal daylight mode
+ * Enable daylight mode (ceiling lights)
  */
 export async function setLampDaylightMode(deviceId: string): Promise<boolean> {
-  let conn: LampConnection | null | undefined = connections.get(deviceId);
-  if (!conn?.connected) {
-    conn = await connectLamp(deviceId);
-  }
-  if (!conn) return false;
+  if (isInCooldown(deviceId)) return false;
 
-  const circuit = deviceCircuits.xiaomiLamp();
-  const lamp = conn; // Capture for closure
+  const device = getDevice(deviceId);
+  if (!device?.ip) return false;
 
   try {
-    await circuit.execute(async () => {
-      // set_power with mode=1 enables normal mode
-      return lamp.device.call('set_power', ['on', 'smooth', 500, 1]);
-    });
-    console.log(`Set ${deviceId} to daylight mode`);
+    // Mode 1 = daylight/normal mode
+    await sendCommand(device.ip, 'set_power', ['on', 'smooth', 500, 1]);
+    console.log(`Set ${device.name} to daylight mode`);
+    failedAttempts.delete(deviceId);
     return true;
   } catch (error: any) {
-    if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for xiaomi-lamp: ${error.message}`);
-    } else {
-      console.error(`Failed to set daylight mode for ${deviceId}:`, error.message);
-    }
+    console.error(`Failed to set daylight for ${device.name}:`, error.message);
+    failedAttempts.set(deviceId, Date.now());
     return false;
   }
 }
 
 /**
- * Disconnect lamp
+ * Disconnect lamp (no-op for stateless TCP)
  */
-export function disconnectLamp(deviceId: string): void {
-  const conn = connections.get(deviceId);
-  if (conn) {
-    conn.device.destroy();
-    connections.delete(deviceId);
-    console.log(`Disconnected from ${deviceId}`);
-  }
+export function disconnectLamp(_deviceId: string): void {
+  // Yeelight LAN is stateless, no persistent connection
 }
 
 /**
- * Disconnect all lamps
+ * Disconnect all lamps (no-op for stateless TCP)
  */
 export function disconnectAllLamps(): void {
-  for (const [id] of connections) {
-    disconnectLamp(id);
-  }
+  // Yeelight LAN is stateless, no persistent connections
+}
+
+// Legacy compatibility - not used with Yeelight LAN
+export async function connectLamp(_deviceId: string): Promise<null> {
+  return null;
 }
