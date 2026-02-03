@@ -1,15 +1,23 @@
 import type { Lamp, LampStatus, RoborockStatus, Preset, LampPreset, Schedule, PendingAction, ApplyResult, TuyaDevice, YamahaDevice, YamahaStatus, AirPurifierStatus, HeaterPreset, HeaterPresetDevice, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData, Automation, AutomationLog } from './types';
+import { AUTH_TOKEN } from './config';
 
 // Use relative URL so it works through nginx proxy
 const API_BASE = '/api';
 
 async function fetcher<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options?.headers,
+  };
+
+  // Add auth header if token is configured
+  if (AUTH_TOKEN) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${AUTH_TOKEN}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers,
   });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);

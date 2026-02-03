@@ -1,5 +1,6 @@
 import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride, getHomeStatus } from './api';
 import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData } from './types';
+import { AUTH_TOKEN } from './config';
 
 // WebSocket connection state
 let ws: WebSocket | null = null;
@@ -29,7 +30,8 @@ function createStore() {
     if (ws?.readyState === WebSocket.OPEN) return;
 
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${protocol}//${location.host}/ws`);
+    const tokenParam = AUTH_TOKEN ? `?token=${encodeURIComponent(AUTH_TOKEN)}` : '';
+    ws = new WebSocket(`${protocol}//${location.host}/ws${tokenParam}`);
 
     ws.onopen = () => {
       console.log('WebSocket connected');

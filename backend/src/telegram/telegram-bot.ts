@@ -4,6 +4,7 @@ import {
   setUpdateOffset,
 } from '../db/database';
 import { handleCommand, handleCallbackQuery } from './telegram-handlers';
+import { getErrorMessage } from '../utils/errors';
 
 interface TelegramUpdate {
   update_id: number;
@@ -44,8 +45,8 @@ async function getUpdates(botToken: string, offset: number): Promise<TelegramUpd
       return data.result;
     }
     return [];
-  } catch (error: any) {
-    console.error('Telegram getUpdates error:', error.message);
+  } catch (error: unknown) {
+    console.error('Telegram getUpdates error:', getErrorMessage(error));
     return [];
   }
 }
@@ -111,8 +112,8 @@ async function pollUpdates(): Promise<void> {
 
     // Mark successful poll for watchdog
     lastPollTime = Date.now();
-  } catch (error: any) {
-    console.error('Poll updates error:', error.message);
+  } catch (error: unknown) {
+    console.error('Poll updates error:', getErrorMessage(error));
   } finally {
     isPolling = false;
   }
@@ -218,8 +219,8 @@ export async function sendMessage(
 
     const data = await response.json() as { ok: boolean };
     return data.ok;
-  } catch (error: any) {
-    console.error('sendMessage error:', error.message);
+  } catch (error: unknown) {
+    console.error('sendMessage error:', getErrorMessage(error));
     return false;
   }
 }
@@ -257,8 +258,8 @@ export async function editMessage(
 
     const data = await response.json() as { ok: boolean };
     return data.ok;
-  } catch (error: any) {
-    console.error('editMessage error:', error.message);
+  } catch (error: unknown) {
+    console.error('editMessage error:', getErrorMessage(error));
     return false;
   }
 }
@@ -286,8 +287,8 @@ export async function answerCallbackQuery(
 
     const data = await response.json() as { ok: boolean };
     return data.ok;
-  } catch (error: any) {
-    console.error('answerCallbackQuery error:', error.message);
+  } catch (error: unknown) {
+    console.error('answerCallbackQuery error:', getErrorMessage(error));
     return false;
   }
 }

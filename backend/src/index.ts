@@ -18,6 +18,7 @@ import { serveStatic, createBunWebSocket } from 'hono/bun';
 import { addClient, removeClient } from './ws/broadcast';
 import { config } from './config';
 import { errorHandler } from './middleware/error-handler';
+import { authMiddleware } from './middleware/auth';
 import { initDatabase, closeDatabase } from './db/database';
 import { startTelegramBot, stopTelegramBot } from './telegram/telegram-bot';
 import { startAlarmNotificationLoop, stopAlarmNotificationLoop } from './notifications/alarm-service';
@@ -91,12 +92,17 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 // === ROUTE MOUNTING ===
 
-// Health check (quick, not behind /api)
+// Health check (quick, not behind auth)
 app.get('/api/health', async (c) => {
   const health = await getHealthStatus();
   const statusCode = health.status === 'unhealthy' ? 503 : 200;
   return c.json(health, statusCode);
 });
+
+// Apply auth middleware to all /api/* routes (except health which is already defined above)
+if (config.auth.token) {
+  app.use('/api/*', authMiddleware);
+}
 
 // Mount route modules
 app.route('/api/devices', devicesRoutes);
@@ -125,14 +131,29 @@ app.get('/api/heater-override', (c) => c.redirect('/api/heater/override'));
 // WebSocket for real-time status updates
 const { upgradeWebSocket, websocket } = createBunWebSocket();
 
-app.get('/ws', upgradeWebSocket(() => ({
-  onOpen(_event, ws) {
-    addClient(ws.raw as WebSocket);
-  },
-  onClose(_event, ws) {
-    removeClient(ws.raw as WebSocket);
-  },
-})));
+app.get('/ws', upgradeWebSocket((c) => {
+  // Verify token from query param if auth is enabled
+  if (config.auth.token) {
+    const token = c.req.query('token');
+    if (token !== config.auth.token) {
+      // Return empty handlers - connection will be rejected
+      return {
+        onOpen(_event, ws) {
+          ws.close(1008, 'Unauthorized');
+        },
+      };
+    }
+  }
+
+  return {
+    onOpen(_event, ws) {
+      addClient(ws.raw as WebSocket);
+    },
+    onClose(_event, ws) {
+      removeClient(ws.raw as WebSocket);
+    },
+  };
+}));
 
 // Serve static files (frontend) in production
 app.use('/*', serveStatic({ root: '../frontend/dist' }));

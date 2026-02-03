@@ -5,6 +5,7 @@ import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from '.
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus } from '../tuya/tuya-local';
 import { translateName } from '../utils/translations';
 import { DeviceUpdateSchema, DeviceControlSchema } from '../validation/schemas';
+import { getErrorMessage } from '../utils/errors';
 
 const devices = new Hono();
 
@@ -15,7 +16,8 @@ devices.get('/', async (c) => {
 
   if (refresh) {
     const trvs = db.query("SELECT id, name FROM devices WHERE category = 'wkf'").all() as { id: string; name: string }[];
-    for (const trv of trvs) {
+    // Fetch all TRV statuses in parallel to avoid N+1 query pattern
+    await Promise.all(trvs.map(async (trv) => {
       try {
         const status = await getLocalStatus(trv.id);
         if (status && status.dps) {
@@ -25,10 +27,9 @@ devices.get('/', async (c) => {
           );
         }
       } catch (e: unknown) {
-        const err = e as Error;
-        console.error(`TRV refresh failed for ${trv.name}:`, err.message);
+        console.error(`TRV refresh failed for ${trv.name}:`, getErrorMessage(e));
       }
-    }
+    }));
   }
 
   const deviceList = db.query('SELECT * FROM devices ORDER BY room, name').all() as Record<string, unknown>[];
@@ -169,7 +170,7 @@ devices.get('/:id/info', async (c) => {
 devices.get('/:id/history', (c) => {
   const db = getDb();
   const id = c.req.param('id');
-  const limit = parseInt(c.req.query('limit') || '100');
+  const limit = Math.min(parseInt(c.req.query('limit') || '100'), 1000);
 
   const history = db.query(`
     SELECT * FROM device_history
