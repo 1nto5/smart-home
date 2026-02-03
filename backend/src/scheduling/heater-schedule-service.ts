@@ -148,28 +148,49 @@ function getAllTrvIds(): string[] {
 /**
  * Apply a specific temperature to a single TRV
  * Returns: 'success' | 'offline' | 'failed'
+ *
+ * Includes retry logic to handle cold-start scenarios where the gateway
+ * connection may not be established yet on first attempts.
  */
 export async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<HeaterApplyResult> {
-  try {
-    const status = await getDeviceStatus(deviceId);
-    if (!status) {
-      return 'offline'; // TRV is offline
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY_MS = 2000;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const status = await getDeviceStatus(deviceId);
+      if (!status) {
+        if (attempt < MAX_RETRIES) {
+          await Bun.sleep(RETRY_DELAY_MS);
+          continue;
+        }
+        return 'offline'; // TRV is offline after all retries
+      }
+
+      const tempValue = Math.round(targetTemp * TRV_DPS.TEMP_SCALE);
+      const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
+
+      if (success) {
+        console.log(`Set ${deviceId} to ${targetTemp}°C`);
+        broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
+        return 'success';
+      }
+
+      if (attempt < MAX_RETRIES) {
+        await Bun.sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      return 'failed'; // command failed after all retries
+    } catch (error: any) {
+      if (attempt < MAX_RETRIES) {
+        await Bun.sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, error.message);
+      return 'failed';
     }
-
-    const tempValue = Math.round(targetTemp * TRV_DPS.TEMP_SCALE);
-    const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
-
-    if (success) {
-      console.log(`Set ${deviceId} to ${targetTemp}°C`);
-      broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
-      return 'success';
-    }
-
-    return 'failed'; // command failed (timeout/error)
-  } catch (error: any) {
-    console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, error.message);
-    return 'failed';
   }
+  return 'failed';
 }
 
 /**
