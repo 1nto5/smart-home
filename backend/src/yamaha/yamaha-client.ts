@@ -4,6 +4,7 @@
  */
 
 import type { YamahaDeviceInfo, YamahaMainStatus } from './yamaha-types';
+import { getErrorMessage } from '../utils/errors';
 
 const YXC_BASE = '/YamahaExtendedControl/v1';
 
@@ -37,8 +38,8 @@ export class YamahaClient {
       }
 
       return data as T;
-    } catch (error: any) {
-      console.error(`YXC request error (${path}):`, error.message);
+    } catch (error: unknown) {
+      console.error(`YXC request error (${path}):`, getErrorMessage(error));
       return null;
     }
   }

@@ -181,11 +181,11 @@ export async function getVolume(): Promise<{ volume: number } | null> {
  */
 export async function setVolume(volume: number): Promise<boolean> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/set-volume`, {
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/set-volume`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ volume }),
-    });
+    }, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
@@ -199,11 +199,11 @@ export async function setVolume(volume: number): Promise<boolean> {
  */
 export async function setFanSpeed(mode: number): Promise<boolean> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/set-fan-speed`, {
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/set-fan-speed`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode }),
-    });
+    }, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
@@ -217,11 +217,11 @@ export async function setFanSpeed(mode: number): Promise<boolean> {
  */
 export async function setMopMode(mode: number): Promise<boolean> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/set-mop-mode`, {
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/set-mop-mode`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode }),
-    });
+    }, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
@@ -235,11 +235,11 @@ export async function setMopMode(mode: number): Promise<boolean> {
  */
 export async function cleanSegments(segments: number[]): Promise<boolean> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/clean-segments`, {
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/clean-segments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ segments }),
-    });
+    }, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
@@ -253,7 +253,7 @@ export async function cleanSegments(segments: number[]): Promise<boolean> {
  */
 export async function getConsumables(): Promise<Consumables | null> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/consumables`);
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/consumables`, {}, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as Consumables;
   } catch (error: unknown) {
@@ -267,11 +267,11 @@ export async function getConsumables(): Promise<Consumables | null> {
  */
 export async function resetConsumable(consumable: string): Promise<boolean> {
   try {
-    const res = await fetch(`${BRIDGE_URL}/reset-consumable`, {
+    const res = await fetchWithTimeout(`${BRIDGE_URL}/reset-consumable`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ consumable }),
-    });
+    }, TIMEOUTS.ROBOROCK);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
