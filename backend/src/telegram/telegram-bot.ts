@@ -5,6 +5,7 @@ import {
 } from '../db/database';
 import { handleCommand, handleCallbackQuery } from './telegram-handlers';
 import { getErrorMessage } from '../utils/errors';
+import { fetchWithTimeout, TIMEOUTS } from '../utils/fetch-timeout';
 
 interface TelegramUpdate {
   update_id: number;
