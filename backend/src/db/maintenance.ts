@@ -30,36 +30,50 @@ export function cleanupOldData(config: RetentionConfig = DEFAULT_RETENTION): Cle
   const start = Date.now();
   const db = getDb();
 
+  // Get size before cleanup
+  const sizeBefore = (db.query("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()").get() as { size: number }).size;
+
   const sensorHistory = db.run(
     `DELETE FROM sensor_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
     [config.sensorHistoryDays]
   ).changes;
+  if (sensorHistory > 0) console.log(`[maintenance] sensor_history: deleted ${sensorHistory} rows (>${config.sensorHistoryDays} days)`);
 
   const deviceHistory = db.run(
     `DELETE FROM device_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
     [config.deviceHistoryDays]
   ).changes;
+  if (deviceHistory > 0) console.log(`[maintenance] device_history: deleted ${deviceHistory} rows (>${config.deviceHistoryDays} days)`);
 
   const contactHistory = db.run(
     `DELETE FROM contact_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
     [config.contactHistoryDays]
   ).changes;
+  if (contactHistory > 0) console.log(`[maintenance] contact_history: deleted ${contactHistory} rows (>${config.contactHistoryDays} days)`);
 
   const telegramLog = db.run(
     `DELETE FROM telegram_log WHERE sent_at < datetime('now', '-' || ? || ' days')`,
     [config.telegramLogDays]
   ).changes;
+  if (telegramLog > 0) console.log(`[maintenance] telegram_log: deleted ${telegramLog} rows (>${config.telegramLogDays} days)`);
 
   const automationLog = db.run(
     `DELETE FROM automation_log WHERE executed_at < datetime('now', '-' || ? || ' days')`,
     [config.automationLogDays]
   ).changes;
+  if (automationLog > 0) console.log(`[maintenance] automation_log: deleted ${automationLog} rows (>${config.automationLogDays} days)`);
 
-  // Vacuum to reclaim space after large deletions
-  const totalDeleted = sensorHistory + deviceHistory + contactHistory + telegramLog + automationLog;
-  if (totalDeleted > 1000) {
-    db.run('VACUUM');
-  }
+  // Clear stale pending lamp actions (no longer used - online-trigger handles this)
+  const pendingLampActions = db.run(`DELETE FROM pending_lamp_actions`).changes;
+  if (pendingLampActions > 0) console.log(`[maintenance] pending_lamp_actions: cleared ${pendingLampActions} stale rows`);
+
+  const totalDeleted = sensorHistory + deviceHistory + contactHistory + telegramLog + automationLog + pendingLampActions;
+
+  // Always VACUUM to reclaim space
+  db.run('VACUUM');
+  const sizeAfter = (db.query("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()").get() as { size: number }).size;
+  const savedMB = (sizeBefore - sizeAfter) / (1024 * 1024);
+  if (savedMB > 0.1) console.log(`[maintenance] VACUUM reclaimed ${savedMB.toFixed(2)} MB`);
 
   return {
     sensorHistory,

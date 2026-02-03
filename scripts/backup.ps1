@@ -51,9 +51,9 @@ try {
     $size = (Get-Item $backupFile).Length / 1MB
     Write-Log "Backup complete: $([math]::Round($size, 2)) MB"
 
-    # Cleanup old backups
+    # Cleanup old backups (including legacy .tar.gz format)
     $deleted = 0
-    Get-ChildItem "$backupDir\smart-home_*.db*" | Where-Object {
+    Get-ChildItem "$backupDir\smart-home_*" -Include "*.db", "*.db-wal", "*.db-shm", "*.tar.gz" | Where-Object {
         $_.LastWriteTime -lt (Get-Date).AddDays(-$retentionDays)
     } | ForEach-Object {
         Remove-Item $_.FullName -Force

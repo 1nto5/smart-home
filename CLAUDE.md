@@ -10,9 +10,22 @@ C:\SmartHome\
 ├── data\smart-home.db (SQLite)
 ├── logs\ (service logs)
 └── .env (Tuya, Roborock, Telegram credentials)
+├── Jellyfin (NSSM) → :8096 (DLNA media server)
 ```
 
 `SSH_PASS_WYSE` configured in `~/.claude/settings.json`
+
+## Jellyfin Media Server
+
+- **URL**: http://10.10.10.10:8096
+- **Admin**: admin / marian
+- **Data**: `C:\ProgramData\Jellyfin\Server\`
+- **Locale**: pl-PL (24-hour time format)
+
+Clients:
+- Xbox: Jellyfin app from Microsoft Store
+- Mac: Jellyfin Media Player (`brew install --cask jellyfin-media-player`)
+- Web: http://10.10.10.10:8096
 
 ## After completing work
 
