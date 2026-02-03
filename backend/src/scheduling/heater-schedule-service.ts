@@ -278,7 +278,10 @@ export async function applyPresetToAllHeaters(
       createPendingHeaterAction(trvId, presetId, scheduleId);
       result.pending.push(trvId);
     } else {
-      // Command failed (timeout/error)
+      // Command failed (timeout/error) - also create pending action for retry
+      // This handles Zigbee communication issues where device responds to status
+      // queries but command confirmations timeout
+      createPendingHeaterAction(trvId, presetId, scheduleId);
       result.failed.push(trvId);
     }
   }
