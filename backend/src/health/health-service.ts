@@ -1,5 +1,6 @@
 import { getDb, getTelegramConfig } from '../db/database';
 import { getGatewayConnectionStatus } from '../tuya/tuya-local';
+import { config } from '../config';
 
 const startTime = Date.now();
 
@@ -79,7 +80,8 @@ async function checkRoborock(): Promise<HealthCheck> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch('http://localhost:3002/status', {
+    const baseUrl = config.roborock.bridgeUrl.replace(/\/$/, '');
+    const response = await fetch(`${baseUrl}/status`, {
       signal: controller.signal,
     });
     clearTimeout(timeout);
