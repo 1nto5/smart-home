@@ -4,7 +4,7 @@
   import { translateDeviceName, getSimplifiedName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Flame, Snowflake, ThermometerSun } from 'lucide-svelte';
+  import { Flame, Lock, LockOpen, Snowflake, ThermometerSun } from 'lucide-svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let fullName = $derived(translateDeviceName(device.name));
@@ -35,6 +35,10 @@
   let serverTargetTemp = $derived(status()?.['4'] ? status()['4'] / 10 : null);
   let targetTemp = $derived(optimisticTemp ?? serverTargetTemp);
   let valve = $derived(status()?.['3'] || 'unknown');
+  let childLock = $derived(status()?.['7'] === true);
+
+  // Child lock state
+  let childLockPending = $state(false);
 
   // Debounced API call
   const [sendTempDebounced, cancelDebounce] = debounce((temp: number) => {
@@ -108,6 +112,21 @@
 
   function cancelEdit() {
     isEditing = false;
+  }
+
+  async function toggleChildLock() {
+    childLockPending = true;
+    try {
+      await fetch(`/api/devices/${device.id}/control`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dps: 7, value: !childLock }),
+      });
+      await refreshStatus();
+    } catch (e) {
+      console.error('Failed to toggle child lock:', e);
+    }
+    childLockPending = false;
   }
 </script>
 
@@ -250,6 +269,33 @@
       <div class="text-center py-8 text-content-tertiary">
         <ThermometerSun class="w-12 h-12 mx-auto mb-3 opacity-50" />
         <p>No data available</p>
+      </div>
+    {/if}
+
+    <!-- Child Lock Toggle -->
+    {#if status()?.['7'] !== undefined}
+      <div class="flex items-center justify-between py-3 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+        <div class="flex items-center gap-2">
+          {#if childLock}
+            <Lock class="w-4 h-4 text-warning" />
+          {:else}
+            <LockOpen class="w-4 h-4 text-content-tertiary" />
+          {/if}
+          <span class="text-sm text-content-secondary">Child Lock</span>
+        </div>
+        <button
+          onclick={toggleChildLock}
+          disabled={childLockPending}
+          class="relative w-12 h-6 rounded-full transition-colors {childLock ? 'bg-warning' : 'bg-surface-elevated border border-stroke-default'}"
+          aria-label="Toggle child lock"
+        >
+          <span
+            class="absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform {childLock ? 'translate-x-7' : 'translate-x-1'}"
+          ></span>
+          {#if childLockPending}
+            <span class="absolute inset-0 rounded-full border-2 border-current animate-pulse"></span>
+          {/if}
+        </button>
       </div>
     {/if}
 
