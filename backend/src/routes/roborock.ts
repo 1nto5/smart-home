@@ -1,4 +1,13 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import {
+  RoborockCommandSchema,
+  RoborockVolumeSchema,
+  RoborockFanSpeedSchema,
+  RoborockMopModeSchema,
+  RoborockCleanSegmentsSchema,
+  RoborockResetConsumableSchema,
+} from '../validation/schemas';
 import {
   getStatus,
   startCleaning,
@@ -38,13 +47,8 @@ roborock.get('/summary', async (c) => {
 });
 
 // Send command
-roborock.post('/command', async (c) => {
-  const body = await c.req.json();
-  const cmd = body.cmd;
-
-  if (!cmd) {
-    return c.json({ error: 'cmd required (start, pause, stop, home, find)' }, 400);
-  }
+roborock.post('/command', zValidator('json', RoborockCommandSchema), async (c) => {
+  const { cmd } = c.req.valid('json');
 
   let success = false;
   switch (cmd) {
@@ -63,8 +67,6 @@ roborock.post('/command', async (c) => {
     case 'find':
       success = await findMe();
       break;
-    default:
-      return c.json({ error: `Unknown command: ${cmd}` }, 400);
   }
 
   return c.json({ success, command: cmd });
@@ -89,41 +91,29 @@ roborock.get('/volume', async (c) => {
 });
 
 // Set volume
-roborock.post('/volume', async (c) => {
-  const { volume } = await c.req.json();
-  if (typeof volume !== 'number' || volume < 0 || volume > 100) {
-    return c.json({ error: 'volume must be 0-100' }, 400);
-  }
+roborock.post('/volume', zValidator('json', RoborockVolumeSchema), async (c) => {
+  const { volume } = c.req.valid('json');
   const success = await setVolume(volume);
   return c.json({ success, volume });
 });
 
 // Set fan speed
-roborock.post('/fan-speed', async (c) => {
-  const { mode } = await c.req.json();
-  if (typeof mode !== 'number' || mode < 101 || mode > 104) {
-    return c.json({ error: 'mode must be 101-104' }, 400);
-  }
+roborock.post('/fan-speed', zValidator('json', RoborockFanSpeedSchema), async (c) => {
+  const { mode } = c.req.valid('json');
   const success = await setFanSpeed(mode);
   return c.json({ success, mode });
 });
 
 // Set mop mode
-roborock.post('/mop-mode', async (c) => {
-  const { mode } = await c.req.json();
-  if (typeof mode !== 'number' || mode < 200 || mode > 203) {
-    return c.json({ error: 'mode must be 200-203' }, 400);
-  }
+roborock.post('/mop-mode', zValidator('json', RoborockMopModeSchema), async (c) => {
+  const { mode } = c.req.valid('json');
   const success = await setMopMode(mode);
   return c.json({ success, mode });
 });
 
 // Clean segments
-roborock.post('/clean-segments', async (c) => {
-  const { segments } = await c.req.json();
-  if (!Array.isArray(segments) || segments.length === 0) {
-    return c.json({ error: 'segments array required' }, 400);
-  }
+roborock.post('/clean-segments', zValidator('json', RoborockCleanSegmentsSchema), async (c) => {
+  const { segments } = c.req.valid('json');
   const success = await cleanSegments(segments);
   return c.json({ success, segments });
 });
@@ -138,9 +128,9 @@ roborock.get('/consumables', async (c) => {
 });
 
 // Reset consumable
-roborock.post('/reset-consumable', async (c) => {
-  const body = await c.req.json<{ consumable: string }>();
-  const success = await resetConsumable(body.consumable);
+roborock.post('/reset-consumable', zValidator('json', RoborockResetConsumableSchema), async (c) => {
+  const { consumable } = c.req.valid('json');
+  const success = await resetConsumable(consumable);
   if (!success) {
     return c.json({ error: 'Failed to reset consumable' }, 500);
   }

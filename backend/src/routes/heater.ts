@@ -1,4 +1,13 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import {
+  HeaterPresetSchema,
+  HeaterPresetUpdateSchema,
+  HeaterPresetDeviceTempSchema,
+  HeaterScheduleSchema,
+  HeaterScheduleUpdateSchema,
+  HeaterOverrideSchema,
+} from '../validation/schemas';
 import {
   getHeaterPresets,
   updateHeaterPreset,
@@ -30,13 +39,8 @@ heater.get('/presets', (c) => {
   return c.json(presets);
 });
 
-heater.post('/presets', async (c) => {
-  const body = await c.req.json();
-  const { id, name, target_temp } = body;
-
-  if (!id || !name || target_temp === undefined) {
-    return c.json({ error: 'id, name, and target_temp are required' }, 400);
-  }
+heater.post('/presets', zValidator('json', HeaterPresetSchema), async (c) => {
+  const { id, name, target_temp } = c.req.valid('json');
 
   try {
     const preset = createHeaterPreset(id, name, target_temp);
@@ -56,17 +60,9 @@ heater.delete('/presets/:id', (c) => {
   return c.json({ success: true });
 });
 
-heater.patch('/presets/:id', async (c) => {
+heater.patch('/presets/:id', zValidator('json', HeaterPresetUpdateSchema), async (c) => {
   const id = c.req.param('id');
-  const body = await c.req.json();
-
-  if (body.target_temp === undefined) {
-    return c.json({ error: 'target_temp required' }, 400);
-  }
-
-  if (typeof body.target_temp !== 'number' || body.target_temp < 5 || body.target_temp > 30) {
-    return c.json({ error: 'target_temp must be between 5 and 30' }, 400);
-  }
+  const body = c.req.valid('json');
 
   const updated = updateHeaterPreset(id, body.target_temp, body.name);
   if (!updated) {
@@ -102,18 +98,9 @@ heater.get('/presets/:id/devices', (c) => {
   return c.json(temps);
 });
 
-heater.post('/presets/:id/devices', async (c) => {
+heater.post('/presets/:id/devices', zValidator('json', HeaterPresetDeviceTempSchema), async (c) => {
   const presetId = c.req.param('id');
-  const body = await c.req.json();
-  const { device_id, target_temp } = body;
-
-  if (!device_id || target_temp === undefined) {
-    return c.json({ error: 'device_id and target_temp required' }, 400);
-  }
-
-  if (typeof target_temp !== 'number' || target_temp < 5 || target_temp > 30) {
-    return c.json({ error: 'target_temp must be between 5 and 30' }, 400);
-  }
+  const { device_id, target_temp } = c.req.valid('json');
 
   setPresetDeviceTemp(presetId, device_id, target_temp);
   return c.json({ success: true, preset_id: presetId, device_id, target_temp });
@@ -133,12 +120,8 @@ heater.get('/schedules', (c) => {
   return c.json(schedules);
 });
 
-heater.post('/schedules', async (c) => {
-  const body = await c.req.json();
-
-  if (!body.name || !body.preset_id || !body.time) {
-    return c.json({ error: 'name, preset_id, and time required' }, 400);
-  }
+heater.post('/schedules', zValidator('json', HeaterScheduleSchema), async (c) => {
+  const body = c.req.valid('json');
 
   if (!isValidHeaterPreset(body.preset_id)) {
     return c.json({ error: `Invalid preset: ${body.preset_id}` }, 400);
@@ -162,9 +145,9 @@ heater.patch('/schedules/:id/toggle', (c) => {
   return c.json(schedule);
 });
 
-heater.patch('/schedules/:id', async (c) => {
+heater.patch('/schedules/:id', zValidator('json', HeaterScheduleUpdateSchema), async (c) => {
   const id = parseInt(c.req.param('id'));
-  const body = await c.req.json();
+  const body = c.req.valid('json');
 
   try {
     const schedule = updateHeaterSchedule(id, {
@@ -207,16 +190,8 @@ heater.get('/override', (c) => {
   return c.json(override);
 });
 
-heater.post('/override', async (c) => {
-  const body = await c.req.json();
-  const { enabled, mode, fixed_temp } = body;
-
-  if (typeof enabled !== 'boolean') {
-    return c.json({ error: 'enabled must be boolean' }, 400);
-  }
-  if (mode && mode !== 'pause' && mode !== 'fixed') {
-    return c.json({ error: 'mode must be "pause" or "fixed"' }, 400);
-  }
+heater.post('/override', zValidator('json', HeaterOverrideSchema), async (c) => {
+  const { enabled, mode, fixed_temp } = c.req.valid('json');
 
   const override = setHeaterOverride(enabled, mode || 'pause', fixed_temp || 18);
 

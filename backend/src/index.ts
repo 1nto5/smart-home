@@ -17,6 +17,7 @@ import { logger } from 'hono/logger';
 import { serveStatic, createBunWebSocket } from 'hono/bun';
 import { addClient, removeClient } from './ws/broadcast';
 import { config } from './config';
+import { errorHandler } from './middleware/error-handler';
 import { initDatabase, closeDatabase } from './db/database';
 import { startTelegramBot, stopTelegramBot } from './telegram/telegram-bot';
 import { startAlarmNotificationLoop, stopAlarmNotificationLoop } from './notifications/alarm-service';
@@ -43,6 +44,9 @@ import {
 } from './routes';
 
 const app = new Hono();
+
+// Global error handler
+app.onError(errorHandler);
 
 // Middleware
 app.use('*', logger());

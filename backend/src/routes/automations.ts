@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { AutomationSchema, AutomationUpdateSchema } from '../validation/schemas';
 import {
   getAutomations,
   getAutomation,
@@ -35,17 +37,17 @@ automations.get('/:id', (c) => {
 });
 
 // Create automation
-automations.post('/', async (c) => {
-  const body = await c.req.json();
+automations.post('/', zValidator('json', AutomationSchema), async (c) => {
+  const body = c.req.valid('json');
   const automation = createAutomation(body);
   console.log(`Created automation: ${automation.name}`);
   return c.json(automation, 201);
 });
 
 // Update automation
-automations.patch('/:id', async (c) => {
+automations.patch('/:id', zValidator('json', AutomationUpdateSchema), async (c) => {
   const id = parseInt(c.req.param('id'));
-  const body = await c.req.json();
+  const body = c.req.valid('json');
   const automation = updateAutomation(id, body);
   if (!automation) {
     return c.json({ error: 'Automation not found' }, 404);

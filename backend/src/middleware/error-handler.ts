@@ -1,4 +1,5 @@
-import type { Context, Next } from 'hono';
+import type { Context } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
 import { logger } from '../utils/logger';
 
@@ -58,51 +59,48 @@ export function createErrorResponse(
   };
 }
 
-export function getErrorMessage(code: string): string {
-  return ERROR_MESSAGES[code] || ERROR_MESSAGES.INTERNAL_ERROR;
+export function getErrorMessage(code: string | undefined): string {
+  if (code && code in ERROR_MESSAGES) {
+    return ERROR_MESSAGES[code]!;
+  }
+  return ERROR_MESSAGES.INTERNAL_ERROR!;
 }
 
-// Global error handler middleware
-export async function errorHandler(c: Context, next: Next): Promise<Response> {
-  try {
-    await next();
-  } catch (err) {
-    // Handle Zod validation errors
-    if (err instanceof ZodError) {
-      const details = err.errors.map((e) => ({
-        path: e.path.join('.'),
-        message: e.message,
-      }));
-      logger.warn('Validation error', { component: 'api', details });
-      return c.json(
-        createErrorResponse('Validation error', 'VALIDATION_ERROR', details),
-        400
-      );
-    }
-
-    // Handle custom API errors
-    const apiError = err as ApiError;
-    const statusCode = apiError.statusCode || 500;
-    const code = apiError.code || STATUS_TO_CODE[statusCode] || 'INTERNAL_ERROR';
-    const message = apiError.message || getErrorMessage(code);
-
-    // Don't expose internal error details in production
-    const sanitizedMessage =
-      statusCode >= 500 && process.env.NODE_ENV === 'production'
-        ? getErrorMessage(code)
-        : message;
-
-    logger.error('Request error', {
-      component: 'api',
-      statusCode,
-      code,
-      error: message,
-    });
-
-    return c.json(createErrorResponse(sanitizedMessage, code), statusCode);
+// Global error handler for app.onError()
+export function errorHandler(err: Error, c: Context): Response {
+  // Handle Zod validation errors
+  if (err instanceof ZodError) {
+    const details = err.issues.map((e) => ({
+      path: e.path.join('.'),
+      message: e.message,
+    }));
+    logger.warn('Validation error', { component: 'api', details });
+    return c.json(
+      createErrorResponse('Validation error', 'VALIDATION_ERROR', details),
+      400 as ContentfulStatusCode
+    );
   }
 
-  return c.res;
+  // Handle custom API errors
+  const apiErr = err as ApiError;
+  const statusCode = (apiErr.statusCode || 500) as ContentfulStatusCode;
+  const code = apiErr.code || STATUS_TO_CODE[statusCode] || 'INTERNAL_ERROR';
+  const message = apiErr.message || getErrorMessage(code);
+
+  // Don't expose internal error details in production
+  const sanitizedMessage =
+    statusCode >= 500 && process.env.NODE_ENV === 'production'
+      ? getErrorMessage(code)
+      : message;
+
+  logger.error('Request error', {
+    component: 'api',
+    statusCode,
+    code,
+    error: message,
+  });
+
+  return c.json(createErrorResponse(sanitizedMessage, code), statusCode);
 }
 
 // Helper to create typed API errors

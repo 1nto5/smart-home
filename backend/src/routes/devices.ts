@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { getDb } from '../db/database';
 import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from '../tuya/tuya-api';
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus } from '../tuya/tuya-local';
 import { translateName } from '../utils/translations';
+import { DeviceUpdateSchema, DeviceControlSchema } from '../validation/schemas';
 
 const devices = new Hono();
 
@@ -35,13 +37,13 @@ devices.get('/', async (c) => {
 });
 
 // Update device metadata
-devices.patch('/:id', async (c) => {
+devices.patch('/:id', zValidator('json', DeviceUpdateSchema), async (c) => {
   const db = getDb();
   const id = c.req.param('id');
-  const body = await c.req.json();
+  const body = c.req.valid('json');
 
   const updates: string[] = [];
-  const values: unknown[] = [];
+  const values: (string | number | boolean | null)[] = [];
 
   if (body.name !== undefined) {
     updates.push('name = ?');
@@ -70,11 +72,11 @@ devices.patch('/:id', async (c) => {
 });
 
 // Control device via Local API (DPS-based)
-devices.post('/:id/control', async (c) => {
+devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) => {
   const id = c.req.param('id');
-  const body = await c.req.json();
+  const body = c.req.valid('json');
 
-  if (body.dps !== undefined && body.value !== undefined) {
+  if ('dps' in body) {
     console.log(`Local control ${id}: dps ${body.dps} = ${body.value}`);
     try {
       const success = await sendDeviceCommand(id, body.dps, body.value);
@@ -90,10 +92,7 @@ devices.post('/:id/control', async (c) => {
     }
   }
 
-  if (!body.commands || !Array.isArray(body.commands)) {
-    return c.json({ error: 'Either {dps, value} or {commands} required' }, 400);
-  }
-
+  // Cloud command control
   console.log(`Cloud control ${id}:`, body.commands);
   try {
     const success = await sendCommand(id, body.commands);

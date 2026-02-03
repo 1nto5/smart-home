@@ -24,13 +24,38 @@ export interface AutomationAction {
 }
 
 /**
+ * Safely parse actions JSON with validation
+ */
+function safeParseActions(json: string): AutomationAction[] {
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) {
+      console.error('Invalid automation actions: not an array');
+      return [];
+    }
+    return parsed.filter(
+      (a): a is AutomationAction =>
+        typeof a === 'object' && a !== null && typeof a.type === 'string'
+    );
+  } catch (e: unknown) {
+    const err = e as Error;
+    console.error('Invalid automation actions JSON:', err.message);
+    return [];
+  }
+}
+
+/**
  * Execute all actions from an automation rule
  */
 export async function executeAutomationActions(
   automation: Automation,
   context: TriggerContext
 ): Promise<void> {
-  const actions: AutomationAction[] = JSON.parse(automation.actions);
+  const actions = safeParseActions(automation.actions);
+  if (actions.length === 0) {
+    console.warn(`Automation "${automation.name}" has no valid actions`);
+    return;
+  }
 
   for (const action of actions) {
     if (action.type === 'telegram_prompt') {
@@ -208,7 +233,7 @@ export async function executeConfirmedActions(
   context: TriggerContext,
   automationName: string
 ): Promise<string[]> {
-  const actions: AutomationAction[] = JSON.parse(actionsJson);
+  const actions = safeParseActions(actionsJson);
   const results: string[] = [];
 
   for (const action of actions) {

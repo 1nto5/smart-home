@@ -117,7 +117,7 @@ export const YamahaControlSchema = z.object({
 // === ROBOROCK SCHEMAS ===
 
 export const RoborockCommandSchema = z.object({
-  command: z.enum(['start', 'pause', 'stop', 'home', 'find']),
+  cmd: z.enum(['start', 'pause', 'stop', 'home', 'find']),
 });
 
 export const RoborockVolumeSchema = z.object({
@@ -125,11 +125,11 @@ export const RoborockVolumeSchema = z.object({
 });
 
 export const RoborockFanSpeedSchema = z.object({
-  speed: z.enum(['off', 'silent', 'balanced', 'turbo', 'max', 'custom']),
+  mode: z.number().int().min(101).max(104),
 });
 
 export const RoborockMopModeSchema = z.object({
-  mode: z.enum(['standard', 'deep', 'deep_plus', 'custom']),
+  mode: z.number().int().min(200).max(203),
 });
 
 export const RoborockCleanSegmentsSchema = z.object({
@@ -150,14 +150,14 @@ const QuietWindowSchema = z.object({
 
 export const AutomationSchema = z.object({
   name: z.string().min(1).max(100),
-  enabled: z.number().int().min(0).max(1).optional().default(1),
+  enabled: z.number().int().min(0).max(1).default(1),
   trigger_type: z.enum(['device_state', 'schedule', 'sunrise', 'sunset']),
-  trigger_device_id: z.string().nullable().optional(),
+  trigger_device_id: z.string().nullable().default(null),
   trigger_condition: z.string().min(1),
   actions: z.string().min(2), // JSON string
-  telegram_prompt: z.string().nullable().optional(),
-  telegram_action_yes: z.string().nullable().optional(),
-  quiet_windows: z.string().nullable().optional(), // JSON string
+  telegram_prompt: z.string().nullable().default(null),
+  telegram_action_yes: z.string().nullable().default(null),
+  quiet_windows: z.string().nullable().default(null), // JSON string
 });
 
 export const AutomationUpdateSchema = AutomationSchema.partial();
@@ -182,11 +182,9 @@ export const TelegramTestSchema = z.object({
 
 export const AirPurifierControlSchema = z.object({
   power: z.boolean().optional(),
-  mode: z.enum(['auto', 'sleep', 'favorite', 'manual']).optional(),
-  favoriteLevel: z.number().int().min(0).max(16).optional(),
-  ledBrightness: z.enum(['bright', 'dim', 'off']).optional(),
-  buzzer: z.boolean().optional(),
-  childLock: z.boolean().optional(),
+  mode: z.enum(['auto', 'silent', 'favorite']).optional(),
+  fan_speed: z.number().int().min(0).max(16).optional(),
+  led_brightness: z.number().int().min(0).max(8).optional(),
 });
 
 // === DB MAINTENANCE SCHEMAS ===

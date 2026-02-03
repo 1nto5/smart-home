@@ -28,8 +28,15 @@ export function getHeaterPreset(id: string): HeaterPreset | null {
   return db.query('SELECT * FROM heater_presets WHERE id = ?').get(id) as HeaterPreset | null;
 }
 
-export function updateHeaterPreset(id: string, target_temp: number): boolean {
+export function updateHeaterPreset(id: string, target_temp: number, name?: string): boolean {
   const db = getDb();
+  if (name !== undefined) {
+    const result = db.run(
+      'UPDATE heater_presets SET target_temp = ?, name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [target_temp, name, id]
+    );
+    return result.changes > 0;
+  }
   const result = db.run(
     'UPDATE heater_presets SET target_temp = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
     [target_temp, id]

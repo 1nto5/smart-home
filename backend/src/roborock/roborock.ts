@@ -5,6 +5,7 @@
 
 import { broadcastRoborockStatus } from '../ws/device-broadcast';
 import { config } from '../config';
+import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 
 // In Docker, use service name; locally use localhost
 const BRIDGE_URL = config.roborock.bridgeUrl;
@@ -49,14 +50,22 @@ export interface Consumables {
  * Get vacuum status
  */
 export async function getStatus(): Promise<RoborockStatus | null> {
+  const circuit = deviceCircuits.roborock();
+
   try {
-    const res = await fetch(`${BRIDGE_URL}/status`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const status = await res.json() as RoborockStatus;
-    broadcastRoborockStatus(status);
-    return status;
+    return await circuit.execute(async () => {
+      const res = await fetch(`${BRIDGE_URL}/status`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const status = await res.json() as RoborockStatus;
+      broadcastRoborockStatus(status);
+      return status;
+    });
   } catch (error: any) {
-    console.error('Roborock status error:', error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for roborock: ${error.message}`);
+    } else {
+      console.error('Roborock status error:', error.message);
+    }
     return null;
   }
 }
@@ -65,17 +74,25 @@ export async function getStatus(): Promise<RoborockStatus | null> {
  * Send command to vacuum
  */
 async function sendCommand(cmd: string): Promise<boolean> {
+  const circuit = deviceCircuits.roborock();
+
   try {
-    const res = await fetch(`${BRIDGE_URL}/command`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cmd }),
+    await circuit.execute(async () => {
+      const res = await fetch(`${BRIDGE_URL}/command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cmd }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     console.log(`Roborock: ${cmd}`);
     return true;
   } catch (error: any) {
-    console.error(`Roborock command ${cmd} error:`, error.message);
+    if (error instanceof CircuitOpenError) {
+      console.warn(`Circuit open for roborock: ${error.message}`);
+    } else {
+      console.error(`Roborock command ${cmd} error:`, error.message);
+    }
     return false;
   }
 }
@@ -122,7 +139,7 @@ export async function getCleanSummary(): Promise<CleanSummary | null> {
   try {
     const res = await fetch(`${BRIDGE_URL}/clean-summary`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    return await res.json() as CleanSummary;
   } catch (error: any) {
     console.error('Roborock clean-summary error:', error.message);
     return null;
@@ -136,7 +153,7 @@ export async function getRooms(): Promise<RoomsResponse | null> {
   try {
     const res = await fetch(`${BRIDGE_URL}/rooms`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    return await res.json() as RoomsResponse;
   } catch (error: any) {
     console.error('Roborock rooms error:', error.message);
     return null;
@@ -150,7 +167,7 @@ export async function getVolume(): Promise<{ volume: number } | null> {
   try {
     const res = await fetch(`${BRIDGE_URL}/volume`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    return await res.json() as { volume: number };
   } catch (error: any) {
     console.error('Roborock volume error:', error.message);
     return null;
@@ -236,7 +253,7 @@ export async function getConsumables(): Promise<Consumables | null> {
   try {
     const res = await fetch(`${BRIDGE_URL}/consumables`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    return await res.json() as Consumables;
   } catch (error: any) {
     console.error('Roborock consumables error:', error.message);
     return null;
