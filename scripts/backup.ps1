@@ -1,11 +1,12 @@
 # Smart Home Database Backup Script
 # Run daily at 02:00 via Windows Task Scheduler
+# Single backup - overwrites previous
 
 $projectDir = "C:\SmartHome"
 $backupDir = "N:\backups\smart-home"
 $dbPath = "$projectDir\data\smart-home.db"
 $logFile = "$projectDir\logs\backup.log"
-$retentionDays = 28
+$backupFile = "$backupDir\smart-home.db"
 
 function Write-Log($message) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -16,9 +17,6 @@ function Write-Log($message) {
 if (-not (Test-Path $backupDir)) {
     New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
 }
-
-$date = Get-Date -Format "yyyy-MM-dd"
-$backupFile = "$backupDir\smart-home_$date.db"
 
 try {
     # Check if DB exists
@@ -36,11 +34,11 @@ try {
         Write-Log "sqlite3 not found at $sqlite, skipping WAL checkpoint"
     }
 
-    # Copy database
+    # Copy database (overwrites previous backup)
     Write-Log "Copying database to $backupFile..."
     Copy-Item $dbPath $backupFile -Force
 
-    # Also copy WAL and SHM files if they exist (for safety)
+    # Also copy WAL and SHM files if they exist
     if (Test-Path "$dbPath-wal") {
         Copy-Item "$dbPath-wal" "$backupFile-wal" -Force
     }
@@ -50,20 +48,6 @@ try {
 
     $size = (Get-Item $backupFile).Length / 1MB
     Write-Log "Backup complete: $([math]::Round($size, 2)) MB"
-
-    # Cleanup old backups (including legacy .tar.gz format)
-    $deleted = 0
-    Get-ChildItem $backupDir -File | Where-Object {
-        $_.Name -match '^smart-home_.*\.(db|db-wal|db-shm|tar\.gz)$' -and
-        $_.LastWriteTime -lt (Get-Date).AddDays(-$retentionDays)
-    } | ForEach-Object {
-        Remove-Item $_.FullName -Force
-        $deleted++
-    }
-
-    if ($deleted -gt 0) {
-        Write-Log "Cleaned up $deleted old backup files (retention: $retentionDays days)"
-    }
 
 } catch {
     Write-Log "Backup FAILED: $_"
