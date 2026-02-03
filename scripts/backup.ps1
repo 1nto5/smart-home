@@ -29,11 +29,11 @@ try {
 
     # Checkpoint WAL to ensure all data is in main DB file
     Write-Log "Checkpointing WAL..."
-    $sqlite = Get-Command sqlite3 -ErrorAction SilentlyContinue
-    if ($sqlite) {
-        & sqlite3 $dbPath "PRAGMA wal_checkpoint(TRUNCATE);" 2>&1 | Out-Null
+    $sqlite = "C:\Tools\sqlite\sqlite3.exe"
+    if (Test-Path $sqlite) {
+        & $sqlite $dbPath "PRAGMA wal_checkpoint(TRUNCATE);" 2>&1 | Out-Null
     } else {
-        Write-Log "sqlite3 not found, skipping WAL checkpoint"
+        Write-Log "sqlite3 not found at $sqlite, skipping WAL checkpoint"
     }
 
     # Copy database
@@ -53,7 +53,8 @@ try {
 
     # Cleanup old backups (including legacy .tar.gz format)
     $deleted = 0
-    Get-ChildItem "$backupDir\smart-home_*" -Include "*.db", "*.db-wal", "*.db-shm", "*.tar.gz" | Where-Object {
+    Get-ChildItem $backupDir -File | Where-Object {
+        $_.Name -match '^smart-home_.*\.(db|db-wal|db-shm|tar\.gz)$' -and
         $_.LastWriteTime -lt (Get-Date).AddDays(-$retentionDays)
     } | ForEach-Object {
         Remove-Item $_.FullName -Force
