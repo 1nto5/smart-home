@@ -115,12 +115,13 @@
   }
 
   async function toggleChildLock() {
+    const currentLock = status()?.['7'] === true;
     childLockPending = true;
     try {
       await fetch(`/api/devices/${device.id}/control`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dps: 7, value: !childLock }),
+        body: JSON.stringify({ dps: 7, value: !currentLock }),
       });
       await refreshStatus();
     } catch (e) {
@@ -286,14 +287,14 @@
         <button
           onclick={toggleChildLock}
           disabled={childLockPending}
-          class="relative w-12 h-6 rounded-full transition-colors {childLock ? 'bg-warning' : 'bg-surface-elevated border border-stroke-default'}"
+          class="relative w-10 h-6 rounded-full transition-colors {childLock ? 'bg-warning' : 'bg-content-tertiary/30'}"
           aria-label="Toggle child lock"
         >
           <span
-            class="absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform {childLock ? 'translate-x-7' : 'translate-x-1'}"
+            class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform {childLock ? 'translate-x-4' : ''}"
           ></span>
           {#if childLockPending}
-            <span class="absolute inset-0 rounded-full border-2 border-current animate-pulse"></span>
+            <span class="absolute inset-0 rounded-full border-2 border-warning animate-pulse"></span>
           {/if}
         </button>
       </div>
