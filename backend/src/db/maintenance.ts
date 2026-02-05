@@ -63,11 +63,7 @@ export function cleanupOldData(config: RetentionConfig = DEFAULT_RETENTION): Cle
   ).changes;
   if (automationLog > 0) console.log(`[maintenance] automation_log: deleted ${automationLog} rows (>${config.automationLogDays} days)`);
 
-  // Clear stale pending lamp actions (no longer used - online-trigger handles this)
-  const pendingLampActions = db.run(`DELETE FROM pending_lamp_actions`).changes;
-  if (pendingLampActions > 0) console.log(`[maintenance] pending_lamp_actions: cleared ${pendingLampActions} stale rows`);
-
-  const totalDeleted = sensorHistory + deviceHistory + contactHistory + telegramLog + automationLog + pendingLampActions;
+  const totalDeleted = sensorHistory + deviceHistory + contactHistory + telegramLog + automationLog;
 
   // Always VACUUM to reclaim space
   db.run('VACUUM');

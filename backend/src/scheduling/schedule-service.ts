@@ -6,6 +6,7 @@
 import { getDb, setLampPreset } from '../db/database';
 import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
 import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
+import { createPendingAction } from './pending-service';
 
 export interface Schedule {
   id: number;
@@ -142,17 +143,54 @@ function getAllLampIds(): string[] {
   return lamps.map((l) => l.id);
 }
 
+interface LampStatus {
+  power: boolean;
+  brightness: number;
+  color_temp: number;
+  moonlight_mode: boolean;
+  moonlight_brightness: number;
+}
+
+/**
+ * Check if lamp already has the target preset settings
+ */
+function lampHasPreset(status: LampStatus, preset: typeof LAMP_PRESETS[string]): boolean {
+  if (!preset.power) {
+    return status.power === false;
+  }
+
+  if (preset.moonlight) {
+    return status.moonlight_mode === true && status.moonlight_brightness === preset.brightness;
+  }
+
+  return (
+    status.power === true &&
+    status.brightness === preset.brightness &&
+    status.color_temp === preset.colorTemp &&
+    status.moonlight_mode === false
+  );
+}
+
 /**
  * Apply preset to a single lamp
  */
 export async function applyPresetToLamp(deviceId: string, presetName: PresetName): Promise<boolean> {
   const preset = LAMP_PRESETS[presetName];
+  if (!preset) {
+    console.error(`Preset ${presetName} not found`);
+    return false;
+  }
 
   try {
     // Check if lamp is reachable
     const status = await getLampStatus(deviceId);
     if (!status) {
       return false; // Lamp is offline
+    }
+
+    // Skip if lamp already has correct settings
+    if (lampHasPreset(status as LampStatus, preset)) {
+      return true; // Already correct, count as success
     }
 
     // Apply power state
@@ -213,7 +251,8 @@ export async function applyPresetToAllLamps(
     if (success) {
       result.success.push(lampId);
     } else {
-      // Lamp offline - online-trigger will apply correct preset when it comes back
+      // Lamp offline or failed - create pending action for retry
+      createPendingAction(lampId, presetName, scheduleId);
       result.pending.push(lampId);
     }
   }
