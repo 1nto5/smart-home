@@ -149,16 +149,21 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
     }
   }
 
-  // TRV (wkf) - temperature data
+  // TRV (wkf) - temperature and power data
   if (device.category === 'wkf') {
+    const switchState = dps['1'] !== undefined ? dps['1'] === true : null;
     const currentTemp = dps['5'] !== undefined ? dps['5'] / 10 : null;
     const targetTemp = dps['4'] !== undefined ? dps['4'] / 10 : null;
     const battery = dps['35'] !== undefined ? dps['35'] : null;
 
-    if (currentTemp !== null) {
+    if (currentTemp !== null || switchState !== null) {
       recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
-      broadcastTuyaStatus(device.id, device.category, { currentTemp, targetTemp, battery });
-      console.log(`🔥 ${device.name}: ${currentTemp}°C (target: ${targetTemp}°C)`);
+      broadcastTuyaStatus(device.id, device.category, { switchState, currentTemp, targetTemp, battery });
+      if (switchState === false) {
+        console.log(`⏻ ${device.name}: OFF`);
+      } else if (currentTemp !== null) {
+        console.log(`🔥 ${device.name}: ${currentTemp}°C (target: ${targetTemp}°C)`);
+      }
     }
   }
 }

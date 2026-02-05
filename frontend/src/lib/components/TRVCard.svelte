@@ -4,7 +4,7 @@
   import { translateDeviceName, getSimplifiedName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Flame, Lock, LockOpen, Snowflake, ThermometerSun } from 'lucide-svelte';
+  import { Flame, Lock, LockOpen, Power, PowerOff, Snowflake, ThermometerSun } from 'lucide-svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let fullName = $derived(translateDeviceName(device.name));
@@ -31,14 +31,19 @@
     }
   });
 
+  let switchState = $derived(status()?.['1'] !== undefined ? status()['1'] === true : true);
   let currentTemp = $derived(status()?.['5'] ? status()['5'] / 10 : null);
   let serverTargetTemp = $derived(status()?.['4'] ? status()['4'] / 10 : null);
   let targetTemp = $derived(optimisticTemp ?? serverTargetTemp);
   let valve = $derived(status()?.['3'] || 'unknown');
   let childLock = $derived(status()?.['7'] === true);
+  let isDeviceOff = $derived(switchState === false);
 
   // Child lock state
   let childLockPending = $state(false);
+
+  // Power toggle state
+  let powerPending = $state(false);
 
   // Debounced API call
   const [sendTempDebounced, cancelDebounce] = debounce((temp: number) => {
@@ -129,6 +134,22 @@
     }
     childLockPending = false;
   }
+
+  async function togglePower() {
+    const currentPower = status()?.['1'] === true;
+    powerPending = true;
+    try {
+      await fetch(`/api/devices/${device.id}/control`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dps: 1, value: !currentPower }),
+      });
+      await refreshStatus();
+    } catch (e) {
+      console.error('Failed to toggle power:', e);
+    }
+    powerPending = false;
+  }
 </script>
 
 <!-- Card -->
@@ -138,16 +159,18 @@
   role="button"
   tabindex="0"
   class="card {compact ? 'p-3' : 'p-4'} w-full text-left cursor-pointer
-         {valve === 'opened' ? 'card-active glow-climate-heat' : ''}"
+         {isDeviceOff ? '' : valve === 'opened' ? 'card-active glow-climate-heat' : ''}"
 >
   <div class="flex items-center gap-3">
-    <!-- Valve status indicator -->
+    <!-- Valve/Power status indicator -->
     <div
-      class="power-btn {valve === 'opened' ? 'power-btn-on glow-climate-heat' : 'glow-climate-cool'}"
+      class="power-btn {isDeviceOff ? 'opacity-50' : valve === 'opened' ? 'power-btn-on glow-climate-heat' : 'glow-climate-cool'}"
       role="img"
-      aria-label="{valve === 'opened' ? 'Heating active' : 'Idle'}"
+      aria-label="{isDeviceOff ? 'Device off' : valve === 'opened' ? 'Heating active' : 'Idle'}"
     >
-      {#if valve === 'opened'}
+      {#if isDeviceOff}
+        <PowerOff class="w-4 h-4" aria-hidden="true" />
+      {:else if valve === 'opened'}
         <Flame class="w-4 h-4" aria-hidden="true" />
       {:else}
         <Snowflake class="w-4 h-4" aria-hidden="true" />
@@ -157,7 +180,9 @@
     <!-- Info -->
     <div class="min-w-0 flex-1">
       <h4 class="font-medium text-sm text-content-primary truncate">{displayName}</h4>
-      {#if currentTemp !== null}
+      {#if isDeviceOff}
+        <p class="text-xs text-content-tertiary">Off</p>
+      {:else if currentTemp !== null}
         <p class="text-xs text-content-secondary">
           <span class="{valve === 'opened' ? 'text-device-climate-heat-text' : ''}">{currentTemp}°C</span>
           <span class="mx-1 text-content-tertiary">/</span>
@@ -173,13 +198,46 @@
 <!-- Detail Dialog -->
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={fullName}>
   <div class="space-y-5">
-    <!-- Valve Status -->
-    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-      <span class="text-sm text-content-secondary uppercase tracking-wider">Valve</span>
-      <span class="font-medium text-sm {valve === 'opened' ? 'text-device-climate-heat-text neon-text-subtle' : 'text-device-climate-cool-text neon-text-subtle'}">
-        {valve === 'opened' ? 'Heating' : 'Idle'}
-      </span>
+    <!-- Power Toggle -->
+    <div class="flex items-center justify-between py-3 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+      <div class="flex items-center gap-2">
+        {#if isDeviceOff}
+          <PowerOff class="w-4 h-4 text-content-tertiary" />
+        {:else}
+          <Power class="w-4 h-4 text-success" />
+        {/if}
+        <span class="text-sm text-content-secondary">Power</span>
+      </div>
+      <button
+        onclick={togglePower}
+        disabled={powerPending}
+        class="relative w-10 h-6 rounded-full transition-colors {isDeviceOff ? 'bg-content-tertiary/30' : 'bg-success'}"
+        aria-label="Toggle power"
+      >
+        <span
+          class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform {isDeviceOff ? '' : 'translate-x-4'}"
+        ></span>
+        {#if powerPending}
+          <span class="absolute inset-0 rounded-full border-2 border-success animate-pulse"></span>
+        {/if}
+      </button>
     </div>
+
+    {#if isDeviceOff}
+      <!-- Device Off Message -->
+      <div class="text-center py-8 text-content-tertiary">
+        <PowerOff class="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <p>Device is off</p>
+        <p class="text-xs mt-2">Turn on power to control temperature</p>
+      </div>
+    {:else}
+      <!-- Valve Status -->
+      <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
+        <span class="text-sm text-content-secondary uppercase tracking-wider">Valve</span>
+        <span class="font-medium text-sm {valve === 'opened' ? 'text-device-climate-heat-text neon-text-subtle' : 'text-device-climate-cool-text neon-text-subtle'}">
+          {valve === 'opened' ? 'Heating' : 'Idle'}
+        </span>
+      </div>
 
     {#if currentTemp !== null && targetTemp !== null}
       <!-- Temperature Display -->
@@ -298,6 +356,7 @@
           {/if}
         </button>
       </div>
+    {/if}
     {/if}
 
     <!-- Device Info -->
