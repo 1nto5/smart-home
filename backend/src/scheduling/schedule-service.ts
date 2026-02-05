@@ -6,7 +6,7 @@
 import { getDb, setLampPreset } from '../db/database';
 import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
 import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
-import { createPendingAction } from './pending-service';
+import { createPendingAction, clearAllPending } from './pending-service';
 
 export interface Schedule {
   id: number;
@@ -238,6 +238,7 @@ export async function applyPresetToAllLamps(
   presetName: PresetName,
   scheduleId?: number
 ): Promise<ApplyResult> {
+  clearAllPending();
   const lampIds = getAllLampIds();
   const result: ApplyResult = {
     success: [],
