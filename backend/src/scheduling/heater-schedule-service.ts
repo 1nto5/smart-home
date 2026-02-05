@@ -27,9 +27,13 @@ export interface ApplyResult {
 
 // TRV DPS mapping
 const TRV_DPS = {
+  SWITCH: 1, // power on/off (boolean)
   TARGET_TEMP: 4,
   TEMP_SCALE: 10, // multiply by 10 when sending (21°C = 210)
 };
+
+// Special preset IDs
+const OFF_PRESET_ID = 'off';
 
 // Result of applying temp to a single heater
 type HeaterApplyResult = 'success' | 'offline' | 'failed';
@@ -151,6 +155,7 @@ function getAllTrvIds(): string[] {
  *
  * Includes retry logic to handle cold-start scenarios where the gateway
  * connection may not be established yet on first attempts.
+ * Auto-wakes device if it's turned off (DPS 1 = false).
  */
 export async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<HeaterApplyResult> {
   const MAX_RETRIES = 2;
@@ -165,6 +170,17 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
           continue;
         }
         return 'offline'; // TRV is offline after all retries
+      }
+
+      // Auto-wake: if device is off (DPS 1 = false), turn it on first
+      const switchState = status?.dps?.['1'];
+      if (switchState === false) {
+        console.log(`TRV ${deviceId} is off, turning on first...`);
+        const wakeSuccess = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, true);
+        if (wakeSuccess) {
+          broadcastTuyaStatus(deviceId, 'wkf', { switchState: true });
+          await Bun.sleep(500); // Give device time to wake up
+        }
       }
 
       const tempValue = Math.round(targetTemp * TRV_DPS.TEMP_SCALE);
@@ -194,9 +210,59 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
 }
 
 /**
+ * Turn off a TRV (send DPS 1 = false)
+ * Returns: 'success' | 'offline' | 'failed'
+ */
+export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult> {
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY_MS = 2000;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const status = await getDeviceStatus(deviceId);
+      if (!status) {
+        if (attempt < MAX_RETRIES) {
+          await Bun.sleep(RETRY_DELAY_MS);
+          continue;
+        }
+        return 'offline';
+      }
+
+      const success = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, false);
+
+      if (success) {
+        console.log(`Turned off TRV ${deviceId}`);
+        broadcastTuyaStatus(deviceId, 'wkf', { switchState: false });
+        return 'success';
+      }
+
+      if (attempt < MAX_RETRIES) {
+        await Bun.sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      return 'failed';
+    } catch (error: any) {
+      if (attempt < MAX_RETRIES) {
+        await Bun.sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      console.error(`Failed to turn off TRV ${deviceId}:`, error.message);
+      return 'failed';
+    }
+  }
+  return 'failed';
+}
+
+/**
  * Apply preset to a single TRV (uses per-device temp if set, otherwise preset default)
+ * Special handling for 'off' preset: turns off the TRV instead of setting temperature
  */
 export async function applyPresetToHeater(deviceId: string, presetId: string): Promise<HeaterApplyResult> {
+  // Special handling for "off" preset - turn off the device
+  if (presetId === OFF_PRESET_ID) {
+    return turnOffHeater(deviceId);
+  }
+
   const preset = getHeaterPreset(presetId);
   if (!preset) {
     console.error(`Invalid heater preset: ${presetId}`);

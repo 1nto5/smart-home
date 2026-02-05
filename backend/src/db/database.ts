@@ -456,6 +456,21 @@ export function initDatabase(): Database {
     }
   }
 
+  // Migration: Rename heater "off" preset to "frost", create new "off" preset for power control
+  // Check if we have the old "off" preset with temperature (5°C) and no "frost" preset
+  const offPreset = db.query("SELECT * FROM heater_presets WHERE id = 'off'").get() as { target_temp: number } | null;
+  const frostPreset = db.query("SELECT * FROM heater_presets WHERE id = 'frost'").get();
+  if (offPreset && !frostPreset) {
+    // Rename off -> frost (must create new, migrate references, delete old due to primary key)
+    db.run("INSERT INTO heater_presets (id, name, target_temp) VALUES ('frost', 'Frost', ?)", [offPreset.target_temp]);
+    db.run("UPDATE heater_preset_devices SET preset_id = 'frost' WHERE preset_id = 'off'");
+    db.run("UPDATE heater_schedules SET preset_id = 'frost' WHERE preset_id = 'off'");
+    db.run("DELETE FROM heater_presets WHERE id = 'off'");
+    // Create new off preset (target_temp is placeholder, ignored for power-off preset)
+    db.run("INSERT INTO heater_presets (id, name, target_temp) VALUES ('off', 'Off', 5)");
+    console.log('📦 Migrated heater preset "off" -> "frost", created new power-off preset');
+  }
+
   // Automation pending confirmations (Telegram prompts awaiting response)
   db.run(`
     CREATE TABLE IF NOT EXISTS automation_pending (

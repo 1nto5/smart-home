@@ -24,6 +24,7 @@ export const deviceConfigs: Record<string, DeviceConfig> = {
     category: 'wkf',
     name: 'TRV',
     dps: [
+      { dps: 1, name: 'switch', type: 'boolean' }, // power on/off
       { dps: 2, name: 'mode', type: 'string' }, // "manual", "schedule"
       { dps: 3, name: 'valve', type: 'string' }, // "opened", "closed"
       { dps: 4, name: 'target_temp', type: 'number', scale: 10, unit: '°C' },

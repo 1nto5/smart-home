@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
   import { createHeaterSchedule, deleteHeaterSchedule, toggleHeaterSchedule, clearPendingHeaterActions, applyHeaterPreset, createHeaterPreset, deleteHeaterPreset, getTuyaDevices } from '$lib/api';
-  import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame, Pencil } from 'lucide-svelte';
+  import { Thermometer, Clock, Trash2, Plus, Play, X, AlertCircle, Flame, Pencil, PowerOff } from 'lucide-svelte';
   import { showApplyResult, notify } from '$lib/toast.svelte';
   import type { HeaterPreset, HeaterSchedule, TuyaDevice } from '$lib/types';
   import { browser } from '$app/environment';
@@ -223,11 +223,16 @@
     <!-- Preset Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {#each store.heaterPresets as preset (preset.id)}
-        <div class="card p-4 hover:border-device-climate-heat-text/30 transition-colors">
+        {@const isOffPreset = preset.id === 'off'}
+        <div class="card p-4 hover:border-device-climate-heat-text/30 transition-colors {isOffPreset ? 'opacity-75' : ''}">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg glow-climate-heat power-btn-on flex items-center justify-center">
-                <Flame class="w-4 h-4" />
+              <div class="w-9 h-9 rounded-lg {isOffPreset ? 'bg-surface-recessed border border-stroke-subtle' : 'glow-climate-heat power-btn-on'} flex items-center justify-center">
+                {#if isOffPreset}
+                  <PowerOff class="w-4 h-4 text-content-tertiary" />
+                {:else}
+                  <Flame class="w-4 h-4" />
+                {/if}
               </div>
               <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
             </div>
@@ -235,7 +240,7 @@
               <button
                 onclick={() => handleApplyPreset(preset.id)}
                 disabled={applyingPresetId !== null}
-                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on transition-all disabled:opacity-50 relative"
+                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default {isOffPreset ? 'text-content-secondary hover:text-content-primary' : 'text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on'} transition-all disabled:opacity-50 relative"
                 title="Apply to all heaters"
               >
                 <Play class="w-4 h-4 {applyingPresetId === preset.id ? 'animate-spin' : ''}" />
@@ -243,29 +248,37 @@
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
                 {/if}
               </button>
-              <button
-                onclick={() => openPresetDialog(preset)}
-                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-device-climate-heat-text hover:border-device-climate-heat-text/30 transition-all"
-                title="Edit preset"
-              >
-                <Pencil class="w-4 h-4" />
-              </button>
-              <button
-                onclick={() => handleDeletePreset(preset.id)}
-                disabled={deletingPresetId !== null}
-                class="relative p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
-                title="Delete preset"
-              >
-                <Trash2 class="w-4 h-4 {deletingPresetId === preset.id ? 'animate-spin' : ''}" />
-                {#if deletingPresetId === preset.id}
-                  <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
-                {/if}
-              </button>
+              {#if !isOffPreset}
+                <button
+                  onclick={() => openPresetDialog(preset)}
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-device-climate-heat-text hover:border-device-climate-heat-text/30 transition-all"
+                  title="Edit preset"
+                >
+                  <Pencil class="w-4 h-4" />
+                </button>
+                <button
+                  onclick={() => handleDeletePreset(preset.id)}
+                  disabled={deletingPresetId !== null}
+                  class="relative p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
+                  title="Delete preset"
+                >
+                  <Trash2 class="w-4 h-4 {deletingPresetId === preset.id ? 'animate-spin' : ''}" />
+                  {#if deletingPresetId === preset.id}
+                    <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                  {/if}
+                </button>
+              {/if}
             </div>
           </div>
-          <span class="font-display text-2xl text-device-climate-heat-text neon-text-subtle">
-            {preset.target_temp}°C
-          </span>
+          {#if isOffPreset}
+            <span class="font-display text-2xl text-content-tertiary">
+              Power Off
+            </span>
+          {:else}
+            <span class="font-display text-2xl text-device-climate-heat-text neon-text-subtle">
+              {preset.target_temp}°C
+            </span>
+          {/if}
         </div>
       {/each}
     </div>
