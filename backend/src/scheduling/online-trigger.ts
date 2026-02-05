@@ -8,6 +8,7 @@ import { getLampStatus } from '../xiaomi/xiaomi-lamp';
 import { applyPresetToLamp } from './schedule-service';
 import { getCurrentTimeWindow, getPresetForTimeWindow } from './time-windows';
 import { broadcast } from '../ws/broadcast';
+import { createPendingAction, removePendingForDevice } from './pending-service';
 
 // In-memory cache of last known online state
 const lastOnlineState = new Map<string, boolean>();
@@ -105,10 +106,14 @@ async function handleLampCameOnline(deviceId: string, name: string): Promise<voi
 
   try {
     const success = await applyPresetToLamp(deviceId, preset);
-    if (!success) {
+    if (success) {
+      removePendingForDevice(deviceId);
+    } else {
       console.error(`Failed to apply ${preset} to ${name} after coming online`);
+      createPendingAction(deviceId, preset);
     }
   } catch (e: any) {
     console.error(`Error applying ${preset} to ${name}:`, e.message);
+    createPendingAction(deviceId, preset);
   }
 }

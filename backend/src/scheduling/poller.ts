@@ -1,6 +1,6 @@
 /**
  * Poller
- * - Retries pending actions for offline lamps every 30 seconds
+ * - Retries pending actions for offline lamps/heaters every 15 seconds
  * - Refreshes sensor and TRV statuses every 5 minutes (local API)
  * - Fast-polls door sensors every 5 seconds (local API)
  * Note: History cleanup is handled by maintenance.ts scheduler
@@ -8,6 +8,8 @@
 
 import { getPendingHeaterActions, removePendingHeaterAction, incrementHeaterRetryCount } from './heater-pending-service';
 import { applyPresetToHeater } from './heater-schedule-service';
+import { getPendingActions, removePendingAction, incrementRetryCount } from './pending-service';
+import { applyPresetToLamp } from './schedule-service';
 import { getDb, recordSensorReading, recordContactChange, getLastContactState } from '../db/database';
 import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
@@ -190,9 +192,9 @@ export async function startPoller(): Promise<void> {
     // Check for lamp online transitions
     await checkOnlineTransitions().catch(e => console.error('Online check error:', e.message));
 
-    // Refresh sensor and TRV statuses every 5 minutes (10 iterations)
+    // Refresh sensor and TRV statuses every 5 minutes (20 iterations @ 15s)
     sensorRefreshCounter++;
-    if (sensorRefreshCounter >= 10) {
+    if (sensorRefreshCounter >= 20) {
       sensorRefreshCounter = 0;
       refreshWeatherStationStatuses().catch(e => console.error('Weather station error:', e.message));
       refreshSensorStatuses().catch(e => console.error('Sensor refresh error:', e.message));
@@ -200,7 +202,7 @@ export async function startPoller(): Promise<void> {
       pollAqi().catch(e => console.error('AQI poll error:', e.message));
     }
 
-    // Process pending heater actions (lamps use online-trigger instead)
+    // Process pending heater actions
     const pendingHeaters = getPendingHeaterActions();
     if (pendingHeaters.length > 0) {
       console.log(`Poller: checking ${pendingHeaters.length} pending heater actions`);
@@ -221,7 +223,29 @@ export async function startPoller(): Promise<void> {
         }
       }
     }
-  }, 30_000); // Check every 30 seconds
+
+    // Process pending lamp actions
+    const pendingLamps = getPendingActions();
+    if (pendingLamps.length > 0) {
+      console.log(`Poller: checking ${pendingLamps.length} pending lamp actions`);
+
+      for (const action of pendingLamps) {
+        try {
+          const success = await applyPresetToLamp(action.device_id, action.preset);
+
+          if (success) {
+            removePendingAction(action.id);
+            console.log(`Applied pending ${action.preset} to lamp ${action.device_id}`);
+          } else {
+            incrementRetryCount(action.id);
+          }
+        } catch (error: any) {
+          console.error(`Poller error for lamp ${action.device_id}:`, error.message);
+          incrementRetryCount(action.id);
+        }
+      }
+    }
+  }, 15_000); // Check every 15 seconds
 
   // Door fast-poller: every 5 seconds
   doorPollerInterval = setInterval(async () => {
