@@ -5,6 +5,7 @@
   import { showApplyResult, notify } from '$lib/toast.svelte';
   import { browser } from '$app/environment';
   import type { Preset, ApplyResult, Schedule } from '$lib/types';
+  import { translateDeviceName } from '$lib/translations';
   import type { ComponentType } from 'svelte';
   import LampScheduleDialog from '$lib/components/LampScheduleDialog.svelte';
 
@@ -174,7 +175,7 @@
 
   function getLampName(deviceId: string): string {
     const lamp = store.lamps.find(l => l.id === deviceId);
-    return lamp?.name ?? deviceId;
+    return lamp?.name ? translateDeviceName(lamp.name) : deviceId;
   }
 </script>
 
