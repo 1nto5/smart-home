@@ -171,6 +171,11 @@
     const preset = presets[presetId];
     return preset?.name ?? presetId;
   }
+
+  function getLampName(deviceId: string): string {
+    const lamp = store.lamps.find(l => l.id === deviceId);
+    return lamp?.name ?? deviceId;
+  }
 </script>
 
 <svelte:head>
@@ -514,7 +519,7 @@
           <div class="card p-3 flex items-center justify-between border-warning/30">
             <div class="flex items-center gap-3">
               <div class="w-2 h-2 rounded-full bg-warning animate-glow"></div>
-              <span class="font-mono text-sm text-content-primary">{action.device_id}</span>
+              <span class="font-mono text-sm text-content-primary">{getLampName(action.device_id)}</span>
               <span class="text-content-tertiary">→</span>
               <span class="text-sm text-device-lights-text">{getPresetName(action.preset)}</span>
             </div>
