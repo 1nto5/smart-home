@@ -15,6 +15,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serveStatic, createBunWebSocket } from 'hono/bun';
+import type { ServerWebSocket } from 'bun';
 import { addClient, removeClient } from './ws/broadcast';
 import { config } from './config';
 import { errorHandler } from './middleware/error-handler';
@@ -166,10 +167,10 @@ app.get('/ws', upgradeWebSocket((c) => {
 
   return {
     onOpen(_event, ws) {
-      addClient(ws.raw as WebSocket);
+      addClient(ws.raw as ServerWebSocket<unknown>);
     },
     onClose(_event, ws) {
-      removeClient(ws.raw as WebSocket);
+      removeClient(ws.raw as ServerWebSocket<unknown>);
     },
   };
 }));

@@ -23,7 +23,7 @@ function createStore() {
   let homeStatus = $state<HomeStatusData | null>(null);
   let loading = $state(false);
   let initialLoadComplete = $state(false);
-  let error = $state<string | null>(null);
+  const error = $state<string | null>(null);
   let wsConnected = $state(false);
 
   function connectWebSocket() {
@@ -100,7 +100,7 @@ function createStore() {
             break;
           }
         }
-      } catch {}
+      } catch { /* ignore parse errors */ }
     };
   }
 
@@ -142,7 +142,7 @@ function createStore() {
           if (lamp.last_status) {
             try {
               newStatuses.set(lamp.id, JSON.parse(lamp.last_status));
-            } catch {}
+            } catch { /* ignore parse errors */ }
           }
         }
         lampStatuses = newStatuses;

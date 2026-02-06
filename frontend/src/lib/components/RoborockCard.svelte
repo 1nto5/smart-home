@@ -285,13 +285,14 @@
             { cmd: 'pause', icon: Pause, label: 'Pause', glow: 'glow-lights' },
             { cmd: 'home', icon: Home, label: 'Home', glow: 'glow-robot' }
           ] as action}
+            {@const ActionIcon = action.icon}
             <button
               onclick={() => sendCommand(action.cmd)}
               disabled={pendingCommand !== null}
               class="py-4 rounded-xl text-sm font-medium relative transition-all flex flex-col items-center gap-1.5 disabled:opacity-50
                      {action.glow} power-btn-on hover:scale-[1.02]"
             >
-              <svelte:component this={action.icon} class="w-5 h-5 {pendingCommand === action.cmd ? 'animate-spin' : ''}" />
+              <ActionIcon class="w-5 h-5 {pendingCommand === action.cmd ? 'animate-spin' : ''}" />
               {action.label}
               {#if pendingCommand === action.cmd}
                 <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
@@ -319,13 +320,14 @@
           <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Suction Power</p>
           <div class="grid grid-cols-4 gap-1">
             {#each FAN_MODES as fan}
+              {@const FanIcon = fan.icon}
               <button
                 onclick={() => handleFanSpeed(fan.mode)}
                 disabled={pendingFanMode !== null}
                 class="py-2.5 px-1 rounded-lg text-xs font-medium transition-all relative flex flex-col items-center gap-1 disabled:opacity-50
                        {displayFanPower === fan.mode ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={fan.icon} class="w-4 h-4 {pendingFanMode === fan.mode ? 'animate-spin' : ''}" />
+                <FanIcon class="w-4 h-4 {pendingFanMode === fan.mode ? 'animate-spin' : ''}" />
                 {fan.name}
                 {#if pendingFanMode === fan.mode}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
@@ -340,6 +342,7 @@
           <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Mop Intensity</p>
           <div class="grid grid-cols-4 gap-1">
             {#each MOP_MODES as mop}
+              {@const MopIcon = mop.icon}
               <button
                 onclick={() => handleMopMode(mop.mode)}
                 disabled={pendingMopMode !== null}
@@ -349,10 +352,10 @@
                 <div class="flex items-center justify-center gap-0.5 {pendingMopMode === mop.mode ? 'animate-spin' : ''}">
                   {#if mop.count}
                     {#each Array(mop.count) as _}
-                      <svelte:component this={mop.icon} class="w-3 h-3" />
+                      <MopIcon class="w-3 h-3" />
                     {/each}
                   {:else}
-                    <svelte:component this={mop.icon} class="w-4 h-4" />
+                    <MopIcon class="w-4 h-4" />
                   {/if}
                 </div>
                 {mop.name}

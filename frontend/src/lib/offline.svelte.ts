@@ -18,7 +18,7 @@ interface QueuedAction {
 const STORAGE_KEY = 'smart-home-offline-queue';
 
 // Reactive offline state
-let state = $state<OfflineState>({
+const state = $state<OfflineState>({
   isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
   lastOnline: null,
   pendingActions: [],

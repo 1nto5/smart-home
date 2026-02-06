@@ -22,7 +22,13 @@ if (args.length < 6) {
   process.exit(1);
 }
 
-const [id, name, ip, token, model, category, room] = args;
+const id = args[0]!;
+const name = args[1]!;
+const ip = args[2]!;
+const token = args[3]!;
+const model = args[4]!;
+const category = args[5]!;
+const room = args[6];
 
 initDatabase();
 const db = getDb();

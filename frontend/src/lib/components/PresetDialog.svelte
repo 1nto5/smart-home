@@ -32,7 +32,7 @@
 
   // Default temp editing
   let isEditingDefault = $state(false);
-  let defaultTempValue = $state(preset.target_temp);
+  let defaultTempValue = $state(0);
   let defaultInputRef = $state<HTMLInputElement | null>(null);
 
   // Per-device temps

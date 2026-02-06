@@ -115,7 +115,7 @@ Toggle individual lamp power:`;
       try {
         const status = JSON.parse(lamp.last_status);
         isOn = status.power === 'on' || status.power === true;
-      } catch {}
+      } catch { /* ignore parse errors */ }
     }
     const icon = isOn ? '🟢' : '⚫';
     buttons.push([{ text: `${icon} ${lamp.name}`, callback_data: `lamp:toggle:${lamp.id}` }]);
@@ -182,7 +182,7 @@ Select a heater to adjust:`;
         // DPS 5 = current temp (scaled by 10), DPS 4 = target temp (scaled by 10)
         if (status['5'] !== undefined) temp = `${(status['5'] / 10).toFixed(1)}`;
         if (status['4'] !== undefined) targetTemp = `${(status['4'] / 10).toFixed(0)}`;
-      } catch {}
+      } catch { /* ignore parse errors */ }
     }
     const icon = heater.online ? '🟢' : '⚫';
     const shortName = heater.name.replace(' Heater', '').replace(' TRV', '');
@@ -222,7 +222,7 @@ export function heaterDeviceKeyboard(deviceId: string): { text: string; keyboard
       const status = JSON.parse(heater.last_status);
       if (status['5'] !== undefined) currentTemp = `${(status['5'] / 10).toFixed(1)}°C`;
       if (status['4'] !== undefined) targetTemp = status['4'] / 10;
-    } catch {}
+    } catch { /* ignore parse errors */ }
   }
 
   const shortName = heater.name.replace(' Heater', '').replace(' TRV', '');
@@ -603,7 +603,7 @@ export function weatherKeyboard(): { text: string; keyboard: InlineKeyboard } {
       statusText = `🌡️ Temperature: <b>${temp}</b>
 💧 Humidity: <b>${hum}</b>
 🔋 Battery: <b>${bat}</b>`;
-    } catch {}
+    } catch { /* ignore parse errors */ }
   }
 
   // Show current time for "Retrieved"

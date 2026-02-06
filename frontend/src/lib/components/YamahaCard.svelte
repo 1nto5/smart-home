@@ -29,7 +29,7 @@
 
   $effect(() => {
     if (!fetched && device.last_status) {
-      try { status = JSON.parse(device.last_status); } catch {}
+      try { status = JSON.parse(device.last_status); } catch { /* ignore parse errors */ }
     }
   });
 
@@ -329,13 +329,14 @@
           <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Input Source</p>
           <div class="grid grid-cols-2 gap-2">
             {#each inputs as inp}
+              {@const InputIcon = inp.icon}
               <button
                 onclick={() => setInput(inp.id)}
                 disabled={pendingInput !== null}
                 class="py-3 rounded-lg transition-all flex items-center justify-center gap-2 font-medium relative disabled:opacity-50
                        {status.input === inp.id ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={inp.icon} class="w-4 h-4 {pendingInput === inp.id ? 'animate-spin' : ''}" />
+                <InputIcon class="w-4 h-4 {pendingInput === inp.id ? 'animate-spin' : ''}" />
                 {inp.label}
                 {#if pendingInput === inp.id}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>

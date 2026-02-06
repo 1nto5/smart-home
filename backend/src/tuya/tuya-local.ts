@@ -185,7 +185,7 @@ export async function discoverDevice(deviceId: string, key: string): Promise<str
 
     device.find().then(() => {
       clearTimeout(timeout);
-      // @ts-ignore - ip is set after find()
+      // @ts-expect-error ip is set after find()
       const ip = device.device?.ip;
       device.disconnect();
       resolve(ip || null);

@@ -27,10 +27,10 @@ export function getCurrentPresetFromSchedules(): PresetName {
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   // Default to last schedule (wraps from yesterday)
-  let activePreset: PresetName = schedules[schedules.length - 1].preset as PresetName;
+  let activePreset: PresetName = schedules[schedules.length - 1]!.preset as PresetName;
 
   for (const schedule of schedules) {
-    const [h, m] = schedule.time.split(':').map(Number);
+    const [h = 0, m = 0] = schedule.time.split(':').map(Number);
     const scheduleMinutes = h * 60 + m;
 
     if (scheduleMinutes <= currentMinutes) {
