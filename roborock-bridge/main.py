@@ -54,7 +54,8 @@ class ResetConsumableRequest(BaseModel):
 
 
 # Room name mapping (segment ID -> name)
-ROOM_NAMES = {
+# Configurable via ROBOROCK_ROOM_NAMES env var as JSON: {"16": "Living Room", ...}
+_DEFAULT_ROOM_NAMES = {
     16: "Living Room",
     17: "Kitchen",
     18: "Hallway",
@@ -63,6 +64,19 @@ ROOM_NAMES = {
     21: "Wardrobe",
     22: "Kids Room",
 }
+
+def _load_room_names() -> dict[int, str]:
+    import json
+    env_val = os.environ.get("ROBOROCK_ROOM_NAMES", "")
+    if env_val:
+        try:
+            parsed = json.loads(env_val)
+            return {int(k): v for k, v in parsed.items()}
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"Warning: Invalid ROBOROCK_ROOM_NAMES, using defaults: {e}")
+    return _DEFAULT_ROOM_NAMES
+
+ROOM_NAMES = _load_room_names()
 
 
 async def get_channel() -> LocalChannel:

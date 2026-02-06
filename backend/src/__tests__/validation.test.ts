@@ -206,14 +206,14 @@ describe('LampScheduleSchema', () => {
 describe('RoborockCommandSchema', () => {
   test('accepts valid commands', () => {
     const commands = ['start', 'pause', 'stop', 'home', 'find'];
-    for (const command of commands) {
-      const result = RoborockCommandSchema.safeParse({ command });
+    for (const cmd of commands) {
+      const result = RoborockCommandSchema.safeParse({ cmd });
       expect(result.success).toBe(true);
     }
   });
 
   test('rejects invalid command', () => {
-    const result = RoborockCommandSchema.safeParse({ command: 'invalid' });
+    const result = RoborockCommandSchema.safeParse({ cmd: 'invalid' });
     expect(result.success).toBe(false);
   });
 });

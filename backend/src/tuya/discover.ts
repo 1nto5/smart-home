@@ -6,7 +6,12 @@ async function main() {
   initDatabase();
 
   const db = getDb();
-  const gateway = db.query('SELECT * FROM devices WHERE category = ?').get('wfcon') as any;
+  const gateway = db.query('SELECT * FROM devices WHERE category = ?').get('wfcon') as {
+    id: string;
+    name: string;
+    local_key: string;
+    ip: string | null;
+  } | null;
 
   if (!gateway) {
     console.error('Gateway not found');

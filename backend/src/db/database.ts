@@ -606,7 +606,16 @@ export interface TelegramConfig {
 
 export function getTelegramConfig(): TelegramConfig {
   const database = getDb();
-  const result = database.query('SELECT * FROM telegram_config WHERE id = 1').get() as any;
+  const result = database.query('SELECT * FROM telegram_config WHERE id = 1').get() as {
+    enabled: number;
+    bot_token: string | null;
+    chat_id: string | null;
+    flood_alerts: number;
+    door_alerts: number;
+    error_alerts: number;
+    cooldown_minutes: number;
+    updated_at: string;
+  };
   return {
     enabled: result.enabled === 1,
     bot_token: result.bot_token,
@@ -622,7 +631,7 @@ export function getTelegramConfig(): TelegramConfig {
 export function updateTelegramConfig(config: Partial<Omit<TelegramConfig, 'updated_at'>>): TelegramConfig {
   const database = getDb();
   const updates: string[] = [];
-  const values: any[] = [];
+  const values: (string | number | null)[] = [];
 
   if (config.enabled !== undefined) {
     updates.push('enabled = ?');
@@ -698,7 +707,7 @@ export function getTelegramLog(limit: number = 50): TelegramLogEntry[] {
 export function getLastTelegramTime(alertType: string, deviceId?: string): Date | null {
   const database = getDb();
   let query = 'SELECT sent_at FROM telegram_log WHERE alert_type = ? AND status = \'sent\'';
-  const params: any[] = [alertType];
+  const params: string[] = [alertType];
 
   if (deviceId) {
     query += ' AND device_id = ?';
@@ -793,7 +802,7 @@ export function acknowledgeAlarm(alarmId: number, by: string = 'telegram'): void
 export function acknowledgeAllAlarms(alarmType?: AlarmType, by: string = 'telegram'): number {
   const database = getDb();
   let query = `UPDATE active_alarms SET acknowledged_at = CURRENT_TIMESTAMP, acknowledged_by = ? WHERE acknowledged_at IS NULL`;
-  const params: any[] = [by];
+  const params: string[] = [by];
 
   if (alarmType) {
     query += ` AND alarm_type = ?`;
@@ -879,7 +888,7 @@ export function createAutomation(automation: Omit<Automation, 'id' | 'created_at
 export function updateAutomation(id: number, updates: Partial<Omit<Automation, 'id' | 'created_at'>>): Automation | null {
   const database = getDb();
   const fields: string[] = [];
-  const values: any[] = [];
+  const values: (string | number | null)[] = [];
 
   if (updates.name !== undefined) { fields.push('name = ?'); values.push(updates.name); }
   if (updates.enabled !== undefined) { fields.push('enabled = ?'); values.push(updates.enabled); }

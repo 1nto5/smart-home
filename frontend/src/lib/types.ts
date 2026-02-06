@@ -222,3 +222,13 @@ export interface AutomationLog {
   result: string;
   executed_at: string;
 }
+
+// WebSocket message types (discriminated union)
+export type WsMessage =
+  | { type: 'lamp_status'; deviceId: string; status: LampStatus }
+  | { type: 'lamp_offline'; deviceId: string }
+  | { type: 'tuya_status'; deviceId: string; category: string; status: Record<string, unknown> }
+  | { type: 'tuya_offline'; deviceId: string }
+  | { type: 'roborock_status'; status: RoborockStatus }
+  | { type: 'yamaha_status'; deviceId: string; status: YamahaStatus | null; online: boolean }
+  | { type: 'purifier_status'; status: AirPurifierStatus };

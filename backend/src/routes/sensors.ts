@@ -14,7 +14,7 @@ sensors.get('/history', (c) => {
   const limit = Math.min(parseInt(c.req.query('limit') || '100'), 1000);
 
   let query = 'SELECT * FROM sensor_history WHERE 1=1';
-  const params: unknown[] = [];
+  const params: (string | number)[] = [];
 
   if (deviceId) {
     query += ' AND device_id = ?';
@@ -44,13 +44,17 @@ sensors.get('/history/averaged', (c) => {
   const from = c.req.query('from');
   const to = c.req.query('to');
 
-  const dateFormat = interval === 'day' ? '%Y-%m-%d' : '%Y-%m-%d %H:00';
+  const ALLOWED_FORMATS: Record<string, string> = {
+    day: '%Y-%m-%d',
+    hour: '%Y-%m-%d %H:00',
+  };
+  const dateFormat = ALLOWED_FORMATS[interval] ?? '%Y-%m-%d %H:00';
 
   let query = `
     SELECT
       device_id,
       device_name,
-      strftime('${dateFormat}', recorded_at) as period,
+      strftime(?, recorded_at) as period,
       AVG(temperature) as avg_temperature,
       AVG(humidity) as avg_humidity,
       AVG(target_temp) as avg_target_temp,
@@ -60,7 +64,7 @@ sensors.get('/history/averaged', (c) => {
     FROM sensor_history
     WHERE 1=1
   `;
-  const params: unknown[] = [];
+  const params: (string | number)[] = [dateFormat];
 
   if (deviceId) {
     query += ' AND device_id = ?';
@@ -106,7 +110,7 @@ sensors.get('/contacts/history', (c) => {
   const limit = Math.min(parseInt(c.req.query('limit') || '100'), 1000);
 
   let query = 'SELECT * FROM contact_history WHERE 1=1';
-  const params: unknown[] = [];
+  const params: (string | number)[] = [];
 
   if (deviceId) {
     query += ' AND device_id = ?';
