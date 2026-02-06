@@ -19,7 +19,11 @@ if (args.length < 3) {
   process.exit(1);
 }
 
-const [id, name, ip, model, room] = args;
+const id = args[0]!;
+const name = args[1]!;
+const ip = args[2]!;
+const model = args[3];
+const room = args[4];
 
 // Test connection and auto-detect model if not provided
 console.log(`Testing connection to ${ip}...`);

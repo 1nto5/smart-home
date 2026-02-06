@@ -33,8 +33,8 @@ function isInQuietWindow(quietWindowsJson: string | null): { inQuiet: boolean; w
   for (const window of windows) {
     if (!window.start || !window.end) continue;
 
-    const [startH, startM] = window.start.split(':').map(Number);
-    const [endH, endM] = window.end.split(':').map(Number);
+    const [startH = 0, startM = 0] = window.start.split(':').map(Number);
+    const [endH = 0, endM = 0] = window.end.split(':').map(Number);
     const startMinutes = startH * 60 + startM;
     const endMinutes = endH * 60 + endM;
 

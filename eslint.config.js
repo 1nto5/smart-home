@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import svelte from 'eslint-plugin-svelte';
 import svelteParser from 'svelte-eslint-parser';
+import globals from 'globals';
 
 export default tseslint.config(
   // Global ignores
@@ -38,6 +39,11 @@ export default tseslint.config(
   // Frontend TS files
   {
     files: ['frontend/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -58,6 +64,9 @@ export default tseslint.config(
       parserOptions: {
         parser: tseslint.parser,
       },
+      globals: {
+        ...globals.browser,
+      },
     },
     rules: {
       ...svelte.configs.recommended.rules,
@@ -65,6 +74,7 @@ export default tseslint.config(
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   }
 );

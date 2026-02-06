@@ -265,12 +265,13 @@
     <!-- Preset Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {#each Object.entries(presets) as [name, preset] (name)}
+        {@const Icon = getIcon(name)}
         <div class="card group hover:border-device-lights-text/30 transition-colors">
           <div class="p-4">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg glow-lights power-btn-on flex items-center justify-center">
-                  <svelte:component this={getIcon(name)} class="w-4 h-4" />
+                  <Icon class="w-4 h-4" />
                 </div>
                 <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
               </div>

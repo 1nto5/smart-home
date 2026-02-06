@@ -38,7 +38,7 @@ async function main() {
 
   try {
     await device.find({ timeout: 20 });
-    // @ts-ignore
+    // @ts-expect-error ip is set after find()
     const ip = device.device?.ip;
 
     if (ip) {

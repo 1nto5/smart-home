@@ -211,13 +211,14 @@
           <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Operating Mode</p>
           <div class="grid grid-cols-3 gap-2">
             {#each modes as mode}
+              {@const ModeIcon = mode.icon}
               <button
                 onclick={() => setMode(mode.value)}
                 disabled={pendingMode !== null}
                 class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium relative disabled:opacity-50
                        {displayMode === mode.value ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={mode.icon} class="w-5 h-5 {pendingMode === mode.value ? 'animate-spin' : ''}" />
+                <ModeIcon class="w-5 h-5 {pendingMode === mode.value ? 'animate-spin' : ''}" />
                 {mode.label}
                 {#if pendingMode === mode.value}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>

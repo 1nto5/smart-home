@@ -92,7 +92,7 @@ export async function executeSingleAction(
         }
         break;
 
-      case 'set_heater_temp':
+      case 'set_heater_temp': {
         const temp = parseFloat(action.value || '5');
         if (action.target === 'room' && context.room) {
           await applyTempToRoom(context.room, temp);
@@ -102,6 +102,7 @@ export async function executeSingleAction(
           success = true;
         }
         break;
+      }
 
       case 'purifier_off':
         success = await setPurifierPower(false);

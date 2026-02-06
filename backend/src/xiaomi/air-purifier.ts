@@ -3,15 +3,10 @@
  * Uses MiOT protocol (get_properties/set_properties)
  */
 
-import miio from 'miio';
+import miio, { type MiioDevice } from 'miio';
 import { getDb } from '../db/database';
 import { broadcastPurifierStatus } from '../ws/device-broadcast';
 import { findAndUpdateDeviceIp } from './xiaomi-discover';
-
-interface MiioDevice {
-  call(method: string, params: unknown[]): Promise<MiioProperty[]>;
-  destroy(): void;
-}
 
 interface MiioProperty {
   siid: number;
@@ -106,7 +101,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       { siid: 7, piid: 2 },  // LED brightness (0-8, 0=off, 8=brightest)
       { siid: 9, piid: 1 },  // motor_speed (current RPM)
       { siid: 9, piid: 3 },  // favorite_rpm (set RPM)
-    ]);
+    ]) as MiioProperty[];
 
     const getValue = (siid: number, piid: number) => {
       const prop = result.find((r: MiioProperty) => r.siid === siid && r.piid === piid);

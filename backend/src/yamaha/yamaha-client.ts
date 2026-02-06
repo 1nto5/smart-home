@@ -29,7 +29,7 @@ export class YamahaClient {
         return null;
       }
 
-      const data = await response.json();
+      const data = await response.json() as T & { response_code: number };
 
       // YXC returns response_code 0 for success
       if (data.response_code !== 0) {
@@ -37,7 +37,7 @@ export class YamahaClient {
         return null;
       }
 
-      return data as T;
+      return data;
     } catch (error: unknown) {
       console.error(`YXC request error (${path}):`, getErrorMessage(error));
       return null;

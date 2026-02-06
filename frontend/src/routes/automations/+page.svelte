@@ -351,8 +351,10 @@
 
 <!-- Create/Edit Dialog -->
 {#if showForm}
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick={closeForm}>
-    <div class="bg-surface-elevated rounded-2xl border border-stroke-default w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick={(e) => e.stopPropagation()}>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick={closeForm} onkeydown={(e) => { if (e.key === 'Escape') closeForm(); }} role="dialog" aria-modal="true" tabindex="-1">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="bg-surface-elevated rounded-2xl border border-stroke-default w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
       <div class="p-4 border-b border-stroke-subtle flex items-center justify-between">
         <h3 class="font-display text-lg text-content-primary">{editingId ? 'Edit' : 'New'} Automation</h3>
         <button onclick={closeForm} class="p-2 rounded-lg hover:bg-surface-recessed transition-colors">
@@ -362,15 +364,15 @@
 
       <div class="p-4 space-y-4">
         <!-- Name -->
-        <div>
-          <label class="block text-sm font-medium text-content-secondary mb-1">Name</label>
+        <label class="block">
+          <span class="block text-sm font-medium text-content-secondary mb-1">Name</span>
           <input
             type="text"
             bind:value={formName}
             placeholder="e.g. Window open - stop heating"
             class="w-full bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-accent focus:outline-none"
           />
-        </div>
+        </label>
 
         <!-- Trigger -->
         <div class="p-3 rounded-lg bg-surface-recessed border border-stroke-subtle">

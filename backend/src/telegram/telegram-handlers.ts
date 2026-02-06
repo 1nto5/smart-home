@@ -107,10 +107,10 @@ export async function handleCallbackQuery(
   try {
     switch (action) {
       case 'menu':
-        await handleMenuNavigation(args[0], chatId, messageId);
+        await handleMenuNavigation(args[0] ?? '', chatId, messageId);
         break;
       case 'alarm':
-        await handleAlarmAction(args[0], chatId, messageId);
+        await handleAlarmAction(args[0] ?? '', chatId, messageId);
         break;
       case 'alarm_ack':
         if (args[0]) await handleAlarmAcknowledge(args[0], chatId, messageId);
@@ -477,7 +477,7 @@ async function handleRoborockAction(
       actionResult = await findMe();
       actionName = 'Find';
       break;
-    case 'status':
+    case 'status': {
       const status = await getRoborockStatus();
       const menu = roborockKeyboard();
       if (status) {
@@ -503,14 +503,17 @@ async function handleRoborockAction(
           100: 'Full',
         };
         const fanNames: Record<number, string> = { 101: 'Quiet', 102: 'Balanced', 103: 'Turbo', 104: 'Max' };
-        const stateName = stateMap[status.state] || `Unknown (${status.state})`;
-        const fanName = status.fan_power !== undefined ? (fanNames[status.fan_power] || `${status.fan_power}`) : 'N/A';
+        const stateNum = Number(status.state);
+        const stateName = stateMap[stateNum] ?? `Unknown (${status.state})`;
+        const fanPowerNum = status.fan_power !== undefined ? Number(status.fan_power) : undefined;
+        const fanName = fanPowerNum !== undefined ? (fanNames[fanPowerNum] ?? `${status.fan_power}`) : 'N/A';
         const text = `${menu.text}\n\n📊 <b>Status:</b>\nState: ${stateName}\nBattery: ${status.battery}%\nFan: ${fanName}`;
         await editMessage(chatId, messageId, text, menu.keyboard);
       } else {
         await editMessage(chatId, messageId, `${menu.text}\n\n❌ Could not get status`, menu.keyboard);
       }
       return;
+    }
   }
 
   console.log(`Telegram: Roborock ${actionName} - ${actionResult ? 'success' : 'failed'}`);
@@ -592,7 +595,7 @@ async function handlePurifierAction(
   } else if (subAction === 'off') {
     success = await setPurifierPower(false);
     actionName = 'Power Off';
-  } else if (subAction === 'mode' && param) {
+  } else if (subAction === 'mode' && param && (param === 'auto' || param === 'silent' || param === 'favorite')) {
     success = await setPurifierMode(param);
     const modeNames: Record<string, string> = { auto: 'Auto', silent: 'Silent', favorite: 'Manual' };
     actionName = `Mode: ${modeNames[param] || param}`;
@@ -808,7 +811,7 @@ async function handleAutomationCallback(
   messageId: number
 ): Promise<void> {
   const [response, pendingIdStr] = args;
-  const pendingId = parseInt(pendingIdStr);
+  const pendingId = parseInt(pendingIdStr ?? '');
 
   if (isNaN(pendingId)) {
     await editMessage(chatId, messageId, '❌ Invalid automation ID', backToMenuKeyboard());
@@ -878,7 +881,7 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
       const ws = JSON.parse(weatherDevice.last_status);
       if (ws['103'] !== undefined) weatherTemp = ws['103'] / 100;
       if (ws['101'] !== undefined) humidity = `${(ws['101'] / 100).toFixed(0)}%`;
-    } catch {}
+    } catch { /* ignore parse errors */ }
   }
 
   // Get heater temps
@@ -889,7 +892,7 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
       try {
         const parsed = JSON.parse(h.last_status);
         if (parsed['5'] !== undefined) heaterTemps.push(parsed['5'] / 10);
-      } catch {}
+      } catch { /* ignore parse errors */ }
     }
   }
 
@@ -906,7 +909,7 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
     const stateMap: Record<number, string> = {
       3: 'Idle', 5: 'Cleaning', 6: 'Returning', 8: 'Charging', 10: 'Paused',
     };
-    roborockState = stateMap[roborockStatus.state] || `State ${roborockStatus.state}`;
+    roborockState = stateMap[Number(roborockStatus.state)] ?? `State ${roborockStatus.state}`;
   }
 
   // Get purifier status with AQI

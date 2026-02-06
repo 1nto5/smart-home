@@ -23,11 +23,11 @@
   let loading = $derived(saving || deleting);
 
   // Form state
-  let editName = $state(schedule.name);
-  let editPresetId = $state(schedule.preset_id);
-  let editTime = $state(schedule.time);
+  let editName = $state('');
+  let editPresetId = $state('');
+  let editTime = $state('');
 
-  // Reset form when dialog opens
+  // Reset form when dialog opens or schedule changes
   $effect(() => {
     if (open && schedule) {
       editName = schedule.name;
@@ -75,29 +75,29 @@
 <DeviceDialog {open} {onclose} title="Edit Schedule">
   <div class="space-y-5">
     <!-- Schedule Name -->
-    <div>
-      <label class="text-xs text-content-tertiary uppercase tracking-wider mb-2 block">Name</label>
+    <label class="block">
+      <span class="text-xs text-content-tertiary uppercase tracking-wider mb-2 block">Name</span>
       <input
         type="text"
         bind:value={editName}
         class="w-full bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-accent focus:outline-none transition-colors"
         placeholder="Schedule name"
       />
-    </div>
+    </label>
 
     <!-- Time -->
-    <div>
-      <label class="text-xs text-content-tertiary uppercase tracking-wider mb-2 block">Time</label>
+    <label class="block">
+      <span class="text-xs text-content-tertiary uppercase tracking-wider mb-2 block">Time</span>
       <input
         type="time"
         bind:value={editTime}
         class="w-full bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary font-display text-xl focus:border-accent focus:outline-none transition-colors"
       />
-    </div>
+    </label>
 
     <!-- Preset Selection -->
     <div>
-      <label class="text-xs text-content-tertiary uppercase tracking-wider mb-2 block">Preset</label>
+      <span class="text-xs text-content-tertiary uppercase tracking-wider mb-2 block">Preset</span>
       <div class="grid grid-cols-2 gap-2">
         {#each presets as preset (preset.id)}
           <button

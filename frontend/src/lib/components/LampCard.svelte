@@ -262,6 +262,7 @@
           <div class="grid grid-cols-3 gap-2">
             {#each presets as preset}
               {@const active = isPresetActive(preset) || activePreset === preset.id}
+              {@const PresetIcon = preset.icon}
               <button
                 onclick={() => applyPreset(preset)}
                 disabled={activePreset !== null}
@@ -270,7 +271,7 @@
                          ? (preset.moonlight ? 'glow-audio power-btn-on' : 'glow-lights power-btn-on')
                          : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
-                <svelte:component this={preset.icon} class="w-4 h-4 {activePreset === preset.id ? 'animate-spin' : ''}" />
+                <PresetIcon class="w-4 h-4 {activePreset === preset.id ? 'animate-spin' : ''}" />
                 <span class="text-xs font-medium">{preset.label}</span>
                 {#if activePreset === preset.id}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>

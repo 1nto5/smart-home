@@ -83,6 +83,7 @@
     return categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
   });
   let statusInfo = $derived(getStatusInfo(parsedStatus(), device.category));
+  let SensorIcon = $derived(config().icon);
 </script>
 
 <!-- Card -->
@@ -100,7 +101,7 @@
       class="power-btn {statusInfo.alert ? 'bg-error/20 text-error border-error/50' : statusInfo.lowBattery ? 'bg-warning/20 text-warning border-warning/50' : 'glow-sensors power-btn-on'}"
       class:animate-glow={statusInfo.alert}
     >
-      <svelte:component this={config().icon} class="w-4 h-4" />
+      <SensorIcon class="w-4 h-4" />
     </div>
 
     <!-- Info -->
@@ -124,7 +125,7 @@
           {#if statusInfo.alert}
             <AlertTriangle class="w-12 h-12 animate-glow" />
           {:else}
-            <svelte:component this={config().icon} class="w-12 h-12" />
+            <SensorIcon class="w-12 h-12" />
           {/if}
         </div>
         <p class="font-display text-2xl mt-3 {statusInfo.color} {statusInfo.alert ? 'neon-text' : ''}">{statusInfo.text}</p>

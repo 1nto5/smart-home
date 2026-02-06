@@ -17,7 +17,7 @@ export async function discoverTuyaGatewayIp(deviceId: string, key: string, timeo
 
   try {
     await device.find({ timeout });
-    // @ts-ignore - ip is set after find()
+    // @ts-expect-error ip is set after find()
     const ip = device.device?.ip;
 
     if (ip) {

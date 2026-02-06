@@ -92,7 +92,7 @@ async function request<T>(
     body: method === 'POST' ? bodyStr : undefined,
   });
 
-  const data = await response.json();
+  const data = await response.json() as { success: boolean; msg?: string; code?: number; result: T };
 
   if (!data.success) {
     throw new Error(`Tuya API Error: ${data.msg} (code: ${data.code})`);
