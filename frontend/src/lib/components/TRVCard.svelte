@@ -2,6 +2,7 @@
   import { tick } from 'svelte';
   import type { TuyaDevice } from '$lib/types';
   import { translateDeviceName, getSimplifiedName } from '$lib/translations';
+  import { controlTuyaDevice, getTuyaDeviceStatus } from '$lib/api';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Flame, Lock, LockOpen, Power, PowerOff, Snowflake, ThermometerSun } from 'lucide-svelte';
@@ -55,11 +56,7 @@
     hasError = false;
     const previousTemp = serverTargetTemp;
     try {
-      await fetch(`/api/devices/${device.id}/control`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dps: 4, value: Math.round(temp * 10) }),
-      });
+      await controlTuyaDevice(device.id, 4, Math.round(temp * 10));
       refreshStatus();
     } catch (e) {
       console.error(e);
@@ -72,12 +69,9 @@
 
   async function refreshStatus() {
     try {
-      const res = await fetch(`/api/devices/${device.id}/status`);
-      if (res.ok) {
-        const data = await res.json();
-        device.last_status = JSON.stringify(data.status);
-        optimisticTemp = null;
-      }
+      const data = await getTuyaDeviceStatus(device.id);
+      device.last_status = JSON.stringify(data.status);
+      optimisticTemp = null;
     } catch (e) {
       console.error(e);
     }
@@ -123,11 +117,7 @@
     const currentLock = status()?.['7'] === true;
     childLockPending = true;
     try {
-      await fetch(`/api/devices/${device.id}/control`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dps: 7, value: !currentLock }),
-      });
+      await controlTuyaDevice(device.id, 7, !currentLock);
       await refreshStatus();
     } catch (e) {
       console.error('Failed to toggle child lock:', e);
@@ -139,11 +129,7 @@
     const currentPower = status()?.['1'] === true;
     powerPending = true;
     try {
-      await fetch(`/api/devices/${device.id}/control`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dps: 1, value: !currentPower }),
-      });
+      await controlTuyaDevice(device.id, 1, !currentPower);
       await refreshStatus();
     } catch (e) {
       console.error('Failed to toggle power:', e);

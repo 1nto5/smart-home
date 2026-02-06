@@ -33,8 +33,8 @@ function checkDatabase(): HealthCheck {
       return { status: 'ok' };
     }
     return { status: 'error', message: 'Query failed' };
-  } catch (err: any) {
-    return { status: 'error', message: err.message };
+  } catch (err) {
+    return { status: 'error', message: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -43,16 +43,16 @@ function checkDatabase(): HealthCheck {
  */
 function checkTelegram(): HealthCheck {
   try {
-    const config = getTelegramConfig();
-    if (!config.enabled) {
+    const telegramConfig = getTelegramConfig();
+    if (!telegramConfig.enabled) {
       return { status: 'ok', message: 'Disabled' };
     }
-    if (!config.bot_token || !config.chat_id) {
+    if (!telegramConfig.bot_token || !telegramConfig.chat_id) {
       return { status: 'error', message: 'Missing bot_token or chat_id' };
     }
     return { status: 'ok' };
-  } catch (err: any) {
-    return { status: 'error', message: err.message };
+  } catch (err) {
+    return { status: 'error', message: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -66,15 +66,22 @@ function checkGateway(): HealthCheck {
       return { status: 'ok' };
     }
     return { status: 'error', message: 'Disconnected' };
-  } catch (err: any) {
-    return { status: 'error', message: err.message };
+  } catch (err) {
+    return { status: 'error', message: err instanceof Error ? err.message : String(err) };
   }
 }
 
 /**
- * Check Roborock bridge reachability
+ * Check Roborock bridge reachability (cached with 30s TTL)
  */
+const ROBOROCK_CACHE_TTL = 30_000;
+let roborockCache: { result: HealthCheck; expiresAt: number } | null = null;
+
 async function checkRoborock(): Promise<HealthCheck> {
+  if (roborockCache && Date.now() < roborockCache.expiresAt) {
+    return roborockCache.result;
+  }
+
   try {
     const start = Date.now();
     const controller = new AbortController();
@@ -88,15 +95,18 @@ async function checkRoborock(): Promise<HealthCheck> {
 
     const responseTime = Date.now() - start;
 
-    if (response.ok) {
-      return { status: 'ok', responseTime };
-    }
-    return { status: 'error', message: `HTTP ${response.status}`, responseTime };
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
-      return { status: 'error', message: 'Timeout' };
-    }
-    return { status: 'error', message: err.message };
+    const result: HealthCheck = response.ok
+      ? { status: 'ok', responseTime }
+      : { status: 'error', message: `HTTP ${response.status}`, responseTime };
+    roborockCache = { result, expiresAt: Date.now() + ROBOROCK_CACHE_TTL };
+    return result;
+  } catch (err) {
+    const message = err instanceof Error
+      ? (err.name === 'AbortError' ? 'Timeout' : err.message)
+      : String(err);
+    const result: HealthCheck = { status: 'error', message };
+    roborockCache = { result, expiresAt: Date.now() + ROBOROCK_CACHE_TTL };
+    return result;
   }
 }
 

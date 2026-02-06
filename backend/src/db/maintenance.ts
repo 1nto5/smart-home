@@ -1,4 +1,5 @@
 import { getDb } from './database';
+import { config } from '../config';
 
 export interface RetentionConfig {
   sensorHistoryDays: number;
@@ -7,14 +8,6 @@ export interface RetentionConfig {
   telegramLogDays: number;
   automationLogDays: number;
 }
-
-const DEFAULT_RETENTION: RetentionConfig = {
-  sensorHistoryDays: 90,
-  deviceHistoryDays: 30,
-  contactHistoryDays: 180,
-  telegramLogDays: 30,
-  automationLogDays: 30,
-};
 
 export interface CleanupResult {
   sensorHistory: number;
@@ -26,7 +19,7 @@ export interface CleanupResult {
   duration: number;
 }
 
-export function cleanupOldData(config: RetentionConfig = DEFAULT_RETENTION): CleanupResult {
+export function cleanupOldData(retention: RetentionConfig = config.retention): CleanupResult {
   const start = Date.now();
   const db = getDb();
 
@@ -35,33 +28,33 @@ export function cleanupOldData(config: RetentionConfig = DEFAULT_RETENTION): Cle
 
   const sensorHistory = db.run(
     `DELETE FROM sensor_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
-    [config.sensorHistoryDays]
+    [retention.sensorHistoryDays]
   ).changes;
-  if (sensorHistory > 0) console.log(`[maintenance] sensor_history: deleted ${sensorHistory} rows (>${config.sensorHistoryDays} days)`);
+  if (sensorHistory > 0) console.log(`[maintenance] sensor_history: deleted ${sensorHistory} rows (>${retention.sensorHistoryDays} days)`);
 
   const deviceHistory = db.run(
     `DELETE FROM device_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
-    [config.deviceHistoryDays]
+    [retention.deviceHistoryDays]
   ).changes;
-  if (deviceHistory > 0) console.log(`[maintenance] device_history: deleted ${deviceHistory} rows (>${config.deviceHistoryDays} days)`);
+  if (deviceHistory > 0) console.log(`[maintenance] device_history: deleted ${deviceHistory} rows (>${retention.deviceHistoryDays} days)`);
 
   const contactHistory = db.run(
     `DELETE FROM contact_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
-    [config.contactHistoryDays]
+    [retention.contactHistoryDays]
   ).changes;
-  if (contactHistory > 0) console.log(`[maintenance] contact_history: deleted ${contactHistory} rows (>${config.contactHistoryDays} days)`);
+  if (contactHistory > 0) console.log(`[maintenance] contact_history: deleted ${contactHistory} rows (>${retention.contactHistoryDays} days)`);
 
   const telegramLog = db.run(
     `DELETE FROM telegram_log WHERE sent_at < datetime('now', '-' || ? || ' days')`,
-    [config.telegramLogDays]
+    [retention.telegramLogDays]
   ).changes;
-  if (telegramLog > 0) console.log(`[maintenance] telegram_log: deleted ${telegramLog} rows (>${config.telegramLogDays} days)`);
+  if (telegramLog > 0) console.log(`[maintenance] telegram_log: deleted ${telegramLog} rows (>${retention.telegramLogDays} days)`);
 
   const automationLog = db.run(
     `DELETE FROM automation_log WHERE executed_at < datetime('now', '-' || ? || ' days')`,
-    [config.automationLogDays]
+    [retention.automationLogDays]
   ).changes;
-  if (automationLog > 0) console.log(`[maintenance] automation_log: deleted ${automationLog} rows (>${config.automationLogDays} days)`);
+  if (automationLog > 0) console.log(`[maintenance] automation_log: deleted ${automationLog} rows (>${retention.automationLogDays} days)`);
 
   const totalDeleted = sensorHistory + deviceHistory + contactHistory + telegramLog + automationLog;
 

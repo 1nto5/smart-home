@@ -19,6 +19,7 @@ import { addClient, removeClient } from './ws/broadcast';
 import { config } from './config';
 import { errorHandler } from './middleware/error-handler';
 import { authMiddleware } from './middleware/auth';
+import { rateLimiter } from './middleware/rate-limit';
 import { initDatabase, closeDatabase } from './db/database';
 import { startTelegramBot, stopTelegramBot } from './telegram/telegram-bot';
 import { startAlarmNotificationLoop, stopAlarmNotificationLoop } from './notifications/alarm-service';
@@ -51,7 +52,14 @@ app.onError(errorHandler);
 
 // Middleware
 app.use('*', logger());
-app.use('*', cors());
+app.use('*', cors({
+  origin: [
+    'http://10.10.10.10',
+    'http://localhost:5173',
+    'http://localhost:3001',
+  ],
+}));
+app.use('/api/*', rateLimiter(100, 60_000));
 
 // Initialize database
 initDatabase();
@@ -92,10 +100,21 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 // === ROUTE MOUNTING ===
 
-// Health check (quick, not behind auth)
+// Health check — basic status is public, full details require auth
 app.get('/api/health', async (c) => {
   const health = await getHealthStatus();
   const statusCode = health.status === 'unhealthy' ? 503 : 200;
+
+  // Check if request has valid auth token for full details
+  const authHeader = c.req.header('Authorization');
+  const isAuthenticated = config.auth.token &&
+    authHeader?.startsWith('Bearer ') &&
+    authHeader.slice(7) === config.auth.token;
+
+  if (!isAuthenticated) {
+    return c.json({ status: health.status, timestamp: health.timestamp }, statusCode);
+  }
+
   return c.json(health, statusCode);
 });
 

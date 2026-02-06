@@ -202,8 +202,19 @@ export async function getTuyaDevices(refresh = false): Promise<TuyaDevice[]> {
   return fetcher(`/devices${refresh ? '?refresh=true' : ''}`);
 }
 
-export async function getTuyaDeviceStatus(id: string): Promise<{ device_id: string; status: Record<string, any> }> {
+export async function getTuyaDeviceStatus(id: string): Promise<{ device_id: string; status: Record<string, unknown> }> {
   return fetcher(`/devices/${id}/status`);
+}
+
+export async function controlTuyaDevice(
+  id: string,
+  dps: number,
+  value: unknown
+): Promise<{ success: boolean }> {
+  return fetcher(`/devices/${id}/control`, {
+    method: 'POST',
+    body: JSON.stringify({ dps, value }),
+  });
 }
 
 // Yamaha devices

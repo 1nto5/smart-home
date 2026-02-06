@@ -6,7 +6,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,svelte,json,css,html}\"",
-    "format:check": "prettier --check \"**/*.{ts,svelte,json,css,html}\""
+    "format:check": "prettier --check \"**/*.{ts,svelte,json,css,html}\"",
+    "typecheck": "tsc --noEmit --project backend/tsconfig.json",
+    "test": "bun test --cwd backend"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

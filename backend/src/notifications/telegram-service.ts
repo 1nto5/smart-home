@@ -36,7 +36,7 @@ async function sendTelegramMessage(
       }),
     });
 
-    const data = await response.json() as any;
+    const data = await response.json() as { ok: boolean; description?: string };
 
     if (response.ok && data.ok) {
       return { success: true };

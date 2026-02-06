@@ -1,5 +1,5 @@
 import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride, getHomeStatus } from './api';
-import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData } from './types';
+import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData, WsMessage } from './types';
 import { AUTH_TOKEN } from './config';
 
 // WebSocket connection state
@@ -52,51 +52,53 @@ function createStore() {
 
     ws.onmessage = (event) => {
       try {
-        const msg = JSON.parse(event.data);
+        const msg: WsMessage = JSON.parse(event.data);
 
-        // Lamp status
-        if (msg.type === 'lamp_status' && msg.deviceId && msg.status) {
-          const newStatuses = new Map(lampStatuses);
-          newStatuses.set(msg.deviceId, msg.status);
-          lampStatuses = newStatuses;
-          lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 1 } : l);
-        } else if (msg.type === 'lamp_offline' && msg.deviceId) {
-          const newStatuses = new Map(lampStatuses);
-          newStatuses.delete(msg.deviceId);
-          lampStatuses = newStatuses;
-          lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 0 } : l);
-        }
-
-        // Tuya devices (sensors, heaters, doors)
-        else if (msg.type === 'tuya_status' && msg.deviceId && msg.status) {
-          tuyaDevices = tuyaDevices.map(d =>
-            d.id === msg.deviceId
-              ? { ...d, last_status: JSON.stringify(msg.status), online: 1 }
-              : d
-          );
-        } else if (msg.type === 'tuya_offline' && msg.deviceId) {
-          tuyaDevices = tuyaDevices.map(d =>
-            d.id === msg.deviceId ? { ...d, online: 0 } : d
-          );
-        }
-
-        // Roborock vacuum
-        else if (msg.type === 'roborock_status' && msg.status) {
-          roborock = msg.status;
-        }
-
-        // Yamaha soundbar
-        else if (msg.type === 'yamaha_status' && msg.deviceId) {
-          yamahaDevices = yamahaDevices.map(d =>
-            d.id === msg.deviceId
-              ? { ...d, last_status: msg.status ? JSON.stringify(msg.status) : null, online: msg.online ? 1 : 0 }
-              : d
-          );
-        }
-
-        // Air purifier
-        else if (msg.type === 'purifier_status' && msg.status) {
-          airPurifier = msg.status;
+        switch (msg.type) {
+          case 'lamp_status': {
+            const newStatuses = new Map(lampStatuses);
+            newStatuses.set(msg.deviceId, msg.status);
+            lampStatuses = newStatuses;
+            lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 1 } : l);
+            break;
+          }
+          case 'lamp_offline': {
+            const newStatuses = new Map(lampStatuses);
+            newStatuses.delete(msg.deviceId);
+            lampStatuses = newStatuses;
+            lamps = lamps.map(l => l.id === msg.deviceId ? { ...l, online: 0 } : l);
+            break;
+          }
+          case 'tuya_status': {
+            tuyaDevices = tuyaDevices.map(d =>
+              d.id === msg.deviceId
+                ? { ...d, last_status: JSON.stringify(msg.status), online: 1 }
+                : d
+            );
+            break;
+          }
+          case 'tuya_offline': {
+            tuyaDevices = tuyaDevices.map(d =>
+              d.id === msg.deviceId ? { ...d, online: 0 } : d
+            );
+            break;
+          }
+          case 'roborock_status': {
+            roborock = msg.status;
+            break;
+          }
+          case 'yamaha_status': {
+            yamahaDevices = yamahaDevices.map(d =>
+              d.id === msg.deviceId
+                ? { ...d, last_status: msg.status ? JSON.stringify(msg.status) : null, online: msg.online ? 1 : 0 }
+                : d
+            );
+            break;
+          }
+          case 'purifier_status': {
+            airPurifier = msg.status;
+            break;
+          }
         }
       } catch {}
     };
@@ -144,7 +146,7 @@ function createStore() {
           }
         }
         lampStatuses = newStatuses;
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch lamps:', e);
       }
     },
@@ -152,7 +154,7 @@ function createStore() {
     async refreshRoborock() {
       try {
         roborock = await getRoborockStatus();
-      } catch (e: any) {
+      } catch {
         roborock = null;
       }
     },
@@ -160,7 +162,7 @@ function createStore() {
     async refreshSchedules() {
       try {
         schedules = await getSchedules();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch schedules:', e);
       }
     },
@@ -168,7 +170,7 @@ function createStore() {
     async refreshPending() {
       try {
         pendingActions = await getPendingActions();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch pending actions:', e);
       }
     },
@@ -176,7 +178,7 @@ function createStore() {
     async refreshTuya(refresh = true) {
       try {
         tuyaDevices = await getTuyaDevices(refresh);
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch Tuya devices:', e);
       }
     },
@@ -184,7 +186,7 @@ function createStore() {
     async refreshYamaha() {
       try {
         yamahaDevices = await getYamahaDevices();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch Yamaha devices:', e);
       }
     },
@@ -192,7 +194,7 @@ function createStore() {
     async refreshAirPurifier() {
       try {
         airPurifier = await getAirPurifierStatus();
-      } catch (e: any) {
+      } catch {
         airPurifier = null;
       }
     },
@@ -200,7 +202,7 @@ function createStore() {
     async refreshHeaterPresets() {
       try {
         heaterPresets = await getHeaterPresets();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch heater presets:', e);
       }
     },
@@ -208,7 +210,7 @@ function createStore() {
     async refreshHeaterSchedules() {
       try {
         heaterSchedules = await getHeaterSchedules();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch heater schedules:', e);
       }
     },
@@ -216,7 +218,7 @@ function createStore() {
     async refreshPendingHeater() {
       try {
         pendingHeaterActions = await getPendingHeaterActions();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch pending heater actions:', e);
       }
     },
@@ -224,7 +226,7 @@ function createStore() {
     async refreshHeaterOverride() {
       try {
         heaterOverride = await getHeaterOverride();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch heater override:', e);
       }
     },
@@ -232,7 +234,7 @@ function createStore() {
     async refreshHomeStatus() {
       try {
         homeStatus = await getHomeStatus();
-      } catch (e: any) {
+      } catch (e) {
         console.error('Failed to fetch home status:', e);
       }
     },

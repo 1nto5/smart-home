@@ -8,7 +8,19 @@ import { getDb } from '../db/database';
 import { broadcastPurifierStatus } from '../ws/device-broadcast';
 import { findAndUpdateDeviceIp } from './xiaomi-discover';
 
-let purifierConnection: any = null;
+interface MiioDevice {
+  call(method: string, params: unknown[]): Promise<MiioProperty[]>;
+  destroy(): void;
+}
+
+interface MiioProperty {
+  siid: number;
+  piid: number;
+  code: number;
+  value: unknown;
+}
+
+let purifierConnection: MiioDevice | null = null;
 
 interface PurifierStatus {
   power: boolean;
@@ -37,7 +49,7 @@ const MODE_TO_VALUE: Record<string, number> = {
  */
 function getPurifier(): { id: string; ip: string; token: string } | null {
   const db = getDb();
-  return db.query("SELECT id, ip, token FROM xiaomi_devices WHERE category = 'purifier'").get() as any;
+  return db.query("SELECT id, ip, token FROM xiaomi_devices WHERE category = 'purifier'").get() as { id: string; ip: string; token: string } | null;
 }
 
 /**
@@ -97,21 +109,20 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     ]);
 
     const getValue = (siid: number, piid: number) => {
-      const prop = result.find((r: any) => r.siid === siid && r.piid === piid);
+      const prop = result.find((r: MiioProperty) => r.siid === siid && r.piid === piid);
       return prop?.code === 0 ? prop.value : undefined;
     };
 
-    const modeValue = getValue(2, 4);
-    const favoriteRpm = getValue(9, 3);
-    const ledValue = getValue(7, 2);
+    const modeValue = getValue(2, 4) as number | undefined;
+    const favoriteRpm = getValue(9, 3) as number | undefined;
+    const ledValue = getValue(7, 2) as number | undefined;
 
-    const status = {
-      power: getValue(2, 1) ?? false,
-      mode: MODE_MAP[modeValue] ?? 'unknown',
-      aqi: getValue(3, 4) ?? 0,
-      filter_life: getValue(4, 3) ?? 0,
+    const status: PurifierStatus = {
+      power: (getValue(2, 1) as boolean | undefined) ?? false,
+      mode: MODE_MAP[modeValue as number] ?? 'unknown',
+      aqi: (getValue(3, 4) as number | undefined) ?? 0,
+      filter_life: (getValue(4, 3) as number | undefined) ?? 0,
       fan_speed: favoriteRpm ?? 300,  // RPM value (300-2200)
-      motor_rpm: getValue(9, 1),  // actual current RPM
       led_brightness: ledValue ?? 8,
     };
     broadcastPurifierStatus(status);
