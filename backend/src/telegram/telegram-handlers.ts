@@ -66,6 +66,15 @@ import {
   setSoundbarBassExtension,
   setSoundbarSubwooferVolume,
 } from '../yamaha/yamaha-soundbar';
+import {
+  broadcastLampStatus,
+  broadcastRoborockStatus,
+  broadcastPurifierStatus,
+  broadcastYamahaStatus,
+  broadcastHomeStatus,
+} from '../ws/device-broadcast';
+import { getCachedPurifierStatus } from '../xiaomi/air-purifier';
+import { getCachedRoborockStatus } from '../roborock/roborock';
 
 /**
  * Handle text commands
@@ -208,9 +217,11 @@ async function handleAlarmAction(
   if (action === 'arm') {
     setAlarmArmed(true);
     console.log('Telegram: Alarm ARMED');
+    broadcastHomeStatus();
   } else if (action === 'disarm') {
     setAlarmArmed(false);
     console.log('Telegram: Alarm DISARMED');
+    broadcastHomeStatus();
   }
 
   const result = alarmKeyboard();
@@ -313,7 +324,7 @@ async function handleLampAction(
     console.log(`Telegram: Toggling lamp ${param}`);
     const success = await toggleLamp(param);
 
-    // Update status in DB
+    // Update status in DB and broadcast
     if (success) {
       const status = await getLampStatus(param);
       if (status) {
@@ -322,6 +333,7 @@ async function handleLampAction(
           'UPDATE xiaomi_devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
           [JSON.stringify(status), param]
         );
+        broadcastLampStatus(param, status as Record<string, unknown>);
       }
     }
 
@@ -426,6 +438,10 @@ async function handleRoborockAction(
     const roomName = roomNames[segmentId] || `Room ${segmentId}`;
     console.log(`Telegram: Starting room cleaning for ${roomName} (segment ${segmentId})`);
     const actionResult = await cleanSegments([segmentId]);
+    if (actionResult) {
+      const cached = getCachedRoborockStatus();
+      if (cached) broadcastRoborockStatus(cached);
+    }
     const menu = roborockRoomsKeyboard();
     const statusText = actionResult ? `✅ Cleaning ${roomName}` : `❌ Failed to start`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -438,6 +454,10 @@ async function handleRoborockAction(
     actionResult = await setFanSpeed(mode);
     const fanNames: Record<number, string> = { 101: 'Quiet', 102: 'Balanced', 103: 'Turbo', 104: 'Max' };
     actionName = `Fan: ${fanNames[mode] || mode}`;
+    if (actionResult) {
+      const cached = getCachedRoborockStatus();
+      if (cached) broadcastRoborockStatus(cached);
+    }
     const menu = roborockFanKeyboard();
     const statusText = actionResult ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -450,6 +470,10 @@ async function handleRoborockAction(
     actionResult = await setMopMode(mode);
     const mopNames: Record<number, string> = { 200: 'Off', 201: 'Low', 202: 'Medium', 203: 'High' };
     actionName = `Mop: ${mopNames[mode] || mode}`;
+    if (actionResult) {
+      const cached = getCachedRoborockStatus();
+      if (cached) broadcastRoborockStatus(cached);
+    }
     const menu = roborockMopKeyboard();
     const statusText = actionResult ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -517,6 +541,10 @@ async function handleRoborockAction(
   }
 
   console.log(`Telegram: Roborock ${actionName} - ${actionResult ? 'success' : 'failed'}`);
+  if (actionResult) {
+    const cached = getCachedRoborockStatus();
+    if (cached) broadcastRoborockStatus(cached);
+  }
   const menu = roborockKeyboard();
   const statusText = actionResult ? `✅ ${actionName} sent` : `❌ ${actionName} failed`;
   await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -548,6 +576,10 @@ async function handlePurifierAction(
     const rpm = parseInt(param);
     success = await setPurifierFanSpeed(rpm);
     actionName = `Fan: ${rpm} RPM`;
+    if (success) {
+      const cached = getCachedPurifierStatus();
+      if (cached) broadcastPurifierStatus(cached);
+    }
     const menu = purifierRpmKeyboard(rpm);
     const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -562,6 +594,10 @@ async function handlePurifierAction(
     const newRpm = Math.max(300, Math.min(2200, currentRpm + adj));
     success = await setPurifierFanSpeed(newRpm);
     actionName = `Fan: ${newRpm} RPM`;
+    if (success) {
+      const cached = getCachedPurifierStatus();
+      if (cached) broadcastPurifierStatus(cached);
+    }
     const menu = purifierRpmKeyboard(newRpm);
     const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -583,6 +619,10 @@ async function handlePurifierAction(
     success = await setLedBrightness(level);
     const levelNames: Record<number, string> = { 0: 'Off', 4: 'Dim', 8: 'Bright' };
     actionName = `LED: ${levelNames[level] || level}`;
+    if (success) {
+      const cached = getCachedPurifierStatus();
+      if (cached) broadcastPurifierStatus(cached);
+    }
     const menu = purifierLedKeyboard(level);
     const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -614,6 +654,10 @@ async function handlePurifierAction(
   }
 
   console.log(`Telegram: Purifier ${actionName} - ${success ? 'success' : 'failed'}`);
+  if (success) {
+    const cached = getCachedPurifierStatus();
+    if (cached) broadcastPurifierStatus(cached);
+  }
   const menu = purifierKeyboard();
   const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
   await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -784,6 +828,8 @@ Subwoofer: ${(status.subwoofer_volume ?? 0) > 0 ? '+' : ''}${status.subwoofer_vo
   }
 
   console.log(`Telegram: Soundbar ${actionName} - ${success ? 'success' : 'failed'}`);
+  // Refresh status to trigger WS broadcast
+  if (success) getSoundbarStatus(soundbar.id).catch(() => {});
   const menu = soundbarKeyboard();
   const statusText = success ? `✅ ${actionName}` : `❌ ${actionName} failed`;
   await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
@@ -902,9 +948,9 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
     ? `${(heaterTemps.reduce((a, b) => a + b, 0) / heaterTemps.length).toFixed(1)}°C`
     : 'N/A';
 
-  // Get roborock status
+  // Get roborock status (from cache)
   let roborockState = 'Unknown';
-  const roborockStatus = await getRoborockStatus();
+  const roborockStatus = getCachedRoborockStatus();
   if (roborockStatus) {
     const stateMap: Record<number, string> = {
       3: 'Idle', 5: 'Cleaning', 6: 'Returning', 8: 'Charging', 10: 'Paused',
@@ -912,10 +958,10 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
     roborockState = stateMap[Number(roborockStatus.state)] ?? `State ${roborockStatus.state}`;
   }
 
-  // Get purifier status with AQI
+  // Get purifier status with AQI (from cache)
   let purifierAqi = 'N/A';
   let aqiLabel = '';
-  const purifierStatus = await getPurifierStatus();
+  const purifierStatus = getCachedPurifierStatus();
   if (purifierStatus) {
     purifierAqi = String(purifierStatus.aqi);
     if (purifierStatus.aqi <= 50) aqiLabel = 'Good';
