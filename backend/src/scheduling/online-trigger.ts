@@ -9,6 +9,7 @@ import { applyPresetToLamp } from './schedule-service';
 import { getCurrentTimeWindow, getPresetForTimeWindow } from './time-windows';
 import { broadcast } from '../ws/broadcast';
 import { createPendingAction, removePendingForDevice } from './pending-service';
+import { getErrorMessage } from '../utils/errors';
 
 // In-memory cache of last known online state
 const lastOnlineState = new Map<string, boolean>();
@@ -81,12 +82,12 @@ export async function checkOnlineTransitions(): Promise<void> {
 
       // Update cache
       lastOnlineState.set(lamp.id, isNowOnline);
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Only log errors periodically to reduce spam
       const now = Date.now();
       const lastLog = lastErrorLogged.get(lamp.id) || 0;
       if (now - lastLog > ERROR_LOG_INTERVAL) {
-        console.error(`Error checking ${lamp.name}:`, e.message);
+        console.error(`Error checking ${lamp.name}:`, getErrorMessage(e));
         lastErrorLogged.set(lamp.id, now);
       }
       // Mark as offline on error
@@ -112,8 +113,8 @@ async function handleLampCameOnline(deviceId: string, name: string): Promise<voi
       console.error(`Failed to apply ${preset} to ${name} after coming online`);
       createPendingAction(deviceId, preset);
     }
-  } catch (e: any) {
-    console.error(`Error applying ${preset} to ${name}:`, e.message);
+  } catch (e: unknown) {
+    console.error(`Error applying ${preset} to ${name}:`, getErrorMessage(e));
     createPendingAction(deviceId, preset);
   }
 }

@@ -5,6 +5,7 @@
 
 import miio, { type MiioDevice } from 'miio';
 import { getDb } from '../db/database';
+import { getErrorMessage } from '../utils/errors';
 import { broadcastPurifierStatus } from '../ws/device-broadcast';
 import { findAndUpdateDeviceIp } from './xiaomi-discover';
 
@@ -87,8 +88,8 @@ export async function connectPurifier(): Promise<boolean> {
 
     console.log(`Connected to Air Purifier 3C (${device.id})`);
     return true;
-  } catch (error: any) {
-    console.error('Failed to connect to Air Purifier:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to connect to Air Purifier:', getErrorMessage(error));
     // Trigger IP discovery async (don't wait)
     if (device?.id) {
       findAndUpdateDeviceIp(device.id).catch(() => {});
@@ -147,8 +148,8 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     cachedPurifierStatus = status;
     broadcastPurifierStatus(status);
     return status;
-  } catch (error: any) {
-    console.error('Failed to get purifier status:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to get purifier status:', getErrorMessage(error));
     // Disconnect stale connection so next call reconnects
     purifierConnection?.destroy();
     purifierConnection = null;
@@ -172,8 +173,8 @@ export async function setPurifierPower(on: boolean): Promise<boolean> {
     );
     console.log(`Air Purifier: Power ${on ? 'on' : 'off'}`);
     return true;
-  } catch (error: any) {
-    console.error('Failed to set purifier power:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to set purifier power:', getErrorMessage(error));
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -199,8 +200,8 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
     );
     console.log(`Air Purifier: Mode set to ${mode}`);
     return true;
-  } catch (error: any) {
-    console.error('Failed to set purifier mode:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to set purifier mode:', getErrorMessage(error));
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -227,8 +228,8 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
     );
     console.log(`Air Purifier: Fan speed set to ${clampedRpm} RPM`);
     return true;
-  } catch (error: any) {
-    console.error('Failed to set purifier fan speed:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to set purifier fan speed:', getErrorMessage(error));
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -253,8 +254,8 @@ export async function setLedBrightness(level: number): Promise<boolean> {
     );
     console.log(`Air Purifier: LED brightness set to ${clamped}`);
     return true;
-  } catch (error: any) {
-    console.error('Failed to set LED brightness:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to set LED brightness:', getErrorMessage(error));
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;

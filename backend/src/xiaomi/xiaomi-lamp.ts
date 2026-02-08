@@ -6,6 +6,7 @@
 
 import net from 'net';
 import { getDb } from '../db/database';
+import { getErrorMessage } from '../utils/errors';
 
 const YEELIGHT_PORT = 55443;
 const COMMAND_TIMEOUT = 5000;
@@ -18,8 +19,20 @@ interface YeelightDevice {
   category: string;
 }
 
+export interface LampStatus {
+  power: boolean;
+  brightness: number;
+  color_temp: number;
+  color_mode: number;
+  rgb: number;
+  moonlight_mode: boolean;
+  moonlight_brightness: number;
+}
+
+type YeelightParam = string | number;
+
 // Track last status for each device
-const lastStatuses = new Map<string, Record<string, any>>();
+const lastStatuses = new Map<string, LampStatus>();
 // Track failed attempts for cooldown
 const failedAttempts = new Map<string, number>();
 const RETRY_COOLDOWN = 30_000;
@@ -35,7 +48,7 @@ function getDevice(deviceId: string): YeelightDevice | null {
 /**
  * Send command to Yeelight lamp via TCP
  */
-async function sendCommand(ip: string, method: string, params: any[] = []): Promise<any> {
+async function sendCommand(ip: string, method: string, params: YeelightParam[] = []): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
     socket.setTimeout(COMMAND_TIMEOUT);
@@ -124,7 +137,7 @@ function isInCooldown(deviceId: string): boolean {
 /**
  * Get lamp status
  */
-export async function getLampStatus(deviceId: string): Promise<Record<string, any> | null> {
+export async function getLampStatus(deviceId: string): Promise<LampStatus | null> {
   if (isInCooldown(deviceId)) {
     return lastStatuses.get(deviceId) || null;
   }
@@ -138,23 +151,23 @@ export async function getLampStatus(deviceId: string): Promise<Record<string, an
   try {
     const props = await sendCommand(device.ip, 'get_prop', [
       'power', 'bright', 'ct', 'color_mode', 'rgb', 'active_mode', 'nl_br'
-    ]);
+    ]) as string[];
 
-    const status = {
+    const status: LampStatus = {
       power: props[0] === 'on',
-      brightness: parseInt(props[1]) || 0,
-      color_temp: parseInt(props[2]) || 0,
-      color_mode: parseInt(props[3]) || 0,
-      rgb: parseInt(props[4]) || 0,
-      moonlight_mode: props[5] === '1' || props[5] === 1,
-      moonlight_brightness: parseInt(props[6]) || 0,
+      brightness: parseInt(props[1] ?? '') || 0,
+      color_temp: parseInt(props[2] ?? '') || 0,
+      color_mode: parseInt(props[3] ?? '') || 0,
+      rgb: parseInt(props[4] ?? '') || 0,
+      moonlight_mode: props[5] === '1',
+      moonlight_brightness: parseInt(props[6] ?? '') || 0,
     };
 
     lastStatuses.set(deviceId, status);
     failedAttempts.delete(deviceId);
     return status;
-  } catch (error: any) {
-    console.error(`Failed to get status for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to get status for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return lastStatuses.get(deviceId) || null;
   }
@@ -174,8 +187,8 @@ export async function setLampPower(deviceId: string, on: boolean): Promise<boole
     console.log(`Set ${device.name} power: ${on}`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to set power for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to set power for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -195,8 +208,8 @@ export async function toggleLamp(deviceId: string): Promise<boolean> {
     console.log(`Toggled ${device.name}`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to toggle ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to toggle ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -218,8 +231,8 @@ export async function setLampBrightness(deviceId: string, brightness: number): P
     console.log(`Set ${device.name} brightness: ${level}%`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to set brightness for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to set brightness for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -239,8 +252,8 @@ export async function setLampColorTemp(deviceId: string, kelvin: number): Promis
     console.log(`Set ${device.name} color temp: ${kelvin}K`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to set color temp for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to set color temp for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -262,8 +275,8 @@ export async function setLampColor(deviceId: string, r: number, g: number, b: nu
     console.log(`Set ${device.name} color: rgb(${r},${g},${b})`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to set color for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to set color for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -290,8 +303,8 @@ export async function setLampMoonlight(deviceId: string, brightness?: number): P
     console.log(`Set ${device.name} to moonlight mode${brightness !== undefined ? ` (${brightness}%)` : ''}`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to set moonlight for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to set moonlight for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -312,8 +325,8 @@ export async function setLampDaylightMode(deviceId: string): Promise<boolean> {
     console.log(`Set ${device.name} to daylight mode`);
     failedAttempts.delete(deviceId);
     return true;
-  } catch (error: any) {
-    console.error(`Failed to set daylight for ${device.name}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to set daylight for ${device.name}:`, getErrorMessage(error));
     failedAttempts.set(deviceId, Date.now());
     return false;
   }

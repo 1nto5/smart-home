@@ -27,12 +27,13 @@ export async function discoverXiaomiDevices(timeout = 30000): Promise<Discovered
     const discoveredDevices: DiscoveredDevice[] = [];
     const browser = miio.browse();
 
-    browser.on('available', (device: any) => {
+    // miio types the callback as Record<string, unknown>, so we cast inside
+    browser.on('available', (raw: Record<string, unknown>) => {
       const discovered: DiscoveredDevice = {
-        id: device.id?.toString() || 'unknown',
-        address: device.address,
-        model: device.model,
-        token: device.token?.toString('hex'),
+        id: raw.id != null ? String(raw.id) : 'unknown',
+        address: String(raw.address ?? ''),
+        model: raw.model != null ? String(raw.model) : undefined,
+        token: raw.token instanceof Buffer ? raw.token.toString('hex') : undefined,
       };
 
       // Avoid duplicates

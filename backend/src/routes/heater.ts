@@ -36,6 +36,7 @@ import {
   broadcastHeaterSchedulesChanged,
   broadcastHeaterOverrideChanged,
 } from '../ws/device-broadcast';
+import { getErrorMessage } from '../utils/errors';
 
 const heater = new Hono();
 
@@ -96,9 +97,9 @@ heater.post('/presets/:id/apply', async (c) => {
     broadcastHomeStatus();
     broadcastPendingHeaterActions();
     return c.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error applying preset ${presetId}:`, error);
-    return c.json({ success: [], pending: [], failed: [], error: error.message }, 500);
+    return c.json({ success: [], pending: [], failed: [], error: getErrorMessage(error) }, 500);
   }
 });
 

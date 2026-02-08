@@ -1,5 +1,6 @@
 import TuyAPI from 'tuyapi';
 import { initDatabase, getDb } from '../db/database';
+import { getErrorMessage } from '../utils/errors';
 
 async function main() {
   console.log('Initializing database...');
@@ -50,8 +51,8 @@ async function main() {
     } else {
       console.log('✗ Device found but no IP returned');
     }
-  } catch (error: any) {
-    console.error('✗ Discovery failed:', error.message);
+  } catch (error: unknown) {
+    console.error('✗ Discovery failed:', getErrorMessage(error));
     console.log('\nTroubleshooting:');
     console.log('1. Make sure you are on the same WiFi network as the gateway');
     console.log('2. Check if UDP ports 6666/6667 are open');

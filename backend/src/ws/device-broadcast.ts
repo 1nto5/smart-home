@@ -111,6 +111,6 @@ export function broadcastHeaterOverrideChanged(): void {
 }
 
 // Lamp status (from xiaomi)
-export function broadcastLampStatus(deviceId: string, status: Record<string, unknown>): void {
+export function broadcastLampStatus(deviceId: string, status: object): void {
   broadcast({ type: 'lamp_status', deviceId, status });
 }
