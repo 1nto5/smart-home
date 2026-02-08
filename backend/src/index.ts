@@ -1,23 +1,26 @@
 import { notifyError } from './notifications/error-notification';
+import { logger as startupLogger } from './utils/logger';
 
 // Global error handlers to prevent crashes from async errors
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught exception:', err.message);
+  startupLogger.error(`Uncaught exception: ${err.message}`, { component: 'process' });
   notifyError({ component: 'Backend', error: err, severity: 'critical' });
 });
 process.on('unhandledRejection', (reason: unknown) => {
   const msg = reason instanceof Error ? reason.message : String(reason);
-  console.error('Unhandled rejection:', msg);
+  startupLogger.error(`Unhandled rejection: ${msg}`, { component: 'process' });
   notifyError({ component: 'Backend', error: msg, severity: 'warning' });
 });
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { logger as structuredLogger } from './utils/logger';
 import { serveStatic, createBunWebSocket } from 'hono/bun';
 import type { ServerWebSocket } from 'bun';
 import { addClient, removeClient } from './ws/broadcast';
 import { buildStateSnapshot } from './ws/snapshot';
+import { WsMessageSchema } from './validation/schemas';
 import { config } from './config';
 import { errorHandler } from './middleware/error-handler';
 import { authMiddleware } from './middleware/auth';
@@ -87,7 +90,7 @@ startMaintenanceScheduler();
 
 // Graceful shutdown handler
 async function shutdown(signal: string) {
-  console.log(`${signal} received, shutting down...`);
+  structuredLogger.info(`${signal} received, shutting down`, { component: 'server' });
   stopTelegramBot();
   stopAlarmNotificationLoop();
   stopGatewayWatchdog();
@@ -173,16 +176,19 @@ app.get('/ws', upgradeWebSocket((c) => {
       try {
         ws.send(JSON.stringify(buildStateSnapshot()));
       } catch (e) {
-        console.error('Failed to send snapshot:', (e as Error).message);
+        structuredLogger.error('Failed to send snapshot', { component: 'server', error: (e as Error).message });
       }
     },
     onMessage(event, ws) {
       try {
-        const msg = JSON.parse(String(event.data));
-        if (msg.type === 'request_snapshot') {
+        const raw = JSON.parse(String(event.data));
+        const result = WsMessageSchema.safeParse(raw);
+        if (!result.success) return;
+
+        if (result.data.type === 'request_snapshot') {
           ws.send(JSON.stringify(buildStateSnapshot()));
         }
-      } catch { /* ignore */ }
+      } catch { /* ignore malformed JSON */ }
     },
     onClose(_event, ws) {
       removeClient(ws.raw as ServerWebSocket<unknown>);
@@ -195,7 +201,7 @@ app.use('/*', serveStatic({ root: '../frontend/dist' }));
 
 // Start server
 const port = config.server.port;
-console.log(`🏠 Smart Home API running on http://localhost:${port}`);
+structuredLogger.info(`Smart Home API running on http://localhost:${port}`, { component: 'server' });
 
 export default {
   port,

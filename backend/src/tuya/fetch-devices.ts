@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import { config } from '../config';
 import path from 'path';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 // Convert cloud API status (code/value array) to DPS format
 function cloudStatusToDps(status: Array<{ code: string; value: string | number | boolean }>, category: string): Record<string, string | number | boolean> {
@@ -29,11 +30,11 @@ function cloudStatusToDps(status: Array<{ code: string; value: string | number |
 }
 
 async function main() {
-  console.log('Fetching devices from Tuya Cloud API...\n');
+  logger.info('Fetching devices from Tuya Cloud API', { component: 'fetch-devices' });
 
   try {
     const devices = await getDevices();
-    console.log(`Found ${devices.length} devices\n`);
+    logger.info('Devices found', { component: 'fetch-devices', count: devices.length });
 
     // Create database
     const dbPath = path.resolve(__dirname, '../../', config.db.path);
@@ -69,14 +70,16 @@ async function main() {
         nodeId = details.node_id || null;
         gatewayId = details.gateway_id || null;
 
-        console.log(`Device: ${device.name}`);
-        console.log(`  ID: ${device.id}`);
-        console.log(`  Node ID: ${nodeId || '(none)'}`);
-        console.log(`  Sub: ${details.sub ? 'Yes' : 'No'}`);
-        console.log(`  Category: ${device.category}`);
-        console.log('');
+        logger.debug('Device details fetched', {
+          component: 'fetch-devices',
+          deviceId: device.id,
+          deviceName: device.name,
+          nodeId: nodeId || '(none)',
+          sub: details.sub ? 'Yes' : 'No',
+          category: device.category,
+        });
       } catch (e: unknown) {
-        console.log(`Device: ${device.name} - failed to get details: ${getErrorMessage(e)}`);
+        logger.warn('Failed to get device details', { component: 'fetch-devices', deviceId: device.id, deviceName: device.name, error: getErrorMessage(e) });
       }
 
       // Don't overwrite local IP with cloud IP (cloud often returns external IP)
@@ -101,19 +104,19 @@ async function main() {
           if (status && status.length > 0) {
             const dps = cloudStatusToDps(status, device.category);
             db.run('UPDATE devices SET last_status = ? WHERE id = ?', [JSON.stringify(dps), device.id]);
-            console.log(`  Status: ${JSON.stringify(dps)}`);
+            logger.debug('Device status fetched', { component: 'fetch-devices', deviceId: device.id, dps });
           }
         } catch (e: unknown) {
-          console.log(`  Status fetch failed: ${getErrorMessage(e)}`);
+          logger.warn('Status fetch failed', { component: 'fetch-devices', deviceId: device.id, error: getErrorMessage(e) });
         }
       }
     }
 
-    console.log(`\nSaved ${devices.length} devices to ${dbPath}`);
+    logger.info('Devices saved to database', { component: 'fetch-devices', count: devices.length, dbPath });
     db.close();
 
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Failed to fetch devices', { component: 'fetch-devices', error: getErrorMessage(error) });
     process.exit(1);
   }
 }

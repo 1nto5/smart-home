@@ -19,6 +19,7 @@ import { getStatus as getRoborockStatus } from '../roborock/roborock';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
 import { broadcastHomeStatus } from '../ws/device-broadcast';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 import { config } from '../config';
 
 let pollerInterval: Timer | null = null;
@@ -50,7 +51,7 @@ async function refreshWeatherStationStatuses(): Promise<void> {
         }
       }
     } catch (e: unknown) {
-      console.error(`Weather station refresh failed for ${station.name}:`, getErrorMessage(e));
+      logger.error('Weather station refresh failed', { component: 'poller', deviceName: station.name, error: getErrorMessage(e) });
     }
   }
 }
@@ -87,12 +88,12 @@ async function refreshSensorStatuses(): Promise<void> {
           if (lastState === null || lastState !== isLeaking) {
             recordContactChange(sensor.id, sensor.name, isLeaking);
             broadcastTuyaStatus(sensor.id, 'sj', { '1': isLeaking ? 1 : 0 });
-            if (isLeaking) console.log(`🚨 WATER LEAK: ${sensor.name}`);
+            if (isLeaking) logger.warn('Water leak detected', { component: 'poller', deviceId: sensor.id, deviceName: sensor.name });
           }
         }
       }
     } catch (e: unknown) {
-      console.error(`Sensor refresh failed for ${sensor.name}:`, getErrorMessage(e));
+      logger.error('Sensor refresh failed', { component: 'poller', deviceName: sensor.name, error: getErrorMessage(e) });
     }
   }
 }
@@ -119,7 +120,7 @@ async function refreshTrvStatuses(): Promise<void> {
         }
       }
     } catch (e: unknown) {
-      console.error(`TRV refresh failed for ${trv.name}:`, getErrorMessage(e));
+      logger.error('TRV refresh failed', { component: 'poller', deviceName: trv.name, error: getErrorMessage(e) });
     }
   }
 }
@@ -133,7 +134,7 @@ async function pollAqi(): Promise<void> {
     // broadcast is called inside getPurifierStatus
     evaluateAqiTrigger(status.aqi);
   } catch (e: unknown) {
-    console.error('AQI poll error:', getErrorMessage(e));
+    logger.error('AQI poll error', { component: 'poller', error: getErrorMessage(e) });
   }
 }
 
@@ -142,7 +143,7 @@ async function refreshRoborockStatus(): Promise<void> {
   try {
     await getRoborockStatus(); // caches + broadcasts internally
   } catch (e: unknown) {
-    console.error('Roborock refresh error:', getErrorMessage(e));
+    logger.error('Roborock refresh error', { component: 'poller', error: getErrorMessage(e) });
   }
 }
 
@@ -151,7 +152,7 @@ async function refreshLampStatuses(): Promise<void> {
   try {
     await checkOnlineTransitions();
   } catch (e: unknown) {
-    console.error('Lamp refresh error:', getErrorMessage(e));
+    logger.error('Lamp refresh error', { component: 'poller', error: getErrorMessage(e) });
   }
 }
 
@@ -160,23 +161,23 @@ async function refreshLampStatuses(): Promise<void> {
  * Runs on startup and every 15 minutes
  */
 async function comprehensiveRefresh(): Promise<void> {
-  console.log('Starting comprehensive device refresh...');
+  logger.info('Starting comprehensive device refresh', { component: 'poller' });
   const start = Date.now();
 
   await Promise.all([
-    refreshWeatherStationStatuses().catch(e => console.error('Weather station error:', e.message)),
-    refreshSensorStatuses().catch(e => console.error('Sensor refresh error:', e.message)),
-    refreshTrvStatuses().catch(e => console.error('TRV refresh error:', e.message)),
-    pollAqi().catch(e => console.error('AQI poll error:', e.message)),
-    refreshRoborockStatus().catch(e => console.error('Roborock refresh error:', e.message)),
-    refreshLampStatuses().catch(e => console.error('Lamp refresh error:', e.message)),
+    refreshWeatherStationStatuses().catch(e => logger.error('Weather station error', { component: 'poller', error: e.message })),
+    refreshSensorStatuses().catch(e => logger.error('Sensor refresh error', { component: 'poller', error: e.message })),
+    refreshTrvStatuses().catch(e => logger.error('TRV refresh error', { component: 'poller', error: e.message })),
+    pollAqi().catch(e => logger.error('AQI poll error', { component: 'poller', error: e.message })),
+    refreshRoborockStatus().catch(e => logger.error('Roborock refresh error', { component: 'poller', error: e.message })),
+    refreshLampStatuses().catch(e => logger.error('Lamp refresh error', { component: 'poller', error: e.message })),
   ]);
 
   // Broadcast updated home status after all refreshes
   broadcastHomeStatus();
 
   const elapsed = Date.now() - start;
-  console.log(`Comprehensive refresh complete (${elapsed}ms)`);
+  logger.info('Comprehensive refresh complete', { component: 'poller', duration: elapsed });
 }
 
 // Fast poll door/window sensors (every 5 seconds) - local API
@@ -202,7 +203,7 @@ async function pollDoorSensors(): Promise<void> {
           if (lastState === null || lastState !== isOpen) {
             recordContactChange(door.id, door.name, isOpen);
             broadcastTuyaStatus(door.id, 'mcs', { '101': isOpen });
-            console.log(`🚪 ${door.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
+            logger.info('Contact sensor state changed', { component: 'poller', deviceId: door.id, deviceName: door.name, state: isOpen ? 'opened' : 'closed' });
             // Trigger automations
             evaluateSensorTrigger(door.id, door.name, isOpen ? 'open' : 'closed');
           }
@@ -219,13 +220,13 @@ async function pollDoorSensors(): Promise<void> {
  */
 export async function startPoller(): Promise<void> {
   if (pollerInterval) {
-    console.log('Poller already running');
+    logger.info('Poller already running', { component: 'poller' });
     return;
   }
 
   // Connect to gateway for local Zigbee device access
-  console.log('Connecting to gateway for local device access...');
-  await connectDevice(GATEWAY_ID).catch(e => console.error('Gateway connection error:', e.message));
+  logger.info('Connecting to gateway for local device access', { component: 'poller' });
+  await connectDevice(GATEWAY_ID).catch(e => logger.error('Gateway connection error', { component: 'poller', error: e.message }));
 
   // Initialize online state cache (for reconnect detection)
   initOnlineStateCache();
@@ -233,17 +234,17 @@ export async function startPoller(): Promise<void> {
   // Run comprehensive refresh once on startup to pre-cache all data
   await comprehensiveRefresh();
 
-  console.log('Starting poller (pending retries every 15s, online checks every 15s, doors every 5s, comprehensive every 15min)');
+  logger.info('Starting poller (pending retries every 15s, online checks every 15s, doors every 5s, comprehensive every 15min)', { component: 'poller' });
 
   // Main poller: every 15 seconds - pending action retries + online transition checks
   pollerInterval = setInterval(async () => {
     // Check for lamp online transitions
-    await checkOnlineTransitions().catch(e => console.error('Online check error:', e.message));
+    await checkOnlineTransitions().catch(e => logger.error('Online check error', { component: 'poller', error: e.message }));
 
     // Process pending heater actions
     const pendingHeaters = getPendingHeaterActions();
     if (pendingHeaters.length > 0) {
-      console.log(`Poller: checking ${pendingHeaters.length} pending heater actions`);
+      logger.debug('Checking pending heater actions', { component: 'poller', count: pendingHeaters.length });
 
       for (const action of pendingHeaters) {
         try {
@@ -251,12 +252,12 @@ export async function startPoller(): Promise<void> {
 
           if (success) {
             removePendingHeaterAction(action.id);
-            console.log(`Applied pending ${action.preset_id} to heater ${action.device_id}`);
+            logger.info('Applied pending heater action', { component: 'poller', deviceId: action.device_id, presetId: action.preset_id });
           } else {
             incrementHeaterRetryCount(action.id);
           }
         } catch (error: unknown) {
-          console.error(`Poller error for heater ${action.device_id}:`, getErrorMessage(error));
+          logger.error('Poller heater error', { component: 'poller', deviceId: action.device_id, error: getErrorMessage(error) });
           incrementHeaterRetryCount(action.id);
         }
       }
@@ -265,7 +266,7 @@ export async function startPoller(): Promise<void> {
     // Process pending lamp actions
     const pendingLamps = getPendingActions();
     if (pendingLamps.length > 0) {
-      console.log(`Poller: checking ${pendingLamps.length} pending lamp actions`);
+      logger.debug('Checking pending lamp actions', { component: 'poller', count: pendingLamps.length });
 
       for (const action of pendingLamps) {
         try {
@@ -273,12 +274,12 @@ export async function startPoller(): Promise<void> {
 
           if (success) {
             removePendingAction(action.id);
-            console.log(`Applied pending ${action.preset} to lamp ${action.device_id}`);
+            logger.info('Applied pending lamp action', { component: 'poller', deviceId: action.device_id, preset: action.preset });
           } else {
             incrementRetryCount(action.id);
           }
         } catch (error: unknown) {
-          console.error(`Poller error for lamp ${action.device_id}:`, getErrorMessage(error));
+          logger.error('Poller lamp error', { component: 'poller', deviceId: action.device_id, error: getErrorMessage(error) });
           incrementRetryCount(action.id);
         }
       }

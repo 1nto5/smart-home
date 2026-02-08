@@ -2,6 +2,7 @@ import { Database } from 'bun:sqlite';
 import { config } from '../config';
 import path from 'path';
 import { mkdirSync, existsSync } from 'fs';
+import { logger } from '../utils/logger';
 
 let db: Database | null = null;
 
@@ -468,7 +469,7 @@ export function initDatabase(): Database {
     db.run("DELETE FROM heater_presets WHERE id = 'off'");
     // Create new off preset (target_temp is placeholder, ignored for power-off preset)
     db.run("INSERT INTO heater_presets (id, name, target_temp) VALUES ('off', 'Off', 5)");
-    console.log('📦 Migrated heater preset "off" -> "frost", created new power-off preset');
+    logger.info('Migrated heater preset "off" -> "frost", created new power-off preset', { component: 'database' });
   }
 
   // Automation pending confirmations (Telegram prompts awaiting response)
@@ -500,7 +501,7 @@ export function initDatabase(): Database {
 
   db.run(`CREATE INDEX IF NOT EXISTS idx_automation_log_time ON automation_log(executed_at DESC)`);
 
-  console.log(`📦 Database initialized: ${dbPath}`);
+  logger.info('Database initialized', { component: 'database', dbPath });
   return db;
 }
 

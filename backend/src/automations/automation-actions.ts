@@ -10,6 +10,7 @@ import { setSoundbarPower } from '../yamaha/yamaha-soundbar';
 import { sendMessage, editMessage } from '../telegram/telegram-bot';
 import { getTelegramConfig } from '../db/database';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 export interface TriggerContext {
   deviceId: string;
@@ -31,7 +32,7 @@ function safeParseActions(json: string): AutomationAction[] {
   try {
     const parsed = JSON.parse(json);
     if (!Array.isArray(parsed)) {
-      console.error('Invalid automation actions: not an array');
+      logger.error('Invalid automation actions: not an array', { component: 'automation-actions' });
       return [];
     }
     return parsed.filter(
@@ -40,7 +41,7 @@ function safeParseActions(json: string): AutomationAction[] {
     );
   } catch (e: unknown) {
     const err = e as Error;
-    console.error('Invalid automation actions JSON:', err.message);
+    logger.error('Invalid automation actions JSON', { component: 'automation-actions', error: err.message });
     return [];
   }
 }
@@ -54,7 +55,7 @@ export async function executeAutomationActions(
 ): Promise<void> {
   const actions = safeParseActions(automation.actions);
   if (actions.length === 0) {
-    console.warn(`Automation "${automation.name}" has no valid actions`);
+    logger.warn('Automation has no valid actions', { component: 'automation-actions', automationName: automation.name });
     return;
   }
 
@@ -132,15 +133,15 @@ export async function executeSingleAction(
         break;
 
       default:
-        console.warn(`Unknown automation action type: ${action.type}`);
+        logger.warn('Unknown automation action type', { component: 'automation-actions', actionType: action.type });
         return false;
     }
 
     logAutomation(automationName, context.deviceName, actionDescription, success ? 'success' : 'failed');
-    console.log(`Automation "${automationName}": ${actionDescription} -> ${success ? 'success' : 'failed'}`);
+    logger.info('Automation action executed', { component: 'automation-actions', automationName, action: actionDescription, result: success ? 'success' : 'failed' });
     return success;
   } catch (error: unknown) {
-    console.error(`Automation action failed: ${actionDescription}`, getErrorMessage(error));
+    logger.error('Automation action failed', { component: 'automation-actions', action: actionDescription, error: getErrorMessage(error) });
     logAutomation(automationName, context.deviceName, actionDescription, 'error');
     return false;
   }
@@ -197,7 +198,7 @@ async function sendTelegramPrompt(
 ): Promise<void> {
   const config = getTelegramConfig();
   if (!config.enabled || !config.chat_id) {
-    console.warn('Telegram not configured, skipping automation prompt');
+    logger.warn('Telegram not configured, skipping automation prompt', { component: 'automation-actions' });
     return;
   }
 

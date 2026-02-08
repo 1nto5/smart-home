@@ -7,15 +7,14 @@
  */
 
 import { initDatabase, getDb } from '../db/database';
+import { logger } from '../utils/logger';
 import { YamahaClient } from './yamaha-client';
 
 const args = process.argv.slice(2);
 
 if (args.length < 3) {
-  console.log('Usage: bun src/yamaha/add-device.ts <id> <name> <ip> [model] [room]');
-  console.log('');
-  console.log('Example:');
-  console.log('  bun src/yamaha/add-device.ts yas306-1 "Soundbar Salon" 192.168.1.50 YAS-306 Salon');
+  logger.info('Usage: bun src/yamaha/add-device.ts <id> <name> <ip> [model] [room]', { component: 'yamaha-add-device' });
+  logger.info('Example: bun src/yamaha/add-device.ts yas306-1 "Soundbar Salon" 192.168.1.50 YAS-306 Salon', { component: 'yamaha-add-device' });
   process.exit(1);
 }
 
@@ -26,18 +25,18 @@ const model = args[3];
 const room = args[4];
 
 // Test connection and auto-detect model if not provided
-console.log(`Testing connection to ${ip}...`);
+logger.debug('Testing connection', { component: 'yamaha-add-device', ip });
 const client = new YamahaClient(ip);
 const info = await client.getDeviceInfo();
 
 if (!info) {
-  console.error(`Failed to connect to Yamaha device at ${ip}`);
-  console.error('Make sure the device is powered on and on the same network.');
+  logger.error('Failed to connect to Yamaha device', { component: 'yamaha-add-device', ip });
+  logger.error('Make sure the device is powered on and on the same network', { component: 'yamaha-add-device' });
   process.exit(1);
 }
 
 const detectedModel = model || info.model_name;
-console.log(`Connected to ${info.model_name} (API v${info.api_version})`);
+logger.info('Connected to device', { component: 'yamaha-add-device', model: info.model_name, apiVersion: info.api_version });
 
 initDatabase();
 const db = getDb();
@@ -54,11 +53,13 @@ db.run(`
     updated_at = CURRENT_TIMESTAMP
 `, [id, name, ip, detectedModel, room || null]);
 
-console.log(`\nAdded/Updated Yamaha device:`);
-console.log(`  ID: ${id}`);
-console.log(`  Name: ${name}`);
-console.log(`  IP: ${ip}`);
-console.log(`  Model: ${detectedModel}`);
-console.log(`  Room: ${room || '(not set)'}`);
-console.log(`  Device ID: ${info.device_id}`);
-console.log(`  Firmware: ${info.system_version}`);
+logger.info('Added/Updated Yamaha device', {
+  component: 'yamaha-add-device',
+  deviceId: id,
+  deviceName: name,
+  ip,
+  model: detectedModel,
+  room: room || '(not set)',
+  yamahaDeviceId: info.device_id,
+  firmware: info.system_version,
+});

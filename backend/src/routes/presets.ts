@@ -29,6 +29,7 @@ import {
   broadcastPendingActions,
   broadcastSchedulesChanged,
 } from '../ws/device-broadcast';
+import { logger } from '../utils/logger';
 
 const presets = new Hono();
 
@@ -95,7 +96,7 @@ presets.post('/:name/apply', async (c) => {
   if (presetName === 'auto') {
     const timeWindow = getCurrentTimeWindow();
     const autoPreset = getPresetForTimeWindow(timeWindow);
-    console.log(`Auto preset: ${autoPreset} (time window: ${timeWindow})`);
+    logger.info('Auto preset applied', { component: 'presets-route', autoPreset, timeWindow });
     const result = await applyPresetToAllLamps(autoPreset);
     broadcastHomeStatus();
     broadcastPendingActions();

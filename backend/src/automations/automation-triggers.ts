@@ -6,6 +6,7 @@
 import { getDb, type Automation } from '../db/database';
 import { executeAutomationActions, type TriggerContext } from './automation-actions';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 interface QuietWindow {
   start: string;
@@ -108,19 +109,19 @@ export async function evaluateSensorTrigger(
     return;
   }
 
-  console.log(`Automation trigger: ${deviceName} -> ${condition}, found ${automations.length} matching rule(s)`);
+  logger.info('Automation trigger matched', { component: 'automation-triggers', deviceName, condition, matchCount: automations.length });
 
   // Execute each matching automation (skip if in quiet window)
   for (const automation of automations) {
     const quietCheck = isInQuietWindow(automation.quiet_windows);
     if (quietCheck.inQuiet) {
-      console.log(`Automation "${automation.name}" skipped - in quiet window (${quietCheck.window?.start}-${quietCheck.window?.end})`);
+      logger.info('Automation skipped - in quiet window', { component: 'automation-triggers', automationName: automation.name, quietStart: quietCheck.window?.start, quietEnd: quietCheck.window?.end });
       continue;
     }
     try {
       await executeAutomationActions(automation, context);
     } catch (error: unknown) {
-      console.error(`Failed to execute automation "${automation.name}":`, getErrorMessage(error));
+      logger.error('Failed to execute automation', { component: 'automation-triggers', automationName: automation.name, error: getErrorMessage(error) });
     }
   }
 }
@@ -157,14 +158,14 @@ export async function evaluateAqiTrigger(currentAqi: number): Promise<void> {
     if (shouldTrigger) {
       const quietCheck = isInQuietWindow(automation.quiet_windows);
       if (quietCheck.inQuiet) {
-        console.log(`AQI automation "${automation.name}" skipped - in quiet window (${quietCheck.window?.start}-${quietCheck.window?.end})`);
+        logger.info('AQI automation skipped - in quiet window', { component: 'automation-triggers', automationName: automation.name, quietStart: quietCheck.window?.start, quietEnd: quietCheck.window?.end });
         continue;
       }
-      console.log(`AQI trigger: ${currentAqi} ${condition} ${threshold}`);
+      logger.info('AQI trigger fired', { component: 'automation-triggers', currentAqi, condition, threshold });
       try {
         await executeAutomationActions(automation, context);
       } catch (error: unknown) {
-        console.error(`Failed to execute AQI automation "${automation.name}":`, getErrorMessage(error));
+        logger.error('Failed to execute AQI automation', { component: 'automation-triggers', automationName: automation.name, error: getErrorMessage(error) });
       }
     }
   }

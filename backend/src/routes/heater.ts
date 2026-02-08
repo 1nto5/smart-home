@@ -37,6 +37,7 @@ import {
   broadcastHeaterOverrideChanged,
 } from '../ws/device-broadcast';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 const heater = new Hono();
 
@@ -98,7 +99,7 @@ heater.post('/presets/:id/apply', async (c) => {
     broadcastPendingHeaterActions();
     return c.json(result);
   } catch (error: unknown) {
-    console.error(`Error applying preset ${presetId}:`, error);
+    logger.error('Error applying preset', { component: 'heater-route', preset: presetId, error: getErrorMessage(error) });
     return c.json({ success: [], pending: [], failed: [], error: getErrorMessage(error) }, 500);
   }
 });
@@ -218,7 +219,7 @@ heater.post('/override', zValidator('json', HeaterOverrideSchema), async (c) => 
   broadcastHomeStatus();
 
   if (enabled && mode === 'fixed' && fixed_temp) {
-    console.log(`Override enabled: applying fixed temp ${fixed_temp}°C to all heaters`);
+    logger.info('Override enabled: applying fixed temp to all heaters', { component: 'heater-route', fixedTemp: fixed_temp });
     applyFixedTempToAllHeaters(fixed_temp);
   }
 

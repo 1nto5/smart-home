@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { getDbStats, cleanupOldData } from '../db/maintenance';
 import { getAllCircuitStats, resetAllCircuits } from '../utils/circuit-breaker';
 import { getHealthStatus } from '../health/health-service';
+import { logger } from '../utils/logger';
 
 const admin = new Hono();
 
@@ -15,7 +16,7 @@ admin.get('/db-stats', (c) => {
 admin.post('/cleanup', async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const result = cleanupOldData(body);
-  console.log(`[admin] Manual cleanup: ${result.totalDeleted} records deleted`);
+  logger.info('Manual cleanup', { component: 'admin-route', totalDeleted: result.totalDeleted });
   return c.json(result);
 });
 

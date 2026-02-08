@@ -5,6 +5,7 @@
 
 import TuyAPI from 'tuyapi';
 import { getDb } from '../db/database';
+import { logger } from '../utils/logger';
 
 /**
  * Discover Tuya gateway IP and update database
@@ -23,7 +24,7 @@ export async function discoverTuyaGatewayIp(deviceId: string, key: string, timeo
     if (ip) {
       const db = getDb();
       db.run('UPDATE devices SET ip = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [ip, deviceId]);
-      console.log(`Updated Tuya gateway IP: ${ip}`);
+      logger.info('Gateway IP updated', { component: 'tuya-discover', deviceId, ip });
       return ip;
     }
   } catch (e) {

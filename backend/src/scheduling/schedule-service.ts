@@ -9,6 +9,7 @@ import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLa
 import { createPendingAction, clearAllPending } from './pending-service';
 import { broadcastPendingActions, broadcastHomeStatus } from '../ws/device-broadcast';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 export interface Schedule {
   id: number;
@@ -179,7 +180,7 @@ function lampHasPreset(status: LampStatus, preset: typeof LAMP_PRESETS[string]):
 export async function applyPresetToLamp(deviceId: string, presetName: PresetName): Promise<boolean> {
   const preset = LAMP_PRESETS[presetName];
   if (!preset) {
-    console.error(`Preset ${presetName} not found`);
+    logger.error('Preset not found', { component: 'schedule-service', preset: presetName });
     return false;
   }
 
@@ -227,7 +228,7 @@ export async function applyPresetToLamp(deviceId: string, presetName: PresetName
 
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to apply ${presetName} to ${deviceId}:`, getErrorMessage(error));
+    logger.error('Failed to apply preset to lamp', { component: 'schedule-service', deviceId, preset: presetName, error: getErrorMessage(error) });
     return false;
   }
 }
@@ -267,6 +268,6 @@ export async function applyPresetToAllLamps(
   broadcastPendingActions();
   broadcastHomeStatus();
 
-  console.log(`Applied ${presetName}: ${result.success.length} ok, ${result.pending.length} pending`);
+  logger.info('Applied lamp preset to all', { component: 'schedule-service', preset: presetName, successCount: result.success.length, pendingCount: result.pending.length });
   return result;
 }

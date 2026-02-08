@@ -9,6 +9,7 @@ import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
 import { broadcastTuyaStatus, broadcastPendingHeaterActions, broadcastHomeStatus } from '../ws/device-broadcast';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 export interface HeaterSchedule {
   id: number;
@@ -176,7 +177,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       // Auto-wake: if device is off (DPS 1 = false), turn it on first
       const switchState = status?.dps?.['1'];
       if (switchState === false) {
-        console.log(`TRV ${deviceId} is off, turning on first...`);
+        logger.debug('TRV is off, turning on first', { component: 'heater-schedule', deviceId });
         const wakeSuccess = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, true);
         if (wakeSuccess) {
           broadcastTuyaStatus(deviceId, 'wkf', { switchState: true });
@@ -188,7 +189,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
 
       if (success) {
-        console.log(`Set ${deviceId} to ${targetTemp}°C`);
+        logger.debug('Set TRV temperature', { component: 'heater-schedule', deviceId, targetTemp });
         broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
         return 'success';
       }
@@ -203,7 +204,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
         await Bun.sleep(RETRY_DELAY_MS);
         continue;
       }
-      console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, getErrorMessage(error));
+      logger.error('Failed to apply temperature to TRV', { component: 'heater-schedule', deviceId, targetTemp, error: getErrorMessage(error) });
       return 'failed';
     }
   }
@@ -232,7 +233,7 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
       const success = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, false);
 
       if (success) {
-        console.log(`Turned off TRV ${deviceId}`);
+        logger.debug('Turned off TRV', { component: 'heater-schedule', deviceId });
         broadcastTuyaStatus(deviceId, 'wkf', { switchState: false });
         return 'success';
       }
@@ -247,7 +248,7 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
         await Bun.sleep(RETRY_DELAY_MS);
         continue;
       }
-      console.error(`Failed to turn off TRV ${deviceId}:`, getErrorMessage(error));
+      logger.error('Failed to turn off TRV', { component: 'heater-schedule', deviceId, error: getErrorMessage(error) });
       return 'failed';
     }
   }
@@ -266,7 +267,7 @@ export async function applyPresetToHeater(deviceId: string, presetId: string): P
 
   const preset = getHeaterPreset(presetId);
   if (!preset) {
-    console.error(`Invalid heater preset: ${presetId}`);
+    logger.error('Invalid heater preset', { component: 'heater-schedule', presetId });
     return 'failed';
   }
 
@@ -304,7 +305,7 @@ export async function applyFixedTempToAllHeaters(targetTemp: number): Promise<Ap
     }
   }
 
-  console.log(`Applied fixed temp ${targetTemp}°C: ${result.success.length} ok, ${result.pending.length} offline, ${result.failed.length} failed`);
+  logger.info('Applied fixed temp to all heaters', { component: 'heater-schedule', targetTemp, successCount: result.success.length, offlineCount: result.pending.length, failedCount: result.failed.length });
   return result;
 }
 
@@ -325,7 +326,7 @@ export async function applyPresetToAllHeaters(
 
   const preset = getHeaterPreset(presetId);
   if (!preset) {
-    console.error(`Invalid heater preset: ${presetId}`);
+    logger.error('Invalid heater preset', { component: 'heater-schedule', presetId });
     return result;
   }
 
@@ -360,6 +361,6 @@ export async function applyPresetToAllHeaters(
   broadcastPendingHeaterActions();
   broadcastHomeStatus();
 
-  console.log(`Applied heater preset "${preset.name}": ${result.success.length} ok, ${result.pending.length} pending, ${result.failed.length} failed`);
+  logger.info('Applied heater preset to all', { component: 'heater-schedule', presetName: preset.name, successCount: result.success.length, pendingCount: result.pending.length, failedCount: result.failed.length });
   return result;
 }

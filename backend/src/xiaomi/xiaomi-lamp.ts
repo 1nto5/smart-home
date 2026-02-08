@@ -7,6 +7,7 @@
 import net from 'net';
 import { getDb } from '../db/database';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 const YEELIGHT_PORT = 55443;
 const COMMAND_TIMEOUT = 5000;
@@ -144,7 +145,7 @@ export async function getLampStatus(deviceId: string): Promise<LampStatus | null
 
   const device = getDevice(deviceId);
   if (!device?.ip) {
-    console.error(`Device ${deviceId} not found or missing IP`);
+    logger.error('Device not found or missing IP', { component: 'xiaomi-lamp', deviceId });
     return null;
   }
 
@@ -167,7 +168,7 @@ export async function getLampStatus(deviceId: string): Promise<LampStatus | null
     failedAttempts.delete(deviceId);
     return status;
   } catch (error: unknown) {
-    console.error(`Failed to get status for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to get status', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return lastStatuses.get(deviceId) || null;
   }
@@ -184,11 +185,11 @@ export async function setLampPower(deviceId: string, on: boolean): Promise<boole
 
   try {
     await sendCommand(device.ip, 'set_power', [on ? 'on' : 'off', 'smooth', 500]);
-    console.log(`Set ${device.name} power: ${on}`);
+    logger.info('Set power', { component: 'xiaomi-lamp', deviceName: device.name, action: on ? 'on' : 'off' });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to set power for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to set power', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -205,11 +206,11 @@ export async function toggleLamp(deviceId: string): Promise<boolean> {
 
   try {
     await sendCommand(device.ip, 'toggle', []);
-    console.log(`Toggled ${device.name}`);
+    logger.info('Toggled lamp', { component: 'xiaomi-lamp', deviceName: device.name, action: 'toggle' });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to toggle ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to toggle', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -228,11 +229,11 @@ export async function setLampBrightness(deviceId: string, brightness: number): P
 
   try {
     await sendCommand(device.ip, 'set_bright', [level, 'smooth', 500]);
-    console.log(`Set ${device.name} brightness: ${level}%`);
+    logger.info('Set brightness', { component: 'xiaomi-lamp', deviceName: device.name, brightness: level });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to set brightness for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to set brightness', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -249,11 +250,11 @@ export async function setLampColorTemp(deviceId: string, kelvin: number): Promis
 
   try {
     await sendCommand(device.ip, 'set_ct_abx', [kelvin, 'smooth', 500]);
-    console.log(`Set ${device.name} color temp: ${kelvin}K`);
+    logger.info('Set color temperature', { component: 'xiaomi-lamp', deviceName: device.name, kelvin });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to set color temp for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to set color temperature', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -272,11 +273,11 @@ export async function setLampColor(deviceId: string, r: number, g: number, b: nu
 
   try {
     await sendCommand(device.ip, 'set_rgb', [rgb, 'smooth', 500]);
-    console.log(`Set ${device.name} color: rgb(${r},${g},${b})`);
+    logger.info('Set color', { component: 'xiaomi-lamp', deviceName: device.name, r, g, b });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to set color for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to set color', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -300,11 +301,11 @@ export async function setLampMoonlight(deviceId: string, brightness?: number): P
       await sendCommand(device.ip, 'set_scene', ['nightlight', level]);
     }
 
-    console.log(`Set ${device.name} to moonlight mode${brightness !== undefined ? ` (${brightness}%)` : ''}`);
+    logger.info('Set moonlight mode', { component: 'xiaomi-lamp', deviceName: device.name, action: 'moonlight', brightness });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to set moonlight for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to set moonlight mode', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }
@@ -322,11 +323,11 @@ export async function setLampDaylightMode(deviceId: string): Promise<boolean> {
   try {
     // Mode 1 = daylight/normal mode
     await sendCommand(device.ip, 'set_power', ['on', 'smooth', 500, 1]);
-    console.log(`Set ${device.name} to daylight mode`);
+    logger.info('Set daylight mode', { component: 'xiaomi-lamp', deviceName: device.name, action: 'daylight' });
     failedAttempts.delete(deviceId);
     return true;
   } catch (error: unknown) {
-    console.error(`Failed to set daylight for ${device.name}:`, getErrorMessage(error));
+    logger.error('Failed to set daylight mode', { component: 'xiaomi-lamp', deviceName: device.name, error: getErrorMessage(error) });
     failedAttempts.set(deviceId, Date.now());
     return false;
   }

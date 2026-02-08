@@ -6,6 +6,7 @@ import {
 import { handleCommand, handleCallbackQuery } from './telegram-handlers';
 import { getErrorMessage } from '../utils/errors';
 import { fetchWithTimeout, TIMEOUTS } from '../utils/fetch-timeout';
+import { logger } from '../utils/logger';
 
 interface TelegramInlineKeyboard {
   inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
@@ -59,7 +60,7 @@ async function getUpdates(botToken: string, offset: number): Promise<TelegramUpd
     }
     return [];
   } catch (error: unknown) {
-    console.error('Telegram getUpdates error:', getErrorMessage(error));
+    logger.error('Telegram getUpdates error', { component: 'telegram-bot', error: getErrorMessage(error) });
     return [];
   }
 }
@@ -74,7 +75,7 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
   if (update.message) {
     const chatId = update.message.chat.id.toString();
     if (chatId !== config.chat_id) {
-      console.log(`Ignoring message from unauthorized chat: ${chatId}`);
+      logger.warn('Ignoring message from unauthorized chat', { component: 'telegram-bot', chatId });
       return;
     }
 
@@ -87,7 +88,7 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
   if (update.callback_query) {
     const chatId = update.callback_query.message.chat.id.toString();
     if (chatId !== config.chat_id) {
-      console.log(`Ignoring callback from unauthorized chat: ${chatId}`);
+      logger.warn('Ignoring callback from unauthorized chat', { component: 'telegram-bot', chatId });
       return;
     }
 
@@ -126,7 +127,7 @@ async function pollUpdates(): Promise<void> {
     // Mark successful poll for watchdog
     lastPollTime = Date.now();
   } catch (error: unknown) {
-    console.error('Poll updates error:', getErrorMessage(error));
+    logger.error('Poll updates error', { component: 'telegram-bot', error: getErrorMessage(error) });
   } finally {
     isPolling = false;
   }
@@ -144,7 +145,7 @@ function checkPollingHealth(): void {
   const timeSinceLastPoll = Date.now() - lastPollTime;
 
   if (lastPollTime > 0 && timeSinceLastPoll > WATCHDOG_TIMEOUT_MS) {
-    console.warn(`🐕 Telegram watchdog: polling stalled (${Math.round(timeSinceLastPoll / 1000)}s), restarting...`);
+    logger.warn('Telegram watchdog: polling stalled, restarting', { component: 'telegram-bot', stalledSeconds: Math.round(timeSinceLastPoll / 1000) });
 
     // Reset state
     isPolling = false;
@@ -156,7 +157,7 @@ function checkPollingHealth(): void {
     pollInterval = setInterval(pollUpdates, 2000);
     pollUpdates();
 
-    console.log('🐕 Telegram watchdog: polling restarted');
+    logger.info('Telegram watchdog: polling restarted', { component: 'telegram-bot' });
   }
 }
 
@@ -167,11 +168,11 @@ export function startTelegramBot(): void {
   const config = getTelegramConfig();
 
   if (!config.enabled || !config.bot_token || !config.chat_id) {
-    console.log('🤖 Telegram bot not configured, skipping');
+    logger.info('Telegram bot not configured, skipping', { component: 'telegram-bot' });
     return;
   }
 
-  console.log('🤖 Starting Telegram bot polling...');
+  logger.info('Starting Telegram bot polling', { component: 'telegram-bot' });
 
   // Initialize watchdog timestamp
   lastPollTime = Date.now();
@@ -198,7 +199,7 @@ export function stopTelegramBot(): void {
     clearInterval(watchdogInterval);
     watchdogInterval = null;
   }
-  console.log('🤖 Telegram bot stopped');
+  logger.info('Telegram bot stopped', { component: 'telegram-bot' });
 }
 
 /**
@@ -233,7 +234,7 @@ export async function sendMessage(
     const data = await response.json() as { ok: boolean };
     return data.ok;
   } catch (error: unknown) {
-    console.error('sendMessage error:', getErrorMessage(error));
+    logger.error('sendMessage error', { component: 'telegram-bot', error: getErrorMessage(error) });
     return false;
   }
 }
@@ -272,7 +273,7 @@ export async function editMessage(
     const data = await response.json() as { ok: boolean };
     return data.ok;
   } catch (error: unknown) {
-    console.error('editMessage error:', getErrorMessage(error));
+    logger.error('editMessage error', { component: 'telegram-bot', error: getErrorMessage(error) });
     return false;
   }
 }
@@ -301,7 +302,7 @@ export async function answerCallbackQuery(
     const data = await response.json() as { ok: boolean };
     return data.ok;
   } catch (error: unknown) {
-    console.error('answerCallbackQuery error:', getErrorMessage(error));
+    logger.error('answerCallbackQuery error', { component: 'telegram-bot', error: getErrorMessage(error) });
     return false;
   }
 }

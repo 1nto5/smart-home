@@ -7,6 +7,7 @@ import { discoverTuyaGatewayIp } from './tuya-discover';
 import { config } from '../config';
 import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 type DpsValue = boolean | number | string;
 type DpsRecord = Record<string, DpsValue>;
@@ -95,7 +96,7 @@ function findDeviceByNodeId(nodeId: string): TuyaDevice | null {
 function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
   const device = findDeviceByNodeId(cid);
   if (!device) {
-    console.log(`Unknown subdevice with cid: ${cid}`);
+    logger.debug('Unknown subdevice event', { component: 'tuya-local', cid });
     return;
   }
 
@@ -108,7 +109,7 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
     if (lastState === null || lastState !== isOpen) {
       recordContactChange(device.id, device.name, isOpen);
       broadcastTuyaStatus(device.id, device.category, { '101': isOpen });
-      console.log(`📍 ${device.name}: ${isOpen ? 'OPENED' : 'CLOSED'}`);
+      logger.info(`Contact sensor ${isOpen ? 'opened' : 'closed'}`, { component: 'tuya-local', deviceId: device.id, deviceName: device.name });
 
       // Trigger automations
       evaluateSensorTrigger(device.id, device.name, isOpen ? 'open' : 'closed');
@@ -116,7 +117,7 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
       // Trigger door alarm (only creates if alarm is armed, handled inside triggerAlarm)
       if (isOpen) {
         triggerAlarm('door', device.id, device.name).catch((err) => {
-          console.error('Failed to trigger door alarm:', err);
+          logger.error('Failed to trigger door alarm', { component: 'tuya-local', deviceId: device.id, deviceName: device.name, error: getErrorMessage(err) });
         });
       }
     }
@@ -132,14 +133,14 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
       recordContactChange(device.id, device.name, isLeaking);
       broadcastTuyaStatus(device.id, device.category, { '1': isLeaking ? 1 : 0 });
       if (isLeaking) {
-        console.log(`🚨 WATER LEAK DETECTED: ${device.name}`);
+        logger.warn('Water leak detected', { component: 'tuya-local', deviceId: device.id, deviceName: device.name });
 
         // Trigger flood alarm (always, regardless of alarm armed state)
         triggerAlarm('flood', device.id, device.name).catch((err) => {
-          console.error('Failed to trigger flood alarm:', err);
+          logger.error('Failed to trigger flood alarm', { component: 'tuya-local', deviceId: device.id, deviceName: device.name, error: getErrorMessage(err) });
         });
       } else {
-        console.log(`✓ ${device.name}: Water sensor normal`);
+        logger.info('Water sensor normal', { component: 'tuya-local', deviceId: device.id, deviceName: device.name });
       }
     }
   }
@@ -153,7 +154,7 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
     if (temp !== null || humidity !== null) {
       recordSensorReading(device.id, device.name, temp, humidity, null, battery);
       broadcastTuyaStatus(device.id, device.category, { temp, humidity, battery });
-      console.log(`🌡️ ${device.name}: ${temp}°C, ${humidity}%`);
+      logger.debug('Sensor reading', { component: 'tuya-local', deviceId: device.id, deviceName: device.name, temp, humidity });
     }
   }
 
@@ -168,9 +169,9 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
       recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
       broadcastTuyaStatus(device.id, device.category, { switchState, currentTemp, targetTemp, battery });
       if (switchState === false) {
-        console.log(`⏻ ${device.name}: OFF`);
+        logger.debug('TRV off', { component: 'tuya-local', deviceId: device.id, deviceName: device.name });
       } else if (currentTemp !== null) {
-        console.log(`🔥 ${device.name}: ${currentTemp}°C (target: ${targetTemp}°C)`);
+        logger.debug('TRV reading', { component: 'tuya-local', deviceId: device.id, deviceName: device.name, currentTemp, targetTemp });
       }
     }
   }
@@ -216,7 +217,7 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
 
   const dbDevice = getDevice(deviceId);
   if (!dbDevice || !dbDevice.local_key) {
-    console.error(`Device ${deviceId} not found or missing local_key`);
+    logger.error('Device not found or missing local_key', { component: 'tuya-local', deviceId });
     return null;
   }
 
@@ -224,15 +225,15 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
 
   // If no IP, try to discover
   if (!ip) {
-    console.log(`Discovering IP for ${deviceId}...`);
+    logger.info('Discovering device IP', { component: 'tuya-local', deviceId });
     ip = await discoverDevice(deviceId, dbDevice.local_key);
     if (ip) {
       // Save IP to database
       const db = getDb();
       db.run('UPDATE devices SET ip = ? WHERE id = ?', [ip, deviceId]);
-      console.log(`Found IP: ${ip}`);
+      logger.info('Device IP discovered', { component: 'tuya-local', deviceId, ip });
     } else {
-      console.error(`Could not discover IP for ${deviceId}`);
+      logger.error('Could not discover device IP', { component: 'tuya-local', deviceId });
       return null;
     }
   }
@@ -255,7 +256,7 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
 
   // Event handlers
   device.on('connected', () => {
-    console.log(`Connected to ${dbDevice.name} (${deviceId})`);
+    logger.info('Device connected', { component: 'tuya-local', deviceId, deviceName: dbDevice.name });
     connection.connected = true;
     // Reset reconnect attempts on successful connection
     if (deviceId === GATEWAY_ID) {
@@ -264,17 +265,17 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
   });
 
   device.on('disconnected', () => {
-    console.log(`Disconnected from ${dbDevice.name} (${deviceId})`);
+    logger.info('Device disconnected', { component: 'tuya-local', deviceId, deviceName: dbDevice.name });
     connection.connected = false;
 
     // Auto-reconnect for gateway (with max retry limit)
     if (deviceId === GATEWAY_ID && !reconnectTimeout) {
       if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-        console.error(`🔌 Gateway reconnect failed after ${MAX_RECONNECT_ATTEMPTS} attempts, giving up`);
+        logger.error('Gateway reconnect failed, giving up', { component: 'tuya-local', attempts: MAX_RECONNECT_ATTEMPTS });
         return;
       }
       reconnectAttempts++;
-      console.log(`🔌 Scheduling gateway reconnect in ${RECONNECT_DELAY_MS / 1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+      logger.info('Scheduling gateway reconnect', { component: 'tuya-local', delayMs: RECONNECT_DELAY_MS, attempt: reconnectAttempts, maxAttempts: MAX_RECONNECT_ATTEMPTS });
       reconnectTimeout = setTimeout(async () => {
         reconnectTimeout = null;
         await reconnectGateway();
@@ -283,13 +284,13 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
   });
 
   device.on('error', (error: Error) => {
-    console.error(`Error from ${dbDevice.name}:`, error.message);
+    logger.error('Device error', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: error.message });
   });
 
   // TuyAPI types data as DPSObject; cast to access dps/cid fields
   device.on('data', (rawData) => {
     const data = rawData as { dps?: DpsRecord; cid?: string };
-    console.log(`Data from ${dbDevice.name}:`, data);
+    logger.debug('Device data received', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, data });
     if (data.dps) {
       connection.lastStatus = data.dps;
       // Save to history
@@ -300,7 +301,7 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
         try {
           handleSubdeviceEvent(data.cid, data.dps);
         } catch (error: unknown) {
-          console.error(`Subdevice event handler error for cid ${data.cid}:`, getErrorMessage(error));
+          logger.error('Subdevice event handler error', { component: 'tuya-local', cid: data.cid, error: getErrorMessage(error) });
         }
       }
     }
@@ -311,7 +312,7 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
     connections.set(deviceId, connection);
     return connection;
   } catch (error: unknown) {
-    console.error(`Failed to connect to ${deviceId}:`, getErrorMessage(error));
+    logger.error('Device connection failed', { component: 'tuya-local', deviceId, error: getErrorMessage(error) });
 
     // Trigger IP discovery for gateway on connection failure
     if (dbDevice.category === 'wfcon') {
@@ -328,7 +329,7 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
 export async function getDeviceStatus(deviceId: string): Promise<TuyaStatusResponse | null> {
   const dbDevice = getDevice(deviceId);
   if (!dbDevice) {
-    console.error(`Device ${deviceId} not found in database`);
+    logger.error('Device not found in database', { component: 'tuya-local', deviceId });
     return null;
   }
 
@@ -362,9 +363,9 @@ export async function getDeviceStatus(deviceId: string): Promise<TuyaStatusRespo
       return status;
     } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
-        console.warn(`Circuit open for tuya-local: ${error.message}`);
+        logger.warn('Circuit open for tuya-local', { component: 'tuya-local', error: error.message });
       } else {
-        console.error(`Failed to get status for ${dbDevice.name}:`, getErrorMessage(error));
+        logger.error('Failed to get device status', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: getErrorMessage(error) });
       }
       return null;
     }
@@ -393,9 +394,9 @@ export async function getDeviceStatus(deviceId: string): Promise<TuyaStatusRespo
       return status;
     } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
-        console.warn(`Circuit open for tuya-local: ${error.message}`);
+        logger.warn('Circuit open for tuya-local', { component: 'tuya-local', error: error.message });
       } else {
-        console.error(`Failed to get status for ${dbDevice.name}:`, getErrorMessage(error));
+        logger.error('Failed to get device status', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: getErrorMessage(error) });
       }
       return device.lastStatus ? { dps: device.lastStatus } : null;
     }
@@ -412,7 +413,7 @@ export async function sendDeviceCommand(
 ): Promise<boolean> {
   const dbDevice = getDevice(deviceId);
   if (!dbDevice) {
-    console.error(`Device ${deviceId} not found in database`);
+    logger.error('Device not found in database', { component: 'tuya-local', deviceId });
     return false;
   }
 
@@ -428,7 +429,7 @@ export async function sendDeviceCommand(
       gatewayConn = await connectDevice(GATEWAY_ID);
     }
     if (!gatewayConn) {
-      console.error('Cannot connect to gateway for subdevice control');
+      logger.error('Cannot connect to gateway for subdevice control', { component: 'tuya-local' });
       return false;
     }
 
@@ -443,13 +444,13 @@ export async function sendDeviceCommand(
           `sendDeviceCommand(${dbDevice.name})`
         );
       });
-      console.log(`Set ${dbDevice.name} (${cid}) via gateway: dps ${dps} = ${value}`);
+      logger.info('Command sent via gateway', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, cid, dps, value });
       return true;
     } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
-        console.warn(`Circuit open for tuya-local: ${error.message}`);
+        logger.warn('Circuit open for tuya-local', { component: 'tuya-local', error: error.message });
       } else {
-        console.error(`Failed to send to subdevice ${dbDevice.name}:`, getErrorMessage(error));
+        logger.error('Failed to send command to subdevice', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: getErrorMessage(error) });
       }
       return false;
     }
@@ -471,13 +472,13 @@ export async function sendDeviceCommand(
           `sendDeviceCommand(${dbDevice.name})`
         );
       });
-      console.log(`Set ${dbDevice.name} dps ${dps} = ${value}`);
+      logger.info('Command sent', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, dps, value });
       return true;
     } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
-        console.warn(`Circuit open for tuya-local: ${error.message}`);
+        logger.warn('Circuit open for tuya-local', { component: 'tuya-local', error: error.message });
       } else {
-        console.error(`Failed to send to ${dbDevice.name}:`, getErrorMessage(error));
+        logger.error('Failed to send command', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: getErrorMessage(error) });
       }
       return false;
     }
@@ -515,7 +516,7 @@ function saveDeviceHistory(deviceId: string, status: DpsRecord): void {
       [deviceId, JSON.stringify(status)]
     );
   } catch (error) {
-    console.error('Failed to save device history:', error);
+    logger.error('Failed to save device history', { component: 'tuya-local', deviceId, error: getErrorMessage(error) });
   }
 }
 
@@ -525,17 +526,17 @@ function saveDeviceHistory(deviceId: string, status: DpsRecord): void {
 export async function testGatewayConnection(): Promise<boolean> {
   const gateway = getDevice(GATEWAY_ID);
   if (!gateway) {
-    console.error('Gateway not found in database');
+    logger.error('Gateway not found in database', { component: 'tuya-local' });
     return false;
   }
 
-  console.log(`Testing connection to gateway: ${gateway.name}`);
+  logger.info('Testing gateway connection', { component: 'tuya-local', deviceName: gateway.name });
   const conn = await connectDevice(GATEWAY_ID);
 
   if (conn?.connected) {
-    console.log('Gateway connected successfully!');
+    logger.info('Gateway connected successfully', { component: 'tuya-local' });
     const status = await getDeviceStatus(GATEWAY_ID);
-    console.log('Gateway status:', status);
+    logger.debug('Gateway status', { component: 'tuya-local', status });
     return true;
   }
 
@@ -554,7 +555,7 @@ export function getGatewayConnectionStatus(): boolean {
  * Reconnect to gateway
  */
 export async function reconnectGateway(): Promise<boolean> {
-  console.log('🔌 Attempting gateway reconnect...');
+  logger.info('Attempting gateway reconnect', { component: 'tuya-local' });
 
   // Disconnect existing connection if any
   disconnectDevice(GATEWAY_ID);

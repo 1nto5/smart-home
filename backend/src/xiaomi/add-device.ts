@@ -9,16 +9,14 @@
  */
 
 import { initDatabase, getDb } from '../db/database';
+import { logger } from '../utils/logger';
 
 const args = process.argv.slice(2);
 
 if (args.length < 6) {
-  console.log('Usage: bun src/xiaomi/add-device.ts <id> <name> <ip> <token> <model> <category> [room]');
-  console.log('');
-  console.log('Categories: lamp, vacuum, purifier');
-  console.log('');
-  console.log('Example:');
-  console.log('  bun src/xiaomi/add-device.ts 334274943 "Lampa salon" 10.10.10.112 abc123def "yeelink.light.mono1" lamp "Salon"');
+  logger.info('Usage: bun src/xiaomi/add-device.ts <id> <name> <ip> <token> <model> <category> [room]', { component: 'xiaomi-add-device' });
+  logger.info('Categories: lamp, vacuum, purifier', { component: 'xiaomi-add-device' });
+  logger.info('Example: bun src/xiaomi/add-device.ts 334274943 "Lampa salon" 10.10.10.112 abc123def "yeelink.light.mono1" lamp "Salon"', { component: 'xiaomi-add-device' });
   process.exit(1);
 }
 
@@ -46,11 +44,13 @@ db.run(`
     updated_at = CURRENT_TIMESTAMP
 `, [id, name, ip, token, model, category, room || null]);
 
-console.log(`Added/Updated Xiaomi device:`);
-console.log(`  ID: ${id}`);
-console.log(`  Name: ${name}`);
-console.log(`  IP: ${ip}`);
-console.log(`  Token: ${token.substring(0, 8)}...`);
-console.log(`  Model: ${model}`);
-console.log(`  Category: ${category}`);
-console.log(`  Room: ${room || '(not set)'}`);
+logger.info('Added/Updated Xiaomi device', {
+  component: 'xiaomi-add-device',
+  deviceId: id,
+  deviceName: name,
+  ip,
+  token: token.substring(0, 8) + '...',
+  model,
+  category,
+  room: room || '(not set)',
+});

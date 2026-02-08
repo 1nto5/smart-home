@@ -24,21 +24,21 @@
   let inputValue = $state('');
   let inputRef = $state<HTMLInputElement | null>(null);
 
-  let status = $derived(() => {
+  let status = $derived.by(() => {
     if (!device.last_status) return null;
     try {
-      return JSON.parse(device.last_status);
+      return JSON.parse(device.last_status) as Record<string, number | string | boolean>;
     } catch {
       return null;
     }
   });
 
-  let switchState = $derived(status()?.['1'] !== undefined ? status()['1'] === true : true);
-  let currentTemp = $derived(status()?.['5'] ? status()['5'] / 10 : null);
-  let serverTargetTemp = $derived(status()?.['4'] ? status()['4'] / 10 : null);
+  let switchState = $derived(status?.['1'] !== undefined ? status['1'] === true : true);
+  let currentTemp = $derived(status?.['5'] ? Number(status['5']) / 10 : null);
+  let serverTargetTemp = $derived(status?.['4'] ? Number(status['4']) / 10 : null);
   let targetTemp = $derived(optimisticTemp ?? serverTargetTemp);
-  let valve = $derived(status()?.['3'] || 'unknown');
-  let childLock = $derived(status()?.['7'] === true);
+  let valve = $derived(status?.['3'] || 'unknown');
+  let childLock = $derived(status?.['7'] === true);
   let isDeviceOff = $derived(switchState === false);
 
   // Child lock state
@@ -106,7 +106,7 @@
   }
 
   async function toggleChildLock() {
-    const currentLock = status()?.['7'] === true;
+    const currentLock = status?.['7'] === true;
     childLockPending = true;
     try {
       await controlTuyaDevice(device.id, 7, !currentLock);
@@ -117,7 +117,7 @@
   }
 
   async function togglePower() {
-    const currentPower = status()?.['1'] === true;
+    const currentPower = status?.['1'] === true;
     powerPending = true;
     try {
       await controlTuyaDevice(device.id, 1, !currentPower);
@@ -307,7 +307,7 @@
     {/if}
 
     <!-- Child Lock Toggle -->
-    {#if status()?.['7'] !== undefined}
+    {#if status?.['7'] !== undefined}
       <div class="flex items-center justify-between py-3 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
         <div class="flex items-center gap-2">
           {#if childLock}

@@ -4,6 +4,7 @@
  */
 
 import { getDb } from '../db/database';
+import { logger } from '../utils/logger';
 import { YamahaClient } from './yamaha-client';
 import type { YamahaDevice, YamahaSoundbarStatus } from './yamaha-types';
 import { broadcastYamahaStatus, broadcastYamahaOffline } from '../ws/device-broadcast';
@@ -28,7 +29,7 @@ function getClient(deviceId: string): YamahaClient | null {
 
   const device = getDevice(deviceId);
   if (!device?.ip) {
-    console.error(`Yamaha device ${deviceId} not found or missing IP`);
+    logger.error('Device not found or missing IP', { component: 'yamaha-soundbar', deviceId });
     return null;
   }
 
@@ -87,7 +88,7 @@ export async function setSoundbarPower(deviceId: string, on: boolean): Promise<b
 
   const result = on ? await client.powerOn() : await client.powerOff();
   if (result) {
-    console.log(`Yamaha ${deviceId} power: ${on ? 'on' : 'standby'}`);
+    logger.info('Set power', { component: 'yamaha-soundbar', deviceId, action: on ? 'on' : 'standby' });
   }
   return result;
 }
@@ -101,7 +102,7 @@ export async function setSoundbarVolume(deviceId: string, volume: number): Promi
 
   const result = await client.setVolume(volume);
   if (result) {
-    console.log(`Yamaha ${deviceId} volume: ${volume}`);
+    logger.info('Set volume', { component: 'yamaha-soundbar', deviceId, volume });
   }
   return result;
 }
@@ -115,7 +116,7 @@ export async function setSoundbarMute(deviceId: string, mute: boolean): Promise<
 
   const result = await client.setMute(mute);
   if (result) {
-    console.log(`Yamaha ${deviceId} mute: ${mute}`);
+    logger.info('Set mute', { component: 'yamaha-soundbar', deviceId, mute });
   }
   return result;
 }
@@ -129,7 +130,7 @@ export async function setSoundbarInput(deviceId: string, input: string): Promise
 
   const result = await client.setInput(input);
   if (result) {
-    console.log(`Yamaha ${deviceId} input: ${input}`);
+    logger.info('Set input', { component: 'yamaha-soundbar', deviceId, input });
   }
   return result;
 }
@@ -143,7 +144,7 @@ export async function setSoundbarSoundProgram(deviceId: string, program: string)
 
   const result = await client.setSoundProgram(program);
   if (result) {
-    console.log(`Yamaha ${deviceId} sound program: ${program}`);
+    logger.info('Set sound program', { component: 'yamaha-soundbar', deviceId, program });
   }
   return result;
 }
@@ -157,7 +158,7 @@ export async function setSoundbarClearVoice(deviceId: string, enable: boolean): 
 
   const result = await client.setClearVoice(enable);
   if (result) {
-    console.log(`Yamaha ${deviceId} clear voice: ${enable}`);
+    logger.info('Set clear voice', { component: 'yamaha-soundbar', deviceId, enabled: enable });
   }
   return result;
 }
@@ -171,7 +172,7 @@ export async function setSoundbarBassExtension(deviceId: string, enable: boolean
 
   const result = await client.setBassExtension(enable);
   if (result) {
-    console.log(`Yamaha ${deviceId} bass extension: ${enable}`);
+    logger.info('Set bass extension', { component: 'yamaha-soundbar', deviceId, enabled: enable });
   }
   return result;
 }
@@ -185,7 +186,7 @@ export async function setSoundbarSubwooferVolume(deviceId: string, volume: numbe
 
   const result = await client.setSubwooferVolume(volume);
   if (result) {
-    console.log(`Yamaha ${deviceId} subwoofer volume: ${volume}`);
+    logger.info('Set subwoofer volume', { component: 'yamaha-soundbar', deviceId, volume });
   }
   return result;
 }

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { config } from '../config';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 const BASE_URL = `https://openapi.tuya${config.tuya.region}.com`;
 
@@ -104,8 +105,6 @@ async function request<T>(
   }
 
   const url = `${BASE_URL}${path}`;
-  // console.log('Request:', method, url);
-  // console.log('Headers:', headers);
 
   const response = await fetch(url, {
     method,
@@ -127,13 +126,13 @@ export async function getAccessToken(): Promise<string> {
     return accessToken;
   }
 
-  console.log('Getting new access token...');
+  logger.debug('Requesting new access token', { component: 'tuya-api' });
   const result = await request<TokenResponse>('/v1.0/token?grant_type=1', 'GET', undefined, false);
 
   accessToken = result.access_token;
   tokenExpiry = Date.now() + result.expire_time * 1000 - 60000;
 
-  console.log('Access token obtained');
+  logger.info('Access token obtained', { component: 'tuya-api' });
   return accessToken;
 }
 
@@ -162,8 +161,7 @@ export async function getDevices(): Promise<TuyaDevice[]> {
       });
     }
   } catch (error: unknown) {
-    console.log('First endpoint failed:', getErrorMessage(error));
-    console.log('Trying alternative endpoint...');
+    logger.warn('Primary device endpoint failed, trying alternative', { component: 'tuya-api', error: getErrorMessage(error) });
 
     // Try getting device list for specific user
     try {
@@ -181,7 +179,7 @@ export async function getDevices(): Promise<TuyaDevice[]> {
         });
       }
     } catch (err: unknown) {
-      console.log('Alternative also failed:', getErrorMessage(err));
+      logger.error('Alternative device endpoint also failed', { component: 'tuya-api', error: getErrorMessage(err) });
     }
   }
 
@@ -208,7 +206,7 @@ export async function sendCommand(
     await request(`/v1.0/devices/${deviceId}/commands`, 'POST', { commands });
     return true;
   } catch (error) {
-    console.error(`Error sending command to ${deviceId}:`, error);
+    logger.error('Failed to send command', { component: 'tuya-api', deviceId, error: getErrorMessage(error) });
     return false;
   }
 }
