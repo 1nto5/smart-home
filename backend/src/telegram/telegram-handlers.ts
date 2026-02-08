@@ -437,13 +437,13 @@ async function handleRoborockAction(
     };
     const roomName = roomNames[segmentId] || `Room ${segmentId}`;
     console.log(`Telegram: Starting room cleaning for ${roomName} (segment ${segmentId})`);
-    const actionResult = await cleanSegments([segmentId]);
-    if (actionResult) {
+    const roomResult = await cleanSegments([segmentId]);
+    if (roomResult) {
       const cached = getCachedRoborockStatus();
       if (cached) broadcastRoborockStatus(cached);
     }
     const menu = roborockRoomsKeyboard();
-    const statusText = actionResult ? `✅ Cleaning ${roomName}` : `❌ Failed to start`;
+    const statusText = roomResult ? `✅ Cleaning ${roomName}` : `❌ Failed to start`;
     await editMessage(chatId, messageId, `${menu.text}\n\n${statusText}`, menu.keyboard);
     return;
   }
@@ -913,10 +913,7 @@ async function sendStatusMessage(chatId: number, messageId?: number): Promise<vo
   const alarm = getAlarmConfig();
   const homeStatus = getHomeStatus();
 
-  // Get device counts
   const db = getDb();
-  const lampCount = (db.query("SELECT COUNT(*) as c FROM xiaomi_devices WHERE category LIKE 'yeelink%'").get() as { c: number }).c;
-  const heaterCount = (db.query("SELECT COUNT(*) as c FROM devices WHERE category = 'wkf'").get() as { c: number }).c;
 
   // Get weather station data (indoor)
   let weatherTemp: number | null = null;
