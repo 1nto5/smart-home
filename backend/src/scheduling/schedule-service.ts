@@ -8,6 +8,7 @@ import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
 import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
 import { createPendingAction, clearAllPending } from './pending-service';
 import { broadcastPendingActions, broadcastHomeStatus } from '../ws/device-broadcast';
+import { getErrorMessage } from '../utils/errors';
 
 export interface Schedule {
   id: number;
@@ -225,8 +226,8 @@ export async function applyPresetToLamp(deviceId: string, presetName: PresetName
     }
 
     return true;
-  } catch (error: any) {
-    console.error(`Failed to apply ${presetName} to ${deviceId}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to apply ${presetName} to ${deviceId}:`, getErrorMessage(error));
     return false;
   }
 }

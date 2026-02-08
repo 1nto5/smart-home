@@ -75,6 +75,7 @@ import {
 } from '../ws/device-broadcast';
 import { getCachedPurifierStatus } from '../xiaomi/air-purifier';
 import { getCachedRoborockStatus } from '../roborock/roborock';
+import { getErrorMessage } from '../utils/errors';
 
 /**
  * Handle text commands
@@ -155,8 +156,8 @@ export async function handleCallbackQuery(
         await handleAutomationCallback(args, chatId, messageId);
         break;
     }
-  } catch (error: any) {
-    console.error('Callback handler error:', error.message);
+  } catch (error: unknown) {
+    console.error('Callback handler error:', getErrorMessage(error));
     await answerCallbackQuery(callbackId, '❌ Error occurred');
     return;
   }
@@ -172,7 +173,7 @@ async function handleMenuNavigation(
   chatId: number,
   messageId: number
 ): Promise<void> {
-  let result: { text: string; keyboard: any };
+  let result: { text: string; keyboard: { inline_keyboard: Array<Array<{ text: string; callback_data?: string }>> } };
 
   switch (menu) {
     case 'main':
@@ -333,7 +334,7 @@ async function handleLampAction(
           'UPDATE xiaomi_devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
           [JSON.stringify(status), param]
         );
-        broadcastLampStatus(param, status as Record<string, unknown>);
+        broadcastLampStatus(param, status);
       }
     }
 

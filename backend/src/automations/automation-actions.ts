@@ -9,6 +9,7 @@ import { setPurifierPower, setPurifierMode } from '../xiaomi/air-purifier';
 import { setSoundbarPower } from '../yamaha/yamaha-soundbar';
 import { sendMessage, editMessage } from '../telegram/telegram-bot';
 import { getTelegramConfig } from '../db/database';
+import { getErrorMessage } from '../utils/errors';
 
 export interface TriggerContext {
   deviceId: string;
@@ -138,8 +139,8 @@ export async function executeSingleAction(
     logAutomation(automationName, context.deviceName, actionDescription, success ? 'success' : 'failed');
     console.log(`Automation "${automationName}": ${actionDescription} -> ${success ? 'success' : 'failed'}`);
     return success;
-  } catch (error: any) {
-    console.error(`Automation action failed: ${actionDescription}`, error.message);
+  } catch (error: unknown) {
+    console.error(`Automation action failed: ${actionDescription}`, getErrorMessage(error));
     logAutomation(automationName, context.deviceName, actionDescription, 'error');
     return false;
   }

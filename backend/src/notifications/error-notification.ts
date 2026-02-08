@@ -1,4 +1,5 @@
 import { getTelegramConfig, logTelegram } from '../db/database';
+import { getErrorMessage } from '../utils/errors';
 
 type Severity = 'critical' | 'warning';
 
@@ -92,8 +93,8 @@ Time: ${timestamp}`;
     }
 
     return data.ok;
-  } catch (err: any) {
-    console.error('Error sending notification:', err.message);
+  } catch (err: unknown) {
+    console.error('Error sending notification:', getErrorMessage(err));
     return false;
   }
 }

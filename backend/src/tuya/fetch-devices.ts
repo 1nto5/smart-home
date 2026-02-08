@@ -2,10 +2,11 @@ import { getDevices, getDeviceInfo, getDeviceStatus } from './tuya-api';
 import { Database } from 'bun:sqlite';
 import { config } from '../config';
 import path from 'path';
+import { getErrorMessage } from '../utils/errors';
 
 // Convert cloud API status (code/value array) to DPS format
-function cloudStatusToDps(status: Array<{ code: string; value: any }>, category: string): Record<string, any> {
-  const dps: Record<string, any> = {};
+function cloudStatusToDps(status: Array<{ code: string; value: string | number | boolean }>, category: string): Record<string, string | number | boolean> {
+  const dps: Record<string, string | number | boolean> = {};
   for (const item of status) {
     switch (item.code) {
       // Water sensor (sj)
@@ -74,8 +75,8 @@ async function main() {
         console.log(`  Sub: ${details.sub ? 'Yes' : 'No'}`);
         console.log(`  Category: ${device.category}`);
         console.log('');
-      } catch (e: any) {
-        console.log(`Device: ${device.name} - failed to get details: ${e.message}`);
+      } catch (e: unknown) {
+        console.log(`Device: ${device.name} - failed to get details: ${getErrorMessage(e)}`);
       }
 
       // Don't overwrite local IP with cloud IP (cloud often returns external IP)
@@ -102,8 +103,8 @@ async function main() {
             db.run('UPDATE devices SET last_status = ? WHERE id = ?', [JSON.stringify(dps), device.id]);
             console.log(`  Status: ${JSON.stringify(dps)}`);
           }
-        } catch (e: any) {
-          console.log(`  Status fetch failed: ${e.message}`);
+        } catch (e: unknown) {
+          console.log(`  Status fetch failed: ${getErrorMessage(e)}`);
         }
       }
     }

@@ -5,6 +5,7 @@ import {
   getAlarmConfig,
 } from '../db/database';
 import { translateDeviceName } from '../utils/translations';
+import { getErrorMessage } from '../utils/errors';
 
 export type AlertType = 'flood' | 'door_open';
 
@@ -46,8 +47,8 @@ async function sendTelegramMessage(
       success: false,
       error: data.description || `HTTP ${response.status}`
     };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 

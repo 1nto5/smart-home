@@ -8,6 +8,7 @@ import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp, type HeaterPres
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
 import { broadcastTuyaStatus, broadcastPendingHeaterActions, broadcastHomeStatus } from '../ws/device-broadcast';
+import { getErrorMessage } from '../utils/errors';
 
 export interface HeaterSchedule {
   id: number;
@@ -197,12 +198,12 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
         continue;
       }
       return 'failed'; // command failed after all retries
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (attempt < MAX_RETRIES) {
         await Bun.sleep(RETRY_DELAY_MS);
         continue;
       }
-      console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, error.message);
+      console.error(`Failed to apply ${targetTemp}°C to TRV ${deviceId}:`, getErrorMessage(error));
       return 'failed';
     }
   }
@@ -241,12 +242,12 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
         continue;
       }
       return 'failed';
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (attempt < MAX_RETRIES) {
         await Bun.sleep(RETRY_DELAY_MS);
         continue;
       }
-      console.error(`Failed to turn off TRV ${deviceId}:`, error.message);
+      console.error(`Failed to turn off TRV ${deviceId}:`, getErrorMessage(error));
       return 'failed';
     }
   }

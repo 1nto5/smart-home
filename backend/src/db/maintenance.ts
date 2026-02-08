@@ -1,5 +1,6 @@
 import { getDb } from './database';
 import { config } from '../config';
+import { getErrorMessage } from '../utils/errors';
 
 export interface RetentionConfig {
   sensorHistoryDays: number;
@@ -130,8 +131,8 @@ function runMaintenance(): void {
   try {
     const result = cleanupOldData();
     console.log(`[maintenance] Cleanup complete: ${result.totalDeleted} records deleted in ${result.duration}ms`);
-  } catch (error: any) {
-    console.error('[maintenance] Cleanup failed:', error.message);
+  } catch (error: unknown) {
+    console.error('[maintenance] Cleanup failed:', getErrorMessage(error));
   }
 }
 

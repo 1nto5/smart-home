@@ -18,6 +18,7 @@ import { getPurifierStatus } from '../xiaomi/air-purifier';
 import { getStatus as getRoborockStatus } from '../roborock/roborock';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
 import { broadcastHomeStatus } from '../ws/device-broadcast';
+import { getErrorMessage } from '../utils/errors';
 import { config } from '../config';
 
 let pollerInterval: Timer | null = null;
@@ -40,16 +41,16 @@ async function refreshWeatherStationStatuses(): Promise<void> {
         db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(dps), station.id]);
 
         // Record to sensor history
-        const temp = dps['103'] !== undefined ? dps['103'] / 100 : null;
-        const humidity = dps['101'] !== undefined ? dps['101'] / 100 : null;
-        const battery = dps['102'] !== undefined ? dps['102'] : null;
+        const temp = dps['103'] !== undefined ? Number(dps['103']) / 100 : null;
+        const humidity = dps['101'] !== undefined ? Number(dps['101']) / 100 : null;
+        const battery = dps['102'] !== undefined ? Number(dps['102']) : null;
         if (temp !== null || humidity !== null) {
           recordSensorReading(station.id, station.name, temp, humidity, null, battery);
           broadcastTuyaStatus(station.id, 'wsdcg', { temp, humidity, battery });
         }
       }
-    } catch (e: any) {
-      console.error(`Weather station refresh failed for ${station.name}:`, e.message);
+    } catch (e: unknown) {
+      console.error(`Weather station refresh failed for ${station.name}:`, getErrorMessage(e));
     }
   }
 }
@@ -90,8 +91,8 @@ async function refreshSensorStatuses(): Promise<void> {
           }
         }
       }
-    } catch (e: any) {
-      console.error(`Sensor refresh failed for ${sensor.name}:`, e.message);
+    } catch (e: unknown) {
+      console.error(`Sensor refresh failed for ${sensor.name}:`, getErrorMessage(e));
     }
   }
 }
@@ -109,16 +110,16 @@ async function refreshTrvStatuses(): Promise<void> {
         db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(dps), trv.id]);
 
         // Record to sensor history
-        const currentTemp = dps['5'] !== undefined ? dps['5'] / 10 : null;
-        const targetTemp = dps['4'] !== undefined ? dps['4'] / 10 : null;
-        const battery = dps['35'] !== undefined ? dps['35'] : null;
+        const currentTemp = dps['5'] !== undefined ? Number(dps['5']) / 10 : null;
+        const targetTemp = dps['4'] !== undefined ? Number(dps['4']) / 10 : null;
+        const battery = dps['35'] !== undefined ? Number(dps['35']) : null;
         if (currentTemp !== null) {
           recordSensorReading(trv.id, trv.name, currentTemp, null, targetTemp, battery);
           broadcastTuyaStatus(trv.id, 'wkf', { currentTemp, targetTemp, battery });
         }
       }
-    } catch (e: any) {
-      console.error(`TRV refresh failed for ${trv.name}:`, e.message);
+    } catch (e: unknown) {
+      console.error(`TRV refresh failed for ${trv.name}:`, getErrorMessage(e));
     }
   }
 }
@@ -131,8 +132,8 @@ async function pollAqi(): Promise<void> {
 
     // broadcast is called inside getPurifierStatus
     evaluateAqiTrigger(status.aqi);
-  } catch (e: any) {
-    console.error('AQI poll error:', e.message);
+  } catch (e: unknown) {
+    console.error('AQI poll error:', getErrorMessage(e));
   }
 }
 
@@ -140,8 +141,8 @@ async function pollAqi(): Promise<void> {
 async function refreshRoborockStatus(): Promise<void> {
   try {
     await getRoborockStatus(); // caches + broadcasts internally
-  } catch (e: any) {
-    console.error('Roborock refresh error:', e.message);
+  } catch (e: unknown) {
+    console.error('Roborock refresh error:', getErrorMessage(e));
   }
 }
 
@@ -149,8 +150,8 @@ async function refreshRoborockStatus(): Promise<void> {
 async function refreshLampStatuses(): Promise<void> {
   try {
     await checkOnlineTransitions();
-  } catch (e: any) {
-    console.error('Lamp refresh error:', e.message);
+  } catch (e: unknown) {
+    console.error('Lamp refresh error:', getErrorMessage(e));
   }
 }
 
@@ -207,7 +208,7 @@ async function pollDoorSensors(): Promise<void> {
           }
         }
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Suppress frequent errors for door polling
     }
   }
@@ -254,8 +255,8 @@ export async function startPoller(): Promise<void> {
           } else {
             incrementHeaterRetryCount(action.id);
           }
-        } catch (error: any) {
-          console.error(`Poller error for heater ${action.device_id}:`, error.message);
+        } catch (error: unknown) {
+          console.error(`Poller error for heater ${action.device_id}:`, getErrorMessage(error));
           incrementHeaterRetryCount(action.id);
         }
       }
@@ -276,8 +277,8 @@ export async function startPoller(): Promise<void> {
           } else {
             incrementRetryCount(action.id);
           }
-        } catch (error: any) {
-          console.error(`Poller error for lamp ${action.device_id}:`, error.message);
+        } catch (error: unknown) {
+          console.error(`Poller error for lamp ${action.device_id}:`, getErrorMessage(error));
           incrementRetryCount(action.id);
         }
       }

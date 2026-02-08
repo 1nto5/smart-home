@@ -5,6 +5,7 @@
 
 import { getDb, type Automation } from '../db/database';
 import { executeAutomationActions, type TriggerContext } from './automation-actions';
+import { getErrorMessage } from '../utils/errors';
 
 interface QuietWindow {
   start: string;
@@ -118,8 +119,8 @@ export async function evaluateSensorTrigger(
     }
     try {
       await executeAutomationActions(automation, context);
-    } catch (error: any) {
-      console.error(`Failed to execute automation "${automation.name}":`, error.message);
+    } catch (error: unknown) {
+      console.error(`Failed to execute automation "${automation.name}":`, getErrorMessage(error));
     }
   }
 }
@@ -162,8 +163,8 @@ export async function evaluateAqiTrigger(currentAqi: number): Promise<void> {
       console.log(`AQI trigger: ${currentAqi} ${condition} ${threshold}`);
       try {
         await executeAutomationActions(automation, context);
-      } catch (error: any) {
-        console.error(`Failed to execute AQI automation "${automation.name}":`, error.message);
+      } catch (error: unknown) {
+        console.error(`Failed to execute AQI automation "${automation.name}":`, getErrorMessage(error));
       }
     }
   }

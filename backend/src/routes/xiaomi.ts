@@ -93,7 +93,7 @@ xiaomi.post('/:id/control', async (c) => {
       if (status) {
         const db = getDb();
         db.run('UPDATE xiaomi_devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(status), id]);
-        broadcastLampStatus(id, status as Record<string, unknown>);
+        broadcastLampStatus(id, status);
       }
     }).catch(() => { /* best-effort */ });
   }

@@ -6,11 +6,19 @@ import { broadcastTuyaStatus } from '../ws/device-broadcast';
 import { discoverTuyaGatewayIp } from './tuya-discover';
 import { config } from '../config';
 import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
+import { getErrorMessage } from '../utils/errors';
+
+type DpsValue = boolean | number | string;
+type DpsRecord = Record<string, DpsValue>;
+
+interface TuyaStatusResponse {
+  dps?: DpsRecord;
+}
 
 interface DeviceConnection {
   device: TuyAPI;
   connected: boolean;
-  lastStatus: Record<string, any>;
+  lastStatus: DpsRecord;
 }
 
 // Store active connections
@@ -84,7 +92,7 @@ function findDeviceByNodeId(nodeId: string): TuyaDevice | null {
 /**
  * Handle subdevice data event from gateway (door/window/water sensor state change)
  */
-function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
+function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
   const device = findDeviceByNodeId(cid);
   if (!device) {
     console.log(`Unknown subdevice with cid: ${cid}`);
@@ -138,9 +146,9 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
 
   // Weather station (wsdcg) - temperature/humidity
   if (device.category === 'wsdcg') {
-    const temp = dps['103'] !== undefined ? dps['103'] / 100 : null;
-    const humidity = dps['101'] !== undefined ? dps['101'] / 100 : null;
-    const battery = dps['102'] !== undefined ? dps['102'] : null;
+    const temp = dps['103'] !== undefined ? Number(dps['103']) / 100 : null;
+    const humidity = dps['101'] !== undefined ? Number(dps['101']) / 100 : null;
+    const battery = dps['102'] !== undefined ? Number(dps['102']) : null;
 
     if (temp !== null || humidity !== null) {
       recordSensorReading(device.id, device.name, temp, humidity, null, battery);
@@ -152,9 +160,9 @@ function handleSubdeviceEvent(cid: string, dps: Record<string, any>): void {
   // TRV (wkf) - temperature and power data
   if (device.category === 'wkf') {
     const switchState = dps['1'] !== undefined ? dps['1'] === true : null;
-    const currentTemp = dps['5'] !== undefined ? dps['5'] / 10 : null;
-    const targetTemp = dps['4'] !== undefined ? dps['4'] / 10 : null;
-    const battery = dps['35'] !== undefined ? dps['35'] : null;
+    const currentTemp = dps['5'] !== undefined ? Number(dps['5']) / 10 : null;
+    const targetTemp = dps['4'] !== undefined ? Number(dps['4']) / 10 : null;
+    const battery = dps['35'] !== undefined ? Number(dps['35']) : null;
 
     if (currentTemp !== null || switchState !== null) {
       recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
@@ -278,7 +286,9 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
     console.error(`Error from ${dbDevice.name}:`, error.message);
   });
 
-  device.on('data', (data: any) => {
+  // TuyAPI types data as DPSObject; cast to access dps/cid fields
+  device.on('data', (rawData) => {
+    const data = rawData as { dps?: DpsRecord; cid?: string };
     console.log(`Data from ${dbDevice.name}:`, data);
     if (data.dps) {
       connection.lastStatus = data.dps;
@@ -289,8 +299,8 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
       if (deviceId === GATEWAY_ID && data.cid) {
         try {
           handleSubdeviceEvent(data.cid, data.dps);
-        } catch (error: any) {
-          console.error(`Subdevice event handler error for cid ${data.cid}:`, error.message);
+        } catch (error: unknown) {
+          console.error(`Subdevice event handler error for cid ${data.cid}:`, getErrorMessage(error));
         }
       }
     }
@@ -300,8 +310,8 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
     await device.connect();
     connections.set(deviceId, connection);
     return connection;
-  } catch (error: any) {
-    console.error(`Failed to connect to ${deviceId}:`, error.message);
+  } catch (error: unknown) {
+    console.error(`Failed to connect to ${deviceId}:`, getErrorMessage(error));
 
     // Trigger IP discovery for gateway on connection failure
     if (dbDevice.category === 'wfcon') {
@@ -315,7 +325,7 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
 /**
  * Get device status (handles subdevices via gateway)
  */
-export async function getDeviceStatus(deviceId: string): Promise<Record<string, any> | null> {
+export async function getDeviceStatus(deviceId: string): Promise<TuyaStatusResponse | null> {
   const dbDevice = getDevice(deviceId);
   if (!dbDevice) {
     console.error(`Device ${deviceId} not found in database`);
@@ -344,17 +354,17 @@ export async function getDeviceStatus(deviceId: string): Promise<Record<string, 
           gw.device.get({ cid, schema: true }),
           TUYA_OPERATION_TIMEOUT_MS,
           `getDeviceStatus(${dbDevice.name})`
-        ) as Promise<{ dps?: Record<string, any> } | null>;
+        ) as Promise<TuyaStatusResponse | null>;
       });
       if (status?.dps) {
         saveDeviceHistory(deviceId, status.dps);
       }
       return status;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
         console.warn(`Circuit open for tuya-local: ${error.message}`);
       } else {
-        console.error(`Failed to get status for ${dbDevice.name}:`, error.message);
+        console.error(`Failed to get status for ${dbDevice.name}:`, getErrorMessage(error));
       }
       return null;
     }
@@ -374,20 +384,20 @@ export async function getDeviceStatus(deviceId: string): Promise<Record<string, 
           device.device.get({ schema: true }),
           TUYA_OPERATION_TIMEOUT_MS,
           `getDeviceStatus(${dbDevice.name})`
-        ) as Promise<{ dps?: Record<string, any> } | null>;
+        ) as Promise<TuyaStatusResponse | null>;
       });
       if (status?.dps) {
         device.lastStatus = status.dps;
         saveDeviceHistory(deviceId, status.dps);
       }
       return status;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
         console.warn(`Circuit open for tuya-local: ${error.message}`);
       } else {
-        console.error(`Failed to get status for ${dbDevice.name}:`, error.message);
+        console.error(`Failed to get status for ${dbDevice.name}:`, getErrorMessage(error));
       }
-      return device.lastStatus || null;
+      return device.lastStatus ? { dps: device.lastStatus } : null;
     }
   }
 }
@@ -398,7 +408,7 @@ export async function getDeviceStatus(deviceId: string): Promise<Record<string, 
 export async function sendDeviceCommand(
   deviceId: string,
   dps: number,
-  value: any
+  value: DpsValue
 ): Promise<boolean> {
   const dbDevice = getDevice(deviceId);
   if (!dbDevice) {
@@ -435,11 +445,11 @@ export async function sendDeviceCommand(
       });
       console.log(`Set ${dbDevice.name} (${cid}) via gateway: dps ${dps} = ${value}`);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
         console.warn(`Circuit open for tuya-local: ${error.message}`);
       } else {
-        console.error(`Failed to send to subdevice ${dbDevice.name}:`, error.message);
+        console.error(`Failed to send to subdevice ${dbDevice.name}:`, getErrorMessage(error));
       }
       return false;
     }
@@ -463,11 +473,11 @@ export async function sendDeviceCommand(
       });
       console.log(`Set ${dbDevice.name} dps ${dps} = ${value}`);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof CircuitOpenError) {
         console.warn(`Circuit open for tuya-local: ${error.message}`);
       } else {
-        console.error(`Failed to send to ${dbDevice.name}:`, error.message);
+        console.error(`Failed to send to ${dbDevice.name}:`, getErrorMessage(error));
       }
       return false;
     }
@@ -497,7 +507,7 @@ export function disconnectAll(): void {
 /**
  * Save device status to history
  */
-function saveDeviceHistory(deviceId: string, status: Record<string, any>): void {
+function saveDeviceHistory(deviceId: string, status: DpsRecord): void {
   try {
     const db = getDb();
     db.run(

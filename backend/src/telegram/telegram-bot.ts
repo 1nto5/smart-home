@@ -7,6 +7,18 @@ import { handleCommand, handleCallbackQuery } from './telegram-handlers';
 import { getErrorMessage } from '../utils/errors';
 import { fetchWithTimeout, TIMEOUTS } from '../utils/fetch-timeout';
 
+interface TelegramInlineKeyboard {
+  inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
+}
+
+interface TelegramMessageBody {
+  chat_id: number | string;
+  text: string;
+  parse_mode?: string;
+  reply_markup?: TelegramInlineKeyboard;
+  message_id?: number;
+}
+
 interface TelegramUpdate {
   update_id: number;
   message?: {
@@ -195,14 +207,14 @@ export function stopTelegramBot(): void {
 export async function sendMessage(
   chatId: number | string,
   text: string,
-  replyMarkup?: any
+  replyMarkup?: TelegramInlineKeyboard
 ): Promise<boolean> {
   const config = getTelegramConfig();
   if (!config.bot_token) return false;
 
   try {
     const url = `https://api.telegram.org/bot${config.bot_token}/sendMessage`;
-    const body: any = {
+    const body: TelegramMessageBody = {
       chat_id: chatId,
       text,
       parse_mode: 'HTML',
@@ -233,14 +245,14 @@ export async function editMessage(
   chatId: number | string,
   messageId: number,
   text: string,
-  replyMarkup?: any
+  replyMarkup?: TelegramInlineKeyboard
 ): Promise<boolean> {
   const config = getTelegramConfig();
   if (!config.bot_token) return false;
 
   try {
     const url = `https://api.telegram.org/bot${config.bot_token}/editMessageText`;
-    const body: any = {
+    const body: TelegramMessageBody = {
       chat_id: chatId,
       message_id: messageId,
       text,

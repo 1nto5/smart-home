@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { config } from '../config';
+import { getErrorMessage } from '../utils/errors';
 
 const BASE_URL = `https://openapi.tuya${config.tuya.region}.com`;
 
@@ -19,6 +20,26 @@ interface TuyaDevice {
   online: boolean;
   ip?: string;
   model?: string;
+}
+
+interface TuyaDeviceInfo {
+  id: string;
+  name: string;
+  local_key: string;
+  category: string;
+  product_name: string;
+  online: boolean;
+  ip?: string;
+  model?: string;
+  uuid?: string;
+  node_id?: string;
+  gateway_id?: string;
+  sub?: boolean;
+}
+
+interface TuyaStatusItem {
+  code: string;
+  value: string | number | boolean;
 }
 
 let accessToken: string | null = null;
@@ -123,7 +144,7 @@ export async function getDevices(): Promise<TuyaDevice[]> {
 
   try {
     // Get devices from linked app account
-    const result = await request<{ devices: any[]; total: number }>(
+    const result = await request<{ devices: TuyaDevice[]; total: number }>(
       '/v1.0/iot-01/associated-users/devices?page_no=1&page_size=100',
       'GET'
     );
@@ -140,13 +161,13 @@ export async function getDevices(): Promise<TuyaDevice[]> {
         model: device.model,
       });
     }
-  } catch (error: any) {
-    console.log('First endpoint failed:', error.message);
+  } catch (error: unknown) {
+    console.log('First endpoint failed:', getErrorMessage(error));
     console.log('Trying alternative endpoint...');
 
     // Try getting device list for specific user
     try {
-      const result = await request<any[]>('/v1.0/devices', 'GET');
+      const result = await request<TuyaDevice[]>('/v1.0/devices', 'GET');
       for (const device of result || []) {
         devices.push({
           id: device.id,
@@ -159,27 +180,27 @@ export async function getDevices(): Promise<TuyaDevice[]> {
           model: device.model,
         });
       }
-    } catch (err: any) {
-      console.log('Alternative also failed:', err.message);
+    } catch (err: unknown) {
+      console.log('Alternative also failed:', getErrorMessage(err));
     }
   }
 
   return devices;
 }
 
-export async function getDeviceInfo(deviceId: string): Promise<any> {
+export async function getDeviceInfo(deviceId: string): Promise<TuyaDeviceInfo> {
   await getAccessToken();
-  return request<any>(`/v1.0/devices/${deviceId}`, 'GET');
+  return request<TuyaDeviceInfo>(`/v1.0/devices/${deviceId}`, 'GET');
 }
 
-export async function getDeviceStatus(deviceId: string): Promise<any[]> {
+export async function getDeviceStatus(deviceId: string): Promise<TuyaStatusItem[]> {
   await getAccessToken();
-  return request<any[]>(`/v1.0/devices/${deviceId}/status`, 'GET');
+  return request<TuyaStatusItem[]>(`/v1.0/devices/${deviceId}/status`, 'GET');
 }
 
 export async function sendCommand(
   deviceId: string,
-  commands: { code: string; value: any }[]
+  commands: { code: string; value: string | number | boolean }[]
 ): Promise<boolean> {
   await getAccessToken();
 
