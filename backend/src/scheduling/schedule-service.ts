@@ -7,6 +7,7 @@ import { getDb, setLampPreset } from '../db/database';
 import { LAMP_PRESETS, isValidPreset, type PresetName } from './presets';
 import { setLampPower, setLampBrightness, setLampColorTemp, getLampStatus, setLampMoonlight, setLampDaylightMode } from '../xiaomi/xiaomi-lamp';
 import { createPendingAction, clearAllPending } from './pending-service';
+import { broadcastPendingActions, broadcastHomeStatus } from '../ws/device-broadcast';
 
 export interface Schedule {
   id: number;
@@ -260,6 +261,10 @@ export async function applyPresetToAllLamps(
 
   // Track current lamp preset
   setLampPreset(presetName);
+
+  // Broadcast updated state
+  broadcastPendingActions();
+  broadcastHomeStatus();
 
   console.log(`Applied ${presetName}: ${result.success.length} ok, ${result.pending.length} pending`);
   return result;

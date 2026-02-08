@@ -59,10 +59,9 @@
       theme.init();
       initOfflineSupport();
       store.initWebSocket();
+      // Initial load as fallback (WS snapshot will hydrate most data)
       store.refreshAll();
       loadAlarmStatus();
-      const interval = setInterval(() => store.refreshAll(), 30000);
-      return () => clearInterval(interval);
     }
   });
 

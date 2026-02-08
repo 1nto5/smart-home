@@ -1,7 +1,7 @@
 /**
  * Poller
  * - Retries pending actions for offline lamps/heaters every 15 seconds
- * - Refreshes sensor and TRV statuses every 5 minutes (local API)
+ * - Comprehensive device refresh every 15 minutes (+ on startup)
  * - Fast-polls door sensors every 5 seconds (local API)
  * Note: History cleanup is handled by maintenance.ts scheduler
  */
@@ -15,12 +15,14 @@ import { getDeviceStatus, connectDevice } from '../tuya/tuya-local';
 import { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';
 import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automation-triggers';
 import { getPurifierStatus } from '../xiaomi/air-purifier';
+import { getStatus as getRoborockStatus } from '../roborock/roborock';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
+import { broadcastHomeStatus } from '../ws/device-broadcast';
 import { config } from '../config';
 
 let pollerInterval: Timer | null = null;
 let doorPollerInterval: Timer | null = null;
-let sensorRefreshCounter = 0;
+let comprehensiveInterval: Timer | null = null;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = config.tuya.gatewayId;
@@ -134,6 +136,48 @@ async function pollAqi(): Promise<void> {
   }
 }
 
+// Refresh Roborock vacuum status
+async function refreshRoborockStatus(): Promise<void> {
+  try {
+    await getRoborockStatus(); // caches + broadcasts internally
+  } catch (e: any) {
+    console.error('Roborock refresh error:', e.message);
+  }
+}
+
+// Refresh lamp statuses (check online transitions + fetch statuses)
+async function refreshLampStatuses(): Promise<void> {
+  try {
+    await checkOnlineTransitions();
+  } catch (e: any) {
+    console.error('Lamp refresh error:', e.message);
+  }
+}
+
+/**
+ * Comprehensive refresh of ALL device types
+ * Runs on startup and every 15 minutes
+ */
+async function comprehensiveRefresh(): Promise<void> {
+  console.log('Starting comprehensive device refresh...');
+  const start = Date.now();
+
+  await Promise.all([
+    refreshWeatherStationStatuses().catch(e => console.error('Weather station error:', e.message)),
+    refreshSensorStatuses().catch(e => console.error('Sensor refresh error:', e.message)),
+    refreshTrvStatuses().catch(e => console.error('TRV refresh error:', e.message)),
+    pollAqi().catch(e => console.error('AQI poll error:', e.message)),
+    refreshRoborockStatus().catch(e => console.error('Roborock refresh error:', e.message)),
+    refreshLampStatuses().catch(e => console.error('Lamp refresh error:', e.message)),
+  ]);
+
+  // Broadcast updated home status after all refreshes
+  broadcastHomeStatus();
+
+  const elapsed = Date.now() - start;
+  console.log(`Comprehensive refresh complete (${elapsed}ms)`);
+}
+
 // Fast poll door/window sensors (every 5 seconds) - local API
 async function pollDoorSensors(): Promise<void> {
   const db = getDb();
@@ -170,7 +214,7 @@ async function pollDoorSensors(): Promise<void> {
 }
 
 /**
- * Start the poller (checks every 30 seconds)
+ * Start the poller
  */
 export async function startPoller(): Promise<void> {
   if (pollerInterval) {
@@ -185,22 +229,15 @@ export async function startPoller(): Promise<void> {
   // Initialize online state cache (for reconnect detection)
   initOnlineStateCache();
 
-  console.log('Starting poller (sensors every 5min, doors every 5s)');
+  // Run comprehensive refresh once on startup to pre-cache all data
+  await comprehensiveRefresh();
 
-  // Main poller: every 30 seconds
+  console.log('Starting poller (pending retries every 15s, online checks every 15s, doors every 5s, comprehensive every 15min)');
+
+  // Main poller: every 15 seconds - pending action retries + online transition checks
   pollerInterval = setInterval(async () => {
     // Check for lamp online transitions
     await checkOnlineTransitions().catch(e => console.error('Online check error:', e.message));
-
-    // Refresh sensor and TRV statuses every 5 minutes (20 iterations @ 15s)
-    sensorRefreshCounter++;
-    if (sensorRefreshCounter >= 20) {
-      sensorRefreshCounter = 0;
-      refreshWeatherStationStatuses().catch(e => console.error('Weather station error:', e.message));
-      refreshSensorStatuses().catch(e => console.error('Sensor refresh error:', e.message));
-      refreshTrvStatuses().catch(e => console.error('TRV refresh error:', e.message));
-      pollAqi().catch(e => console.error('AQI poll error:', e.message));
-    }
 
     // Process pending heater actions
     const pendingHeaters = getPendingHeaterActions();
@@ -245,10 +282,15 @@ export async function startPoller(): Promise<void> {
         }
       }
     }
-  }, 15_000); // Check every 15 seconds
+  }, 15_000);
 
   // Door fast-poller: every 5 seconds
   doorPollerInterval = setInterval(async () => {
     await pollDoorSensors().catch(() => {});
   }, 5_000);
+
+  // Comprehensive refresh: every 15 minutes
+  comprehensiveInterval = setInterval(async () => {
+    await comprehensiveRefresh();
+  }, 900_000);
 }

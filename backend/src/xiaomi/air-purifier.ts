@@ -26,6 +26,13 @@ interface PurifierStatus {
   led_brightness?: number; // 0-8 (0=off, 8=brightest)
 }
 
+// Module-level cached status for instant API responses
+let cachedPurifierStatus: PurifierStatus | null = null;
+
+export function getCachedPurifierStatus(): PurifierStatus | null {
+  return cachedPurifierStatus;
+}
+
 // MiOT mode mapping
 const MODE_MAP: Record<number, string> = {
   0: 'auto',
@@ -120,6 +127,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
       fan_speed: favoriteRpm ?? 300,  // RPM value (300-2200)
       led_brightness: ledValue ?? 8,
     };
+    cachedPurifierStatus = status;
     broadcastPurifierStatus(status);
     return status;
   } catch (error: any) {

@@ -231,4 +231,12 @@ export type WsMessage =
   | { type: 'tuya_offline'; deviceId: string }
   | { type: 'roborock_status'; status: RoborockStatus }
   | { type: 'yamaha_status'; deviceId: string; status: YamahaStatus | null; online: boolean }
-  | { type: 'purifier_status'; status: AirPurifierStatus };
+  | { type: 'purifier_status'; status: AirPurifierStatus }
+  | { type: 'home_status'; status: HomeStatusData }
+  | { type: 'pending_actions'; actions: PendingAction[] }
+  | { type: 'pending_heater_actions'; actions: PendingHeaterAction[] }
+  | { type: 'schedules_changed'; schedules: Schedule[] }
+  | { type: 'heater_schedules_changed'; schedules: HeaterSchedule[] }
+  | { type: 'heater_presets_changed'; presets: HeaterPreset[] }
+  | { type: 'heater_override_changed'; override: HeaterOverride }
+  | { type: 'full_state_snapshot'; lamps: Lamp[]; tuyaDevices: TuyaDevice[]; yamahaDevices: YamahaDevice[]; roborock: RoborockStatus | null; airPurifier: AirPurifierStatus | null; schedules: Schedule[]; pendingActions: PendingAction[]; heaterPresets: HeaterPreset[]; heaterSchedules: HeaterSchedule[]; pendingHeaterActions: PendingHeaterAction[]; heaterOverride: HeaterOverride | null; homeStatus: HomeStatusData | null };

@@ -64,7 +64,7 @@
     try {
       await createHeaterSchedule(newName.trim(), newPresetId, newTime);
       newName = '';
-      await store.refreshHeaterSchedules();
+      // WS broadcast will update schedules
     } catch (e) {
       console.error(e);
     }
@@ -73,17 +73,17 @@
 
   async function handleDelete(id: number) {
     await deleteHeaterSchedule(id);
-    await store.refreshHeaterSchedules();
+    // WS broadcast will update schedules
   }
 
   async function handleToggle(id: number) {
     await toggleHeaterSchedule(id);
-    await store.refreshHeaterSchedules();
+    // WS broadcast will update schedules
   }
 
   async function handleClearPending() {
     await clearPendingHeaterActions();
-    await store.refreshPendingHeater();
+    // WS broadcast will update pending actions
   }
 
   // New preset state
@@ -102,10 +102,11 @@
       createPresetName = '';
       createPresetTemp = 20;
       showNewPresetForm = false;
-      await store.refreshHeaterPresets();
-    } catch (e: any) {
-      console.error(e);
-      alert(e.message || 'Failed to create preset');
+      // WS broadcast will update presets
+    } catch (e: unknown) {
+      const err = e as Error;
+      console.error(err);
+      alert(err.message || 'Failed to create preset');
     }
     creatingPreset = false;
   }
@@ -115,8 +116,7 @@
     deletingPresetId = id;
     try {
       await deleteHeaterPreset(id);
-      await store.refreshHeaterPresets();
-      await store.refreshHeaterSchedules();
+      // WS broadcast will update presets and schedules
     } catch (e) {
       console.error(e);
     }
@@ -128,9 +128,10 @@
     try {
       const result = await applyHeaterPreset(id);
       showApplyResult(result, getPresetName(id));
-      await store.refreshPendingHeater();
-    } catch (e: any) {
-      console.error(e);
+      // WS broadcast will update pending actions
+    } catch (e: unknown) {
+      const err = e as Error;
+      console.error(err);
       notify.error(`Failed: ${getPresetName(id)}`);
     }
     applyingPresetId = null;

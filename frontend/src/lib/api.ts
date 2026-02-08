@@ -198,8 +198,8 @@ export async function clearPendingActions(): Promise<{ success: boolean }> {
 }
 
 // Tuya devices
-export async function getTuyaDevices(refresh = false): Promise<TuyaDevice[]> {
-  return fetcher(`/devices${refresh ? '?refresh=true' : ''}`);
+export async function getTuyaDevices(): Promise<TuyaDevice[]> {
+  return fetcher('/devices');
 }
 
 export async function getTuyaDeviceStatus(id: string): Promise<{ device_id: string; status: Record<string, unknown> }> {

@@ -7,7 +7,7 @@ import { getDb, setHeaterPreset } from '../db/database';
 import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp, type HeaterPreset } from './heater-presets';
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
-import { broadcastTuyaStatus } from '../ws/device-broadcast';
+import { broadcastTuyaStatus, broadcastPendingHeaterActions, broadcastHomeStatus } from '../ws/device-broadcast';
 
 export interface HeaterSchedule {
   id: number;
@@ -354,6 +354,10 @@ export async function applyPresetToAllHeaters(
 
   // Track current heater preset
   setHeaterPreset(presetId);
+
+  // Broadcast updated state
+  broadcastPendingHeaterActions();
+  broadcastHomeStatus();
 
   console.log(`Applied heater preset "${preset.name}": ${result.success.length} ok, ${result.pending.length} pending, ${result.failed.length} failed`);
   return result;

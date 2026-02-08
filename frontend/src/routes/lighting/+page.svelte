@@ -76,7 +76,7 @@
     try {
       applyResult = await applyPreset(name);
       showApplyResult(applyResult, presets[name]?.name || name);
-      store.refreshPending();
+      // WS broadcast will update pending actions
     } catch (e) {
       console.error(e);
       notify.error(`Failed: ${name}`);
@@ -133,7 +133,7 @@
     try {
       await deleteLampPreset(id);
       await refreshPresets();
-      await store.refreshSchedules();
+      // WS broadcast will update schedules
     } catch (e) {
       console.error(e);
     }
@@ -146,7 +146,7 @@
     try {
       await createSchedule(newName.trim(), newPreset, newTime);
       newName = '';
-      await store.refreshSchedules();
+      // WS broadcast will update schedules
     } catch (e) {
       console.error(e);
     }
@@ -155,17 +155,17 @@
 
   async function handleDelete(id: number) {
     await deleteSchedule(id);
-    await store.refreshSchedules();
+    // WS broadcast will update schedules
   }
 
   async function handleToggle(id: number) {
     await toggleSchedule(id);
-    await store.refreshSchedules();
+    // WS broadcast will update schedules
   }
 
   async function handleClearPending() {
     await clearPendingActions();
-    await store.refreshPending();
+    // WS broadcast will update pending actions
   }
 
   function getPresetName(presetId: string): string {

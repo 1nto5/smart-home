@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { AirPurifierControlSchema } from '../validation/schemas';
 import {
   getPurifierStatus,
+  getCachedPurifierStatus,
   setPurifierPower,
   setPurifierMode,
   setPurifierFanSpeed,
@@ -11,8 +12,13 @@ import {
 
 const purifier = new Hono();
 
-// Get air purifier status
+// Get air purifier status (returns cached data, falls back to live fetch)
 purifier.get('/status', async (c) => {
+  const cached = getCachedPurifierStatus();
+  if (cached) {
+    return c.json(cached);
+  }
+  // No cache yet - fetch live
   const status = await getPurifierStatus();
   if (!status) {
     return c.json({ error: 'Failed to get status' }, 500);

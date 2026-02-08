@@ -29,6 +29,13 @@ import {
   getHeaterOverride,
   setHeaterOverride,
 } from '../scheduling';
+import {
+  broadcastHomeStatus,
+  broadcastPendingHeaterActions,
+  broadcastHeaterPresetsChanged,
+  broadcastHeaterSchedulesChanged,
+  broadcastHeaterOverrideChanged,
+} from '../ws/device-broadcast';
 
 const heater = new Hono();
 
@@ -44,6 +51,7 @@ heater.post('/presets', zValidator('json', HeaterPresetSchema), async (c) => {
 
   try {
     const preset = createHeaterPreset(id, name, target_temp);
+    broadcastHeaterPresetsChanged();
     return c.json(preset);
   } catch (e: unknown) {
     const err = e as Error;
@@ -57,6 +65,7 @@ heater.delete('/presets/:id', (c) => {
   if (!deleted) {
     return c.json({ error: 'Preset not found' }, 404);
   }
+  broadcastHeaterPresetsChanged();
   return c.json({ success: true });
 });
 
@@ -69,6 +78,7 @@ heater.patch('/presets/:id', zValidator('json', HeaterPresetUpdateSchema), async
     return c.json({ error: 'Preset not found' }, 404);
   }
 
+  broadcastHeaterPresetsChanged();
   const presets = getHeaterPresets();
   const preset = presets.find(p => p.id === id);
   return c.json(preset);
@@ -83,6 +93,8 @@ heater.post('/presets/:id/apply', async (c) => {
 
   try {
     const result = await applyPresetToAllHeaters(presetId);
+    broadcastHomeStatus();
+    broadcastPendingHeaterActions();
     return c.json(result);
   } catch (error: any) {
     console.error(`Error applying preset ${presetId}:`, error);
@@ -103,6 +115,7 @@ heater.post('/presets/:id/devices', zValidator('json', HeaterPresetDeviceTempSch
   const { device_id, target_temp } = c.req.valid('json');
 
   setPresetDeviceTemp(presetId, device_id, target_temp);
+  broadcastHeaterPresetsChanged();
   return c.json({ success: true, preset_id: presetId, device_id, target_temp });
 });
 
@@ -110,6 +123,7 @@ heater.delete('/presets/:id/devices/:deviceId', (c) => {
   const presetId = c.req.param('id');
   const deviceId = c.req.param('deviceId');
   const deleted = deletePresetDeviceTemp(presetId, deviceId);
+  if (deleted) broadcastHeaterPresetsChanged();
   return c.json({ success: deleted });
 });
 
@@ -129,6 +143,7 @@ heater.post('/schedules', zValidator('json', HeaterScheduleSchema), async (c) =>
 
   try {
     const schedule = createHeaterSchedule(body.name, body.preset_id, body.time);
+    broadcastHeaterSchedulesChanged();
     return c.json(schedule, 201);
   } catch (e: unknown) {
     const err = e as Error;
@@ -142,6 +157,7 @@ heater.patch('/schedules/:id/toggle', (c) => {
   if (!schedule) {
     return c.json({ error: 'Schedule not found' }, 404);
   }
+  broadcastHeaterSchedulesChanged();
   return c.json(schedule);
 });
 
@@ -158,6 +174,7 @@ heater.patch('/schedules/:id', zValidator('json', HeaterScheduleUpdateSchema), a
     if (!schedule) {
       return c.json({ error: 'Schedule not found' }, 404);
     }
+    broadcastHeaterSchedulesChanged();
     return c.json(schedule);
   } catch (e: unknown) {
     const err = e as Error;
@@ -168,6 +185,7 @@ heater.patch('/schedules/:id', zValidator('json', HeaterScheduleUpdateSchema), a
 heater.delete('/schedules/:id', (c) => {
   const id = parseInt(c.req.param('id'));
   const deleted = deleteHeaterSchedule(id);
+  if (deleted) broadcastHeaterSchedulesChanged();
   return c.json({ success: deleted });
 });
 
@@ -180,6 +198,7 @@ heater.get('/pending-actions', (c) => {
 
 heater.delete('/pending-actions', (c) => {
   clearAllPendingHeater();
+  broadcastPendingHeaterActions();
   return c.json({ success: true });
 });
 
@@ -194,6 +213,8 @@ heater.post('/override', zValidator('json', HeaterOverrideSchema), async (c) => 
   const { enabled, mode, fixed_temp } = c.req.valid('json');
 
   const override = setHeaterOverride(enabled, mode || 'pause', fixed_temp || 18);
+  broadcastHeaterOverrideChanged();
+  broadcastHomeStatus();
 
   if (enabled && mode === 'fixed' && fixed_temp) {
     console.log(`Override enabled: applying fixed temp ${fixed_temp}°C to all heaters`);

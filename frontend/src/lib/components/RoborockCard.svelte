@@ -83,7 +83,7 @@
     pendingCommand = cmd;
     try {
       await sendRoborockCommand(cmd);
-      store.refreshRoborock();
+      // WS broadcast will update roborock status
     } catch (e) {
       console.error(e);
     }
@@ -95,7 +95,7 @@
     pendingFanMode = mode;
     try {
       await setRoborockFanSpeed(mode);
-      store.refreshRoborock();
+      // WS broadcast will update roborock status
     } catch (e) {
       console.error(e);
       optimisticFanPower = null;
@@ -108,7 +108,7 @@
     pendingMopMode = mode;
     try {
       await setRoborockMopMode(mode);
-      store.refreshRoborock();
+      // WS broadcast will update roborock status
     } catch (e) {
       console.error(e);
       optimisticMopMode = null;
@@ -144,7 +144,7 @@
     try {
       await cleanRoborockSegments([...selectedRooms]);
       selectedRooms = new Set();
-      store.refreshRoborock();
+      // WS broadcast will update roborock status
     } catch (e) {
       console.error(e);
     }

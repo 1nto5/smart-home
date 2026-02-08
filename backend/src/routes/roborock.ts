@@ -10,6 +10,7 @@ import {
 } from '../validation/schemas';
 import {
   getStatus,
+  getCachedRoborockStatus,
   startCleaning,
   pauseCleaning,
   stopCleaning,
@@ -28,8 +29,13 @@ import {
 
 const roborock = new Hono();
 
-// Get Roborock status
+// Get Roborock status (returns cached data, falls back to live fetch)
 roborock.get('/status', async (c) => {
+  const cached = getCachedRoborockStatus();
+  if (cached) {
+    return c.json(cached);
+  }
+  // No cache yet (first request before poller runs) - fetch live
   const status = await getStatus();
   if (!status) {
     return c.json({ error: 'Failed to get status (is bridge running?)' }, 500);
