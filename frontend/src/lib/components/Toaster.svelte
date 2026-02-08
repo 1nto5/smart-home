@@ -29,7 +29,7 @@
   role="region"
   aria-live="polite"
   aria-label="Notifications"
-  class="fixed bottom-20 left-1/2 -translate-x-1/2 md:top-4 md:bottom-auto md:left-auto md:right-4 md:translate-x-0 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none"
+  class="fixed top-0 left-0 right-0 p-3 md:top-4 md:left-auto md:right-4 md:p-0 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none"
 >
   {#each toasts as toast (toast.id)}
     {@const Icon = getIcon(toast.type)}
@@ -44,6 +44,16 @@
 </div>
 
 <style>
+  @keyframes slide-down {
+    from {
+      transform: translateY(-1rem);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
   @keyframes slide-up {
     from {
       transform: translateY(1rem);
@@ -55,6 +65,11 @@
     }
   }
   .animate-slide-in {
-    animation: slide-up 0.2s ease-out;
+    animation: slide-down 0.2s ease-out;
+  }
+  @media (min-width: 768px) {
+    .animate-slide-in {
+      animation: slide-up 0.2s ease-out;
+    }
   }
 </style>
