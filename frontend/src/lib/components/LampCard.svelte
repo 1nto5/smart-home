@@ -5,7 +5,10 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Power, Sun, Moon, Sparkles, Minus, Plus, Search } from 'lucide-svelte';
+  import { Power, Sun, Moon, Sparkles, Search } from 'lucide-svelte';
+  import DeviceSlider from './DeviceSlider.svelte';
+  import StatusRow from './StatusRow.svelte';
+  import DialogPowerButton from './DialogPowerButton.svelte';
   import { notify } from '$lib/toast.svelte';
 
   let { lamp, compact = false }: { lamp: Lamp; compact?: boolean } = $props();
@@ -196,18 +199,11 @@
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
   <div class="space-y-5">
     <!-- Status indicator -->
-    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-      <span class="text-sm text-content-secondary uppercase tracking-wider">Status</span>
-      <span class="font-medium text-sm {displayPower ? (status?.moonlight_mode ? 'text-device-audio-text neon-text-subtle' : 'text-device-lights-text neon-text-subtle') : 'text-content-tertiary'}">
-        {#if !isOnline}
-          Offline
-        {:else if displayPower}
-          {status?.moonlight_mode ? 'Moonlight' : 'Active'}
-        {:else}
-          Standby
-        {/if}
+    <StatusRow label="Status">
+      <span class="{displayPower ? (status?.moonlight_mode ? 'text-device-audio-text neon-text-subtle' : 'text-device-lights-text neon-text-subtle') : 'text-content-tertiary'}">
+        {#if !isOnline}Offline{:else if displayPower}{status?.moonlight_mode ? 'Moonlight' : 'Active'}{:else}Standby{/if}
       </span>
-    </div>
+    </StatusRow>
 
     {#if !isOnline}
       <!-- Offline: show discover button prominently -->
@@ -227,20 +223,12 @@
 
     {#if isOnline && status}
       <!-- Large Power Button -->
-      <button
+      <DialogPowerButton
+        isOn={displayPower}
+        isPending={isPowerPending}
         onclick={togglePower}
-        disabled={isPowerPending}
-        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden flex items-center justify-center gap-2 disabled:opacity-50
-               {displayPower
-                 ? (status.moonlight_mode ? 'glow-audio power-btn-on' : 'glow-lights power-btn-on')
-                 : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
-      >
-        <Power class="w-4 h-4 relative z-10 {isPowerPending ? 'animate-spin' : ''}" />
-        <span class="relative z-10">{displayPower ? 'Power Off' : 'Power On'}</span>
-        {#if isPowerPending}
-          <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
-        {/if}
-      </button>
+        glowClass={status?.moonlight_mode ? 'glow-audio' : 'glow-lights'}
+      />
 
       {#if displayPower}
         <!-- Presets -->
@@ -275,43 +263,16 @@
               <span class="text-xs text-content-tertiary uppercase tracking-wider">Brightness</span>
               <span class="font-display text-lg text-device-lights-text neon-text-subtle">{displayBrightness}%</span>
             </div>
-            <div class="flex gap-2 items-center">
-              <button
-                onclick={() => handleBrightnessInput(Math.max(1, displayBrightness - 10))}
-                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
-              >
-                <Minus class="w-5 h-5" />
-              </button>
-              <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
-                <div
-                  class="absolute inset-y-0 left-0 bg-device-lights-text/30 transition-all duration-150"
-                  style="width: {displayBrightness}%"
-                ></div>
-                <div
-                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-lights-text shadow-[0_0_10px_var(--color-lights-glow)] transition-all duration-150"
-                  style="left: calc({displayBrightness}% - 8px)"
-                ></div>
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={displayBrightness}
-                  oninput={(e) => handleBrightnessInput(parseInt(e.currentTarget.value))}
-                  aria-label="Brightness"
-                  aria-valuemin={1}
-                  aria-valuemax={100}
-                  aria-valuenow={displayBrightness}
-                  aria-valuetext="{displayBrightness}%"
-                  class="absolute inset-0 w-full h-full slider-accessible cursor-pointer"
-                />
-              </div>
-              <button
-                onclick={() => handleBrightnessInput(Math.min(100, displayBrightness + 10))}
-                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
-              >
-                <Plus class="w-5 h-5" />
-              </button>
-            </div>
+            <DeviceSlider
+              value={displayBrightness}
+              min={1}
+              max={100}
+              step={10}
+              color="--color-lights"
+              ariaLabel="Brightness"
+              ariaValueText="{displayBrightness}%"
+              oninput={handleBrightnessInput}
+            />
           </div>
 
           <!-- Color Temperature -->
@@ -320,40 +281,20 @@
               <span class="text-xs text-content-tertiary uppercase tracking-wider">Temperature</span>
               <span class="font-display text-lg text-device-lights-text neon-text-subtle">{displayColorTemp}K</span>
             </div>
-            <div class="flex gap-2 items-center">
-              <button
-                onclick={() => handleColorTempInput(Math.max(1700, displayColorTemp - 500))}
-                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-orange-400 hover:border-orange-400/50 transition-all flex items-center justify-center"
-              >
-                <Minus class="w-5 h-5" />
-              </button>
-              <div class="flex-1 h-10 rounded-lg overflow-hidden relative" style="background: linear-gradient(to right, #f97316, #fbbf24, #fef3c7, #e0f2fe, #7dd3fc);">
-                <div
-                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-content-primary shadow-lg transition-all duration-150"
-                  style="left: calc({((displayColorTemp - 1700) / 4800) * 100}% - 8px)"
-                ></div>
-                <input
-                  type="range"
-                  min="1700"
-                  max="6500"
-                  step="100"
-                  value={displayColorTemp}
-                  oninput={(e) => handleColorTempInput(parseInt(e.currentTarget.value))}
-                  aria-label="Color temperature"
-                  aria-valuemin={1700}
-                  aria-valuemax={6500}
-                  aria-valuenow={displayColorTemp}
-                  aria-valuetext="{displayColorTemp} Kelvin"
-                  class="absolute inset-0 w-full h-full slider-accessible cursor-pointer"
-                />
-              </div>
-              <button
-                onclick={() => handleColorTempInput(Math.min(6500, displayColorTemp + 500))}
-                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-sky-400 hover:border-sky-400/50 transition-all flex items-center justify-center"
-              >
-                <Plus class="w-5 h-5" />
-              </button>
-            </div>
+            <DeviceSlider
+              value={displayColorTemp}
+              min={1700}
+              max={6500}
+              step={500}
+              inputStep={100}
+              color="--color-lights"
+              gradient="linear-gradient(to right, #f97316, #fbbf24, #fef3c7, #e0f2fe, #7dd3fc)"
+              ariaLabel="Color temperature"
+              ariaValueText="{displayColorTemp} Kelvin"
+              oninput={handleColorTempInput}
+              minBtnClass="bg-surface-recessed border border-stroke-default text-orange-400 hover:border-orange-400/50"
+              maxBtnClass="bg-surface-recessed border border-stroke-default text-sky-400 hover:border-sky-400/50"
+            />
             <div class="flex justify-between text-[10px] text-content-tertiary mt-2 uppercase tracking-wider">
               <span class="text-orange-400">Warm</span>
               <span class="text-sky-400">Cool</span>

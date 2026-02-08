@@ -2,7 +2,10 @@
   import { controlAirPurifier } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Wind, Power, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Minus, Plus, Sun } from 'lucide-svelte';
+  import { Wind, Moon, Gauge, Zap, Thermometer, Droplets, Filter, Sun } from 'lucide-svelte';
+  import DeviceSlider from './DeviceSlider.svelte';
+  import StatusRow from './StatusRow.svelte';
+  import DialogPowerButton from './DialogPowerButton.svelte';
   import { debounce } from '$lib/debounce';
 
   let { compact = false }: { compact?: boolean } = $props();
@@ -86,10 +89,6 @@
     sendFanSpeedDebounced(clamped);
   }
 
-  // Calculate slider positions
-  let fanSliderPercent = $derived(((displayFanSpeed - 300) / 1900) * 100);
-  let ledSliderPercent = $derived((displayLedBrightness / 8) * 100);
-
   function aqiColor(aqi: number): string {
     if (aqi <= 50) return 'text-success';
     if (aqi <= 100) return 'text-warning';
@@ -170,29 +169,20 @@
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title="Air Purifier">
   <div class="space-y-5">
     <!-- Status -->
-    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-      <span class="text-sm text-content-secondary uppercase tracking-wider">Status</span>
-      <span class="font-medium text-sm {displayPower ? 'text-device-air-text neon-text-subtle' : 'text-content-tertiary'}">
+    <StatusRow label="Status">
+      <span class="{displayPower ? 'text-device-air-text neon-text-subtle' : 'text-content-tertiary'}">
         {displayPower ? 'Active' : status ? 'Standby' : 'Offline'}
       </span>
-    </div>
+    </StatusRow>
 
     {#if status}
       <!-- Power Button -->
-      <button
+      <DialogPowerButton
+        isOn={displayPower}
+        isPending={isPowerPending}
         onclick={togglePower}
-        disabled={isPowerPending}
-        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden disabled:opacity-50
-               {displayPower ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
-      >
-        <span class="relative z-10 flex items-center justify-center gap-2">
-          <Power class="w-5 h-5 {isPowerPending ? 'animate-spin' : ''}" />
-          {displayPower ? 'Power Off' : 'Power On'}
-        </span>
-        {#if isPowerPending}
-          <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
-        {/if}
-      </button>
+        glowClass="glow-air"
+      />
 
       {#if displayPower}
         <!-- AQI Display -->
@@ -231,41 +221,15 @@
               <span class="text-xs text-content-tertiary uppercase tracking-wider">Fan Speed</span>
               <span class="font-display text-lg text-device-air-text neon-text-subtle">{displayFanSpeed} RPM</span>
             </div>
-            <div class="flex gap-2 items-center">
-              <button
-                onclick={() => handleFanSpeedInput(displayFanSpeed - 100)}
-                disabled={displayFanSpeed <= 300}
-                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Minus class="w-5 h-5" />
-              </button>
-              <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
-                <div
-                  class="absolute inset-y-0 left-0 bg-device-air-text/30 transition-all duration-150"
-                  style="width: {fanSliderPercent}%"
-                ></div>
-                <div
-                  class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-air-text shadow-[0_0_10px_var(--color-air-glow)] transition-all duration-150"
-                  style="left: clamp(8px, calc({fanSliderPercent}% - 8px + 8px), calc(100% - 8px))"
-                ></div>
-                <input
-                  type="range"
-                  min="300"
-                  max="2200"
-                  step="50"
-                  value={displayFanSpeed}
-                  oninput={(e) => handleFanSpeedInput(parseInt(e.currentTarget.value))}
-                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-              </div>
-              <button
-                onclick={() => handleFanSpeedInput(displayFanSpeed + 100)}
-                disabled={displayFanSpeed >= 2200}
-                class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Plus class="w-5 h-5" />
-              </button>
-            </div>
+            <DeviceSlider
+              value={displayFanSpeed}
+              min={300}
+              max={2200}
+              step={100}
+              inputStep={50}
+              color="--color-air"
+              oninput={handleFanSpeedInput}
+            />
           </div>
         {/if}
 
@@ -278,41 +242,13 @@
               {displayLedBrightness === 0 ? 'Off' : displayLedBrightness}
             </span>
           </div>
-          <div class="flex gap-2 items-center">
-            <button
-              onclick={() => handleLedBrightnessInput(displayLedBrightness - 1)}
-              disabled={displayLedBrightness <= 0}
-              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Minus class="w-5 h-5" />
-            </button>
-            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
-              <div
-                class="absolute inset-y-0 left-0 bg-device-air-text/30 transition-all duration-150"
-                style="width: {ledSliderPercent}%"
-              ></div>
-              <div
-                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-air-text shadow-[0_0_10px_var(--color-air-glow)] transition-all duration-150"
-                style="left: clamp(8px, calc({ledSliderPercent}% - 8px + 8px), calc(100% - 8px))"
-              ></div>
-              <input
-                type="range"
-                min="0"
-                max="8"
-                step="1"
-                value={displayLedBrightness}
-                oninput={(e) => handleLedBrightnessInput(parseInt(e.currentTarget.value))}
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-            </div>
-            <button
-              onclick={() => handleLedBrightnessInput(displayLedBrightness + 1)}
-              disabled={displayLedBrightness >= 8}
-              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Plus class="w-5 h-5" />
-            </button>
-          </div>
+          <DeviceSlider
+            value={displayLedBrightness}
+            min={0}
+            max={8}
+            color="--color-air"
+            oninput={handleLedBrightnessInput}
+          />
         </div>
 
         <!-- Stats -->
