@@ -4,7 +4,10 @@
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { Volume2, VolumeX, Power, Tv, Bluetooth, Mic, Radio, Minus, Plus } from 'lucide-svelte';
+  import { Volume2, VolumeX, Tv, Bluetooth, Mic, Radio } from 'lucide-svelte';
+  import DeviceSlider from './DeviceSlider.svelte';
+  import StatusRow from './StatusRow.svelte';
+  import DialogPowerButton from './DialogPowerButton.svelte';
 
   let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
@@ -182,29 +185,20 @@
 <DeviceDialog open={dialogOpen} onclose={() => dialogOpen = false} title={displayName}>
   <div class="space-y-5">
     <!-- Status -->
-    <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-      <span class="text-sm text-content-secondary uppercase tracking-wider">Status</span>
-      <span class="font-medium text-sm {displayPower === 'on' ? 'text-device-audio-text neon-text-subtle' : 'text-content-tertiary'}">
+    <StatusRow label="Status">
+      <span class="{displayPower === 'on' ? 'text-device-audio-text neon-text-subtle' : 'text-content-tertiary'}">
         {displayPower === 'on' ? 'Active' : status ? 'Standby' : 'Offline'}
       </span>
-    </div>
+    </StatusRow>
 
     {#if status}
       <!-- Power Button -->
-      <button
+      <DialogPowerButton
+        isOn={displayPower === 'on'}
+        isPending={isPowerPending}
         onclick={togglePower}
-        disabled={isPowerPending}
-        class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden disabled:opacity-50
-               {displayPower === 'on' ? 'glow-audio power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
-      >
-        <span class="relative z-10 flex items-center justify-center gap-2">
-          <Power class="w-5 h-5 {isPowerPending ? 'animate-spin' : ''}" />
-          {displayPower === 'on' ? 'Power Off' : 'Power On'}
-        </span>
-        {#if isPowerPending}
-          <div class="absolute inset-0 rounded-xl border-2 border-current animate-glow"></div>
-        {/if}
-      </button>
+        glowClass="glow-audio"
+      />
 
       {#if displayPower === 'on'}
         <!-- Volume -->
@@ -213,50 +207,29 @@
             <span class="text-xs text-content-tertiary uppercase tracking-wider">Volume</span>
             <span class="font-display text-lg {status.mute ? 'text-error' : 'text-device-audio-text neon-text-subtle'}">{status.mute ? 'Muted' : `${displayVolume}%`}</span>
           </div>
-          <div class="flex gap-2 items-center">
-            <button
-              onclick={() => handleVolumeInput(Math.max(0, displayVolume - 5))}
-              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
-            >
-              <Minus class="w-5 h-5" />
-            </button>
-            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
-              <div
-                class="absolute inset-y-0 left-0 bg-device-audio-text/30 transition-all duration-150"
-                style="width: {displayVolume}%"
-              ></div>
-              <div
-                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-audio-text shadow-[0_0_10px_var(--color-audio-glow)] transition-all duration-150"
-                style="left: calc({displayVolume}% - 8px)"
-              ></div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={displayVolume}
-                oninput={(e) => handleVolumeInput(parseInt(e.currentTarget.value))}
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-            </div>
-            <button
-              onclick={() => handleVolumeInput(Math.min(100, displayVolume + 5))}
-              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
-            >
-              <Plus class="w-5 h-5" />
-            </button>
-            <button
-              onclick={toggleMute}
-              class="w-10 h-10 rounded-lg transition-all flex items-center justify-center
-                     {status.mute ? 'bg-error/20 text-error border border-error/50' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}
-                     hover:scale-105"
-            >
-              {#if status.mute}
-                <VolumeX class="w-5 h-5" />
-              {:else}
-                <Volume2 class="w-5 h-5" />
-              {/if}
-            </button>
-          </div>
+          <DeviceSlider
+            value={displayVolume}
+            min={0}
+            max={100}
+            step={5}
+            color="--color-audio"
+            oninput={handleVolumeInput}
+          >
+            {#snippet after()}
+              <button
+                onclick={toggleMute}
+                class="w-10 h-10 rounded-lg transition-all flex items-center justify-center
+                       {status.mute ? 'bg-error/20 text-error border border-error/50' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}
+                       hover:scale-105"
+              >
+                {#if status.mute}
+                  <VolumeX class="w-5 h-5" />
+                {:else}
+                  <Volume2 class="w-5 h-5" />
+                {/if}
+              </button>
+            {/snippet}
+          </DeviceSlider>
         </div>
 
         <!-- Subwoofer Volume -->
@@ -265,39 +238,13 @@
             <span class="text-xs text-content-tertiary uppercase tracking-wider">Subwoofer</span>
             <span class="font-display text-lg text-device-audio-text neon-text-subtle">{displaySubwooferVol > 0 ? '+' : ''}{displaySubwooferVol}</span>
           </div>
-          <div class="flex gap-2 items-center">
-            <button
-              onclick={() => handleSubwooferInput(Math.max(-4, displaySubwooferVol - 1))}
-              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
-            >
-              <Minus class="w-5 h-5" />
-            </button>
-            <div class="flex-1 h-10 rounded-lg bg-surface-recessed border border-stroke-default overflow-hidden relative">
-              <div
-                class="absolute inset-y-0 left-0 bg-device-audio-text/30 transition-all duration-150"
-                style="width: {((displaySubwooferVol + 4) / 8) * 100}%"
-              ></div>
-              <div
-                class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-device-audio-text shadow-[0_0_10px_var(--color-audio-glow)] transition-all duration-150"
-                style="left: calc({((displaySubwooferVol + 4) / 8) * 100}% - 8px)"
-              ></div>
-              <input
-                type="range"
-                min="-4"
-                max="4"
-                step="1"
-                value={displaySubwooferVol}
-                oninput={(e) => handleSubwooferInput(parseInt(e.currentTarget.value))}
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-            </div>
-            <button
-              onclick={() => handleSubwooferInput(Math.min(4, displaySubwooferVol + 1))}
-              class="w-10 h-10 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong hover:text-content-primary transition-all flex items-center justify-center"
-            >
-              <Plus class="w-5 h-5" />
-            </button>
-          </div>
+          <DeviceSlider
+            value={displaySubwooferVol}
+            min={-4}
+            max={4}
+            color="--color-audio"
+            oninput={handleSubwooferInput}
+          />
         </div>
 
         <!-- Input Selection -->

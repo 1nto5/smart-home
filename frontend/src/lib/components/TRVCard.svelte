@@ -6,6 +6,7 @@
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Flame, Lock, LockOpen, Power, PowerOff, Snowflake, ThermometerSun } from 'lucide-svelte';
+  import StatusRow from './StatusRow.svelte';
 
   let { device, compact = false }: { device: TuyaDevice; compact?: boolean } = $props();
   let fullName = $derived(translateDeviceName(device.name));
@@ -207,12 +208,11 @@
       </div>
     {:else}
       <!-- Valve Status -->
-      <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-recessed border border-stroke-subtle">
-        <span class="text-sm text-content-secondary uppercase tracking-wider">Valve</span>
-        <span class="font-medium text-sm {valve === 'opened' ? 'text-device-climate-heat-text neon-text-subtle' : 'text-device-climate-cool-text neon-text-subtle'}">
+      <StatusRow label="Valve">
+        <span class="{valve === 'opened' ? 'text-device-climate-heat-text neon-text-subtle' : 'text-device-climate-cool-text neon-text-subtle'}">
           {valve === 'opened' ? 'Heating' : 'Idle'}
         </span>
-      </div>
+      </StatusRow>
 
     {#if currentTemp !== null && targetTemp !== null}
       <!-- Temperature Display -->
