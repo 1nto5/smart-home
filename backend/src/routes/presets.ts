@@ -24,6 +24,11 @@ import {
   getCurrentTimeWindow,
   getPresetForTimeWindow,
 } from '../scheduling';
+import {
+  broadcastHomeStatus,
+  broadcastPendingActions,
+  broadcastSchedulesChanged,
+} from '../ws/device-broadcast';
 
 const presets = new Hono();
 
@@ -92,6 +97,8 @@ presets.post('/:name/apply', async (c) => {
     const autoPreset = getPresetForTimeWindow(timeWindow);
     console.log(`Auto preset: ${autoPreset} (time window: ${timeWindow})`);
     const result = await applyPresetToAllLamps(autoPreset);
+    broadcastHomeStatus();
+    broadcastPendingActions();
     return c.json({ ...result, timeWindow, autoPreset });
   }
 
@@ -100,6 +107,8 @@ presets.post('/:name/apply', async (c) => {
   }
 
   const result = await applyPresetToAllLamps(presetName);
+  broadcastHomeStatus();
+  broadcastPendingActions();
   return c.json(result);
 });
 
@@ -121,6 +130,7 @@ presets.post('/schedules', zValidator('json', LampScheduleSchema), async (c) => 
 
   try {
     const schedule = createSchedule(body.name, body.preset, body.time);
+    broadcastSchedulesChanged();
     return c.json(schedule, 201);
   } catch (e: unknown) {
     const err = e as Error;
@@ -132,6 +142,7 @@ presets.post('/schedules', zValidator('json', LampScheduleSchema), async (c) => 
 presets.delete('/schedules/:id', (c) => {
   const id = parseInt(c.req.param('id'));
   const deleted = deleteSchedule(id);
+  if (deleted) broadcastSchedulesChanged();
   return c.json({ success: deleted });
 });
 
@@ -142,6 +153,7 @@ presets.patch('/schedules/:id/toggle', (c) => {
   if (!schedule) {
     return c.json({ error: 'Schedule not found' }, 404);
   }
+  broadcastSchedulesChanged();
   return c.json(schedule);
 });
 
@@ -159,6 +171,7 @@ presets.patch('/schedules/:id', zValidator('json', LampScheduleUpdateSchema), as
     if (!schedule) {
       return c.json({ error: 'Schedule not found' }, 404);
     }
+    broadcastSchedulesChanged();
     return c.json(schedule);
   } catch (e: unknown) {
     const err = e as Error;
@@ -175,6 +188,7 @@ presets.get('/pending-actions', (c) => {
 
 presets.delete('/pending-actions', (c) => {
   clearAllPending();
+  broadcastPendingActions();
   return c.json({ success: true });
 });
 

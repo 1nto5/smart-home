@@ -5,33 +5,13 @@ import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from '.
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus } from '../tuya/tuya-local';
 import { translateName } from '../utils/translations';
 import { DeviceUpdateSchema, DeviceControlSchema } from '../validation/schemas';
-import { getErrorMessage } from '../utils/errors';
+import { broadcastTuyaStatus } from '../ws/device-broadcast';
 
 const devices = new Hono();
 
-// Get all devices
-devices.get('/', async (c) => {
+// Get all devices (always returns cached DB data)
+devices.get('/', (c) => {
   const db = getDb();
-  const refresh = c.req.query('refresh') === 'true';
-
-  if (refresh) {
-    const trvs = db.query("SELECT id, name FROM devices WHERE category = 'wkf'").all() as { id: string; name: string }[];
-    // Fetch all TRV statuses in parallel to avoid N+1 query pattern
-    await Promise.all(trvs.map(async (trv) => {
-      try {
-        const status = await getLocalStatus(trv.id);
-        if (status && status.dps) {
-          db.run(
-            'UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [JSON.stringify(status.dps), trv.id]
-          );
-        }
-      } catch (e: unknown) {
-        console.error(`TRV refresh failed for ${trv.name}:`, getErrorMessage(e));
-      }
-    }));
-  }
-
   const deviceList = db.query('SELECT * FROM devices ORDER BY room, name').all() as Record<string, unknown>[];
   const translated = deviceList.map(d => ({ ...d, name: translateName(d.name as string) }));
   return c.json(translated);
@@ -77,11 +57,25 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
   const id = c.req.param('id');
   const body = c.req.valid('json');
 
+  // Helper: after successful command, fetch updated status and broadcast
+  const refreshAndBroadcast = async () => {
+    try {
+      const updated = await getLocalStatus(id);
+      if (updated?.dps) {
+        const db = getDb();
+        const device = db.query('SELECT category FROM devices WHERE id = ?').get(id) as { category: string } | null;
+        db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(updated.dps), id]);
+        if (device) broadcastTuyaStatus(id, device.category, updated.dps);
+      }
+    } catch { /* best-effort */ }
+  };
+
   if ('dps' in body) {
     console.log(`Local control ${id}: dps ${body.dps} = ${body.value}`);
     try {
       const success = await sendDeviceCommand(id, body.dps, body.value);
       if (success) {
+        refreshAndBroadcast();
         return c.json({ success: true, device_id: id, dps: body.dps, value: body.value, method: 'local' });
       } else {
         return c.json({ success: false, error: 'Local command failed' }, 500);
@@ -98,6 +92,7 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
   try {
     const success = await sendCommand(id, body.commands);
     if (success) {
+      refreshAndBroadcast();
       return c.json({ success: true, device_id: id, commands: body.commands, method: 'cloud' });
     } else {
       return c.json({ success: false, error: 'Cloud command failed' }, 500);
@@ -109,48 +104,26 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
   }
 });
 
-// Get device status
-devices.get('/:id/status', async (c) => {
+// Get device status (returns cached DB data)
+devices.get('/:id/status', (c) => {
   const id = c.req.param('id');
-  const source = c.req.query('source');
   const db = getDb();
 
-  if (source !== 'cloud') {
+  const device = db.query('SELECT last_status FROM devices WHERE id = ?').get(id) as { last_status: string | null } | null;
+  if (!device) {
+    return c.json({ error: 'Device not found' }, 404);
+  }
+
+  let status: Record<string, unknown> | null = null;
+  if (device.last_status) {
     try {
-      const status = await getLocalStatus(id);
-      if (status) {
-        db.run(
-          'UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-          [JSON.stringify(status.dps || status), id]
-        );
-        return c.json({ device_id: id, status: status.dps || status, method: 'local' });
-      }
-    } catch (e: unknown) {
-      const err = e as Error;
-      console.log(`Local status failed for ${id}:`, err.message);
+      status = JSON.parse(device.last_status);
+    } catch {
+      // Ignore parse errors
     }
   }
 
-  if (source !== 'local') {
-    try {
-      const status = await getCloudStatus(id);
-      db.run(
-        'INSERT INTO device_history (device_id, status_json) VALUES (?, ?)',
-        [id, JSON.stringify(status)]
-      );
-      db.run(
-        'UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [JSON.stringify(status), id]
-      );
-      return c.json({ device_id: id, status, method: 'cloud' });
-    } catch (e: unknown) {
-      const err = e as Error;
-      console.error(`Cloud status error for ${id}:`, err.message);
-      return c.json({ error: err.message }, 500);
-    }
-  }
-
-  return c.json({ error: 'Could not get status' }, 500);
+  return c.json({ device_id: id, status, method: 'cache' });
 });
 
 // Get device info

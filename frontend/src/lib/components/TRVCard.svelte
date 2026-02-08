@@ -2,7 +2,7 @@
   import { tick } from 'svelte';
   import type { TuyaDevice } from '$lib/types';
   import { translateDeviceName, getSimplifiedName } from '$lib/translations';
-  import { controlTuyaDevice, getTuyaDeviceStatus } from '$lib/api';
+  import { controlTuyaDevice } from '$lib/api';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Flame, Lock, LockOpen, Power, PowerOff, Snowflake, ThermometerSun } from 'lucide-svelte';
@@ -57,26 +57,17 @@
     const previousTemp = serverTargetTemp;
     try {
       await controlTuyaDevice(device.id, 4, Math.round(temp * 10));
-      refreshStatus();
+      // WS broadcast will update device.last_status
+      isPending = false;
+      pendingPreset = null;
     } catch (e) {
       console.error(e);
       hasError = true;
       optimisticTemp = previousTemp;
+      isPending = false;
       pendingPreset = null;
       setTimeout(() => (hasError = false), 3000);
     }
-  }
-
-  async function refreshStatus() {
-    try {
-      const data = await getTuyaDeviceStatus(device.id);
-      device.last_status = JSON.stringify(data.status);
-      optimisticTemp = null;
-    } catch (e) {
-      console.error(e);
-    }
-    isPending = false;
-    pendingPreset = null;
   }
 
   function adjustTemp(delta: number) {
@@ -118,7 +109,6 @@
     childLockPending = true;
     try {
       await controlTuyaDevice(device.id, 7, !currentLock);
-      await refreshStatus();
     } catch (e) {
       console.error('Failed to toggle child lock:', e);
     }
@@ -130,7 +120,6 @@
     powerPending = true;
     try {
       await controlTuyaDevice(device.id, 1, !currentPower);
-      await refreshStatus();
     } catch (e) {
       console.error('Failed to toggle power:', e);
     }

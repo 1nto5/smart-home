@@ -17,6 +17,7 @@ import { logger } from 'hono/logger';
 import { serveStatic, createBunWebSocket } from 'hono/bun';
 import type { ServerWebSocket } from 'bun';
 import { addClient, removeClient } from './ws/broadcast';
+import { buildStateSnapshot } from './ws/snapshot';
 import { config } from './config';
 import { errorHandler } from './middleware/error-handler';
 import { authMiddleware } from './middleware/auth';
@@ -168,6 +169,20 @@ app.get('/ws', upgradeWebSocket((c) => {
   return {
     onOpen(_event, ws) {
       addClient(ws.raw as ServerWebSocket<unknown>);
+      // Send full state snapshot immediately on connect
+      try {
+        ws.send(JSON.stringify(buildStateSnapshot()));
+      } catch (e) {
+        console.error('Failed to send snapshot:', (e as Error).message);
+      }
+    },
+    onMessage(event, ws) {
+      try {
+        const msg = JSON.parse(String(event.data));
+        if (msg.type === 'request_snapshot') {
+          ws.send(JSON.stringify(buildStateSnapshot()));
+        }
+      } catch { /* ignore */ }
     },
     onClose(_event, ws) {
       removeClient(ws.raw as ServerWebSocket<unknown>);

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Lamp } from '$lib/types';
-  import { controlLamp, getLampStatus, discoverLampIp } from '$lib/api';
+  import { controlLamp, discoverLampIp } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
@@ -38,24 +38,12 @@
     isPowerPending = true;
     try {
       await controlLamp(lamp.id, { toggle: true });
-      refreshStatus();
+      // WS broadcast will update lamp status
     } catch (e) {
       console.error(e);
       optimisticPower = null;
-      isPowerPending = false;
-    }
-  }
-
-  async function refreshStatus() {
-    try {
-      const res = await getLampStatus(lamp.id);
-      store.updateLampStatus(lamp.id, res.status);
-      optimisticPower = null;
-    } catch (e) {
-      console.error(e);
     }
     isPowerPending = false;
-    activePreset = null;
   }
 
   // Debounced slider API calls
@@ -116,13 +104,12 @@
         await controlLamp(lamp.id, { brightness: preset.brightness, color_temp: preset.colorTemp });
       }
       notify.success(`${preset.label} applied`);
-      refreshStatus();
+      // WS broadcast will update lamp status
     } catch (e) {
       console.error(e);
       notify.error(`${preset.label} failed`);
-      activePreset = null;
-      refreshStatus();
     }
+    activePreset = null;
   }
 
   // Check if preset is currently active

@@ -23,6 +23,13 @@ export interface RoborockStatus {
   mop_mode?: number;
 }
 
+// Module-level cached status for instant API responses
+let cachedRoborockStatus: RoborockStatus | null = null;
+
+export function getCachedRoborockStatus(): RoborockStatus | null {
+  return cachedRoborockStatus;
+}
+
 export interface CleanSummary {
   total_area: number;
   total_time: number;
@@ -59,6 +66,7 @@ export async function getStatus(): Promise<RoborockStatus | null> {
       const res = await fetchWithTimeout(`${BRIDGE_URL}/status`, {}, TIMEOUTS.ROBOROCK);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const status = await res.json() as RoborockStatus;
+      cachedRoborockStatus = status;
       broadcastRoborockStatus(status);
       return status;
     });

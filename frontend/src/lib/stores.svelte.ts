@@ -37,6 +37,8 @@ function createStore() {
       console.log('WebSocket connected');
       wsConnected = true;
       wsReconnectDelay = 1000;
+      // Request full state snapshot on (re)connect
+      ws?.send(JSON.stringify({ type: 'request_snapshot' }));
     };
 
     ws.onclose = () => {
@@ -97,6 +99,65 @@ function createStore() {
           }
           case 'purifier_status': {
             airPurifier = msg.status;
+            break;
+          }
+          case 'home_status': {
+            homeStatus = msg.status;
+            break;
+          }
+          case 'pending_actions': {
+            pendingActions = msg.actions;
+            break;
+          }
+          case 'pending_heater_actions': {
+            pendingHeaterActions = msg.actions;
+            break;
+          }
+          case 'schedules_changed': {
+            schedules = msg.schedules;
+            break;
+          }
+          case 'heater_schedules_changed': {
+            heaterSchedules = msg.schedules;
+            break;
+          }
+          case 'heater_presets_changed': {
+            heaterPresets = msg.presets;
+            break;
+          }
+          case 'heater_override_changed': {
+            heaterOverride = msg.override;
+            break;
+          }
+          case 'full_state_snapshot': {
+            lamps = msg.lamps;
+            // Parse cached last_status into lampStatuses map
+            const snapshotStatuses = new Map<string, LampStatus>();
+            for (const lamp of msg.lamps) {
+              if (lamp.last_status) {
+                try {
+                  snapshotStatuses.set(lamp.id, JSON.parse(lamp.last_status));
+                } catch { /* ignore */ }
+              }
+            }
+            lampStatuses = snapshotStatuses;
+            tuyaDevices = msg.tuyaDevices;
+            yamahaDevices = msg.yamahaDevices;
+            roborock = msg.roborock;
+            airPurifier = msg.airPurifier;
+            schedules = msg.schedules;
+            pendingActions = msg.pendingActions;
+            heaterPresets = msg.heaterPresets;
+            heaterSchedules = msg.heaterSchedules;
+            pendingHeaterActions = msg.pendingHeaterActions;
+            heaterOverride = msg.heaterOverride;
+            homeStatus = msg.homeStatus;
+            if (!initialLoadComplete) {
+              initialLoadComplete = true;
+              if (typeof document !== 'undefined') {
+                document.documentElement.classList.add('app-ready');
+              }
+            }
             break;
           }
         }
@@ -175,9 +236,9 @@ function createStore() {
       }
     },
 
-    async refreshTuya(refresh = true) {
+    async refreshTuya() {
       try {
-        tuyaDevices = await getTuyaDevices(refresh);
+        tuyaDevices = await getTuyaDevices();
       } catch (e) {
         console.error('Failed to fetch Tuya devices:', e);
       }

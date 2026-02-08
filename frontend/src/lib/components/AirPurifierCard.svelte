@@ -29,7 +29,7 @@
     isPowerPending = true;
     try {
       await controlAirPurifier({ power: newPower });
-      store.refreshAirPurifier();
+      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
       optimisticPower = null;
@@ -44,8 +44,7 @@
     pendingMode = mode;
     try {
       await controlAirPurifier({ mode });
-      await store.refreshAirPurifier();
-      // Keep optimisticMode to prevent flicker
+      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
       optimisticMode = oldMode;
@@ -57,12 +56,11 @@
   const [sendLedBrightnessDebounced] = debounce(async (level: number) => {
     try {
       await controlAirPurifier({ led_brightness: level });
-      await store.refreshAirPurifier();
-      optimisticLedBrightness = null;
+      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
-      optimisticLedBrightness = null;
     }
+    optimisticLedBrightness = null;
   }, 300);
 
   function handleLedBrightnessInput(level: number) {
@@ -75,13 +73,11 @@
   const [sendFanSpeedDebounced] = debounce(async (rpm: number) => {
     try {
       await controlAirPurifier({ fan_speed: rpm });
-      await store.refreshAirPurifier();
-      // Clear optimistic state so actual device value is shown
-      optimisticFanSpeed = null;
+      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
-      optimisticFanSpeed = null;
     }
+    optimisticFanSpeed = null;
   }, 300);
 
   function handleFanSpeedInput(rpm: number) {

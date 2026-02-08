@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { YamahaDevice, YamahaStatus } from '$lib/types';
-  import { getYamahaStatus, controlYamaha } from '$lib/api';
+  import { controlYamaha } from '$lib/api';
   import { translateDeviceName } from '$lib/translations';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
@@ -9,7 +9,6 @@
   let { device, compact = false }: { device: YamahaDevice; compact?: boolean } = $props();
   let displayName = $derived(translateDeviceName(device.name));
   let status = $state<YamahaStatus | null>(null);
-  let fetched = $state(false);
   let dialogOpen = $state(false);
 
   // Optimistic state
@@ -27,16 +26,10 @@
   let displayVolume = $derived(previewVolume ?? status?.volume ?? 0);
   let displaySubwooferVol = $derived(previewSubwooferVol ?? status?.subwoofer_volume ?? 0);
 
+  // Parse cached status from DB (updated via WS broadcasts)
   $effect(() => {
-    if (!fetched && device.last_status) {
+    if (device.last_status) {
       try { status = JSON.parse(device.last_status); } catch { /* ignore parse errors */ }
-    }
-  });
-
-  $effect(() => {
-    if (!fetched) {
-      fetched = true;
-      getYamahaStatus(device.id).then(res => status = res.status).catch(() => {});
     }
   });
 
@@ -46,27 +39,10 @@
     isPowerPending = true;
     try {
       await controlYamaha(device.id, { power: newPower === 'on' });
-      // Soundbar needs time to change power state before status reflects it
-      await new Promise(r => setTimeout(r, 1500));
-      await refreshStatus();
-      // Keep optimistic state if server status doesn't match yet
-      if (status?.power !== newPower) {
-        optimisticPower = newPower;
-      }
+      // WS broadcast will update yamaha status
     } catch (e) {
       console.error(e);
       optimisticPower = null;
-      isPowerPending = false;
-    }
-  }
-
-  async function refreshStatus() {
-    try {
-      const res = await getYamahaStatus(device.id);
-      status = res.status;
-      optimisticPower = null;
-    } catch (e) {
-      console.error(e);
     }
     isPowerPending = false;
   }

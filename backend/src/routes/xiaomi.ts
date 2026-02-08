@@ -1,16 +1,17 @@
 import { Hono } from 'hono';
 import { getDb } from '../db/database';
 import {
-  getLampStatus,
   setLampPower,
   setLampBrightness,
   setLampColorTemp,
   toggleLamp,
   setLampMoonlight,
   setLampDaylightMode,
+  getLampStatus,
   invalidateConnection,
 } from '../xiaomi/xiaomi-lamp';
 import { discoverXiaomiDevices } from '../xiaomi/xiaomi-discover';
+import { broadcastLampStatus } from '../ws/device-broadcast';
 
 const xiaomi = new Hono();
 
@@ -31,20 +32,28 @@ xiaomi.get('/:id', (c) => {
   return c.json(device);
 });
 
-// Get Xiaomi lamp status
-xiaomi.get('/:id/status', async (c) => {
+// Get Xiaomi lamp status (returns cached DB data)
+xiaomi.get('/:id/status', (c) => {
   const id = c.req.param('id');
   const db = getDb();
 
-  const status = await getLampStatus(id);
-  if (!status) {
-    return c.json({ error: 'Failed to get status' }, 500);
+  const device = db.query('SELECT last_status, online FROM xiaomi_devices WHERE id = ?').get(id) as { last_status: string | null; online: number } | null;
+  if (!device) {
+    return c.json({ error: 'Device not found' }, 404);
   }
 
-  db.run(
-    'UPDATE xiaomi_devices SET last_status = ?, online = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [JSON.stringify(status), id]
-  );
+  let status = null;
+  if (device.last_status) {
+    try {
+      status = JSON.parse(device.last_status);
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
+  if (!status) {
+    return c.json({ error: 'No cached status available' }, 500);
+  }
 
   return c.json({ device_id: id, status });
 });
@@ -77,6 +86,18 @@ xiaomi.post('/:id/control', async (c) => {
   }
 
   const allSuccess = Object.values(results).every((v) => v);
+
+  // After successful control, fetch updated status and broadcast
+  if (allSuccess) {
+    getLampStatus(id).then(status => {
+      if (status) {
+        const db = getDb();
+        db.run('UPDATE xiaomi_devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(status), id]);
+        broadcastLampStatus(id, status as Record<string, unknown>);
+      }
+    }).catch(() => { /* best-effort */ });
+  }
+
   return c.json({ success: allSuccess, results, device_id: id });
 });
 

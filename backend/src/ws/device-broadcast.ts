@@ -66,3 +66,51 @@ interface PurifierStatus {
 export function broadcastPurifierStatus(status: PurifierStatus): boolean {
   return broadcastIfChanged('purifier', { type: 'purifier_status', status });
 }
+
+// Home status (computed aggregate)
+export function broadcastHomeStatus(): void {
+  // Lazy import to avoid circular dependency
+  const { computeHomeStatus } = require('../db/home-status');
+  broadcast({ type: 'home_status', status: computeHomeStatus() });
+}
+
+// Pending actions (lamp)
+export function broadcastPendingActions(): void {
+  const { getPendingActions } = require('../scheduling/pending-service');
+  broadcast({ type: 'pending_actions', actions: getPendingActions() });
+}
+
+// Pending actions (heater)
+export function broadcastPendingHeaterActions(): void {
+  const { getPendingHeaterActions } = require('../scheduling/heater-pending-service');
+  broadcast({ type: 'pending_heater_actions', actions: getPendingHeaterActions() });
+}
+
+// Schedules (lamp)
+export function broadcastSchedulesChanged(): void {
+  const { getSchedules } = require('../scheduling/schedule-service');
+  broadcast({ type: 'schedules_changed', schedules: getSchedules() });
+}
+
+// Schedules (heater)
+export function broadcastHeaterSchedulesChanged(): void {
+  const { getHeaterSchedules } = require('../scheduling/heater-schedule-service');
+  broadcast({ type: 'heater_schedules_changed', schedules: getHeaterSchedules() });
+}
+
+// Heater presets
+export function broadcastHeaterPresetsChanged(): void {
+  const { getHeaterPresets } = require('../scheduling/heater-presets');
+  broadcast({ type: 'heater_presets_changed', presets: getHeaterPresets() });
+}
+
+// Heater override
+export function broadcastHeaterOverrideChanged(): void {
+  const { getHeaterOverride } = require('../scheduling/heater-override');
+  broadcast({ type: 'heater_override_changed', override: getHeaterOverride() });
+}
+
+// Lamp status (from xiaomi)
+export function broadcastLampStatus(deviceId: string, status: Record<string, unknown>): void {
+  broadcast({ type: 'lamp_status', deviceId, status });
+}

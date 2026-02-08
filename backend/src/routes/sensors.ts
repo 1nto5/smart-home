@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
-import { getDb, getHomeStatus } from '../db/database';
+import { getDb } from '../db/database';
 import { translateName } from '../utils/translations';
-import { getLampPresets, getHeaterPresets, getHeaterOverride } from '../scheduling';
+import { computeHomeStatus } from '../db/home-status';
 
 const sensors = new Hono();
 
@@ -134,67 +134,7 @@ sensors.get('/contacts/history', (c) => {
 
 // Get home status
 sensors.get('/home-status', (c) => {
-  const db = getDb();
-  const status = getHomeStatus();
-
-  const weatherSensor = db.query(`
-    SELECT last_status FROM devices WHERE category = 'wsdcg' LIMIT 1
-  `).get() as { last_status: string | null } | null;
-
-  let weather = null;
-  if (weatherSensor?.last_status) {
-    try {
-      const parsed = JSON.parse(weatherSensor.last_status);
-      weather = {
-        temperature: parsed['103'] !== undefined ? parsed['103'] / 100 : null,
-        humidity: parsed['101'] !== undefined ? parsed['101'] / 100 : null,
-        battery: parsed['102'] ?? null,
-      };
-    } catch {
-      // Ignore parse errors
-    }
-  }
-
-  const override = getHeaterOverride();
-
-  const heaters = db.query(`
-    SELECT last_status FROM devices WHERE category = 'wkf' AND online = 1
-  `).all() as { last_status: string | null }[];
-
-  let heaterAvgTemp = null;
-  const temps: number[] = [];
-  for (const h of heaters) {
-    if (h.last_status) {
-      try {
-        const parsed = JSON.parse(h.last_status);
-        if (parsed['5'] !== undefined) {
-          temps.push(parsed['5'] / 10);
-        }
-      } catch {
-        // Ignore parse errors
-      }
-    }
-  }
-  if (temps.length > 0) {
-    heaterAvgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
-  }
-
-  const lampPreset = status.lamp_preset ? getLampPresets().find(p => p.id === status.lamp_preset) : null;
-  const heaterPreset = status.heater_preset ? getHeaterPresets().find(p => p.id === status.heater_preset) : null;
-
-  return c.json({
-    weather,
-    lamp: {
-      preset_id: status.lamp_preset,
-      preset_name: lampPreset?.name ?? null,
-    },
-    heater: {
-      preset_id: status.heater_preset,
-      preset_name: heaterPreset?.name ?? null,
-      avg_temp: heaterAvgTemp !== null ? Math.round(heaterAvgTemp * 10) / 10 : null,
-      override: override.enabled ? override : null,
-    },
-  });
+  return c.json(computeHomeStatus());
 });
 
 export default sensors;
