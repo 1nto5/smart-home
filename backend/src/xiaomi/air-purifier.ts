@@ -16,6 +16,19 @@ interface MiioProperty {
 }
 
 let purifierConnection: MiioDevice | null = null;
+const MIIO_TIMEOUT = 8000; // 8 second timeout for MiOT calls
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label}: timeout after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); },
+    );
+  });
+}
 
 interface PurifierStatus {
   power: boolean;
@@ -100,15 +113,19 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     // siid 4 = filter
     // siid 7 = screen/LED (mb4)
     // siid 9 = motor
-    const result = await purifierConnection.call('get_properties', [
-      { siid: 2, piid: 1 },  // power (bool)
-      { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
-      { siid: 3, piid: 4 },  // pm2.5
-      { siid: 4, piid: 3 },  // filter life % (piid 3 works for this device)
-      { siid: 7, piid: 2 },  // LED brightness (0-8, 0=off, 8=brightest)
-      { siid: 9, piid: 1 },  // motor_speed (current RPM)
-      { siid: 9, piid: 3 },  // favorite_rpm (set RPM)
-    ]) as MiioProperty[];
+    const result = await withTimeout(
+      purifierConnection.call('get_properties', [
+        { siid: 2, piid: 1 },  // power (bool)
+        { siid: 2, piid: 4 },  // mode (0=auto, 1=silent, 2=favorite)
+        { siid: 3, piid: 4 },  // pm2.5
+        { siid: 4, piid: 3 },  // filter life % (piid 3 works for this device)
+        { siid: 7, piid: 2 },  // LED brightness (0-8, 0=off, 8=brightest)
+        { siid: 9, piid: 1 },  // motor_speed (current RPM)
+        { siid: 9, piid: 3 },  // favorite_rpm (set RPM)
+      ]),
+      MIIO_TIMEOUT,
+      'getPurifierStatus',
+    ) as MiioProperty[];
 
     const getValue = (siid: number, piid: number) => {
       const prop = result.find((r: MiioProperty) => r.siid === siid && r.piid === piid);
@@ -132,6 +149,9 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     return status;
   } catch (error: any) {
     console.error('Failed to get purifier status:', error.message);
+    // Disconnect stale connection so next call reconnects
+    purifierConnection?.destroy();
+    purifierConnection = null;
     return null;
   }
 }
@@ -146,13 +166,16 @@ export async function setPurifierPower(on: boolean): Promise<boolean> {
   if (!purifierConnection) return false;
 
   try {
-    await purifierConnection.call('set_properties', [
-      { siid: 2, piid: 1, value: on }
-    ]);
+    await withTimeout(
+      purifierConnection.call('set_properties', [{ siid: 2, piid: 1, value: on }]),
+      MIIO_TIMEOUT, 'setPurifierPower',
+    );
     console.log(`Air Purifier: Power ${on ? 'on' : 'off'}`);
     return true;
   } catch (error: any) {
     console.error('Failed to set purifier power:', error.message);
+    purifierConnection?.destroy();
+    purifierConnection = null;
     return false;
   }
 }
@@ -170,13 +193,16 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
   if (modeValue === undefined) return false;
 
   try {
-    await purifierConnection.call('set_properties', [
-      { siid: 2, piid: 4, value: modeValue }
-    ]);
+    await withTimeout(
+      purifierConnection.call('set_properties', [{ siid: 2, piid: 4, value: modeValue }]),
+      MIIO_TIMEOUT, 'setPurifierMode',
+    );
     console.log(`Air Purifier: Mode set to ${mode}`);
     return true;
   } catch (error: any) {
     console.error('Failed to set purifier mode:', error.message);
+    purifierConnection?.destroy();
+    purifierConnection = null;
     return false;
   }
 }
@@ -195,13 +221,16 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
   const clampedRpm = Math.max(300, Math.min(2200, Math.round(rpm)));
 
   try {
-    await purifierConnection.call('set_properties', [
-      { siid: 9, piid: 3, value: clampedRpm }
-    ]);
+    await withTimeout(
+      purifierConnection.call('set_properties', [{ siid: 9, piid: 3, value: clampedRpm }]),
+      MIIO_TIMEOUT, 'setPurifierFanSpeed',
+    );
     console.log(`Air Purifier: Fan speed set to ${clampedRpm} RPM`);
     return true;
   } catch (error: any) {
     console.error('Failed to set purifier fan speed:', error.message);
+    purifierConnection?.destroy();
+    purifierConnection = null;
     return false;
   }
 }
@@ -218,13 +247,16 @@ export async function setLedBrightness(level: number): Promise<boolean> {
   const clamped = Math.max(0, Math.min(8, Math.round(level)));
 
   try {
-    await purifierConnection.call('set_properties', [
-      { siid: 7, piid: 2, value: clamped }
-    ]);
+    await withTimeout(
+      purifierConnection.call('set_properties', [{ siid: 7, piid: 2, value: clamped }]),
+      MIIO_TIMEOUT, 'setLedBrightness',
+    );
     console.log(`Air Purifier: LED brightness set to ${clamped}`);
     return true;
   } catch (error: any) {
     console.error('Failed to set LED brightness:', error.message);
+    purifierConnection?.destroy();
+    purifierConnection = null;
     return false;
   }
 }
