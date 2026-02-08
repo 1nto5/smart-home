@@ -6,6 +6,7 @@ import {
 } from '../db/database';
 import { translateDeviceName } from '../utils/translations';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 export type AlertType = 'flood' | 'door_open';
 
@@ -73,25 +74,25 @@ export async function telegramFloodAlert(deviceId: string, deviceName: string): 
 
   // Check if Telegram notifications are enabled
   if (!config.enabled) {
-    console.log('Telegram notifications disabled, skipping flood alert');
+    logger.debug('Telegram notifications disabled, skipping flood alert', { component: 'telegram-service' });
     return false;
   }
 
   // Check if flood alerts are enabled
   if (!config.flood_alerts) {
-    console.log('Flood alerts disabled, skipping');
+    logger.debug('Flood alerts disabled, skipping', { component: 'telegram-service' });
     return false;
   }
 
   // Check required config
   if (!config.bot_token || !config.chat_id) {
-    console.log('Telegram config incomplete (missing bot_token or chat_id)');
+    logger.debug('Telegram config incomplete (missing bot_token or chat_id)', { component: 'telegram-service' });
     return false;
   }
 
   // Check cooldown
   if (isInCooldown('flood', deviceId, config.cooldown_minutes)) {
-    console.log(`Flood alert for ${deviceName} in cooldown, skipping`);
+    logger.debug('Flood alert in cooldown, skipping', { component: 'telegram-service', deviceId, deviceName });
     return false;
   }
 
@@ -104,7 +105,7 @@ Time: ${new Date().toLocaleString('en-GB')}
 
 Check immediately!`;
 
-  console.log(`Sending flood alert to Telegram chat ${config.chat_id}`);
+  logger.info('Sending flood alert to Telegram', { component: 'telegram-service', chatId: config.chat_id, deviceId, deviceName });
 
   const result = await sendTelegramMessage(
     config.bot_token,
@@ -124,9 +125,9 @@ Check immediately!`;
   );
 
   if (result.success) {
-    console.log(`Flood alert sent to Telegram`);
+    logger.info('Flood alert sent to Telegram', { component: 'telegram-service', deviceId, deviceName });
   } else {
-    console.error(`Failed to send flood alert to Telegram: ${result.error}`);
+    logger.error('Failed to send flood alert to Telegram', { component: 'telegram-service', deviceId, deviceName, error: result.error });
   }
 
   return result.success;
@@ -141,31 +142,31 @@ export async function telegramDoorOpenAlert(deviceId: string, deviceName: string
 
   // Check if alarm is armed
   if (!alarmConfig.armed) {
-    console.log('Alarm not armed, skipping door alert');
+    logger.debug('Alarm not armed, skipping door alert', { component: 'telegram-service' });
     return false;
   }
 
   // Check if Telegram notifications are enabled
   if (!config.enabled) {
-    console.log('Telegram notifications disabled, skipping door alert');
+    logger.debug('Telegram notifications disabled, skipping door alert', { component: 'telegram-service' });
     return false;
   }
 
   // Check if door alerts are enabled
   if (!config.door_alerts) {
-    console.log('Door alerts disabled, skipping');
+    logger.debug('Door alerts disabled, skipping', { component: 'telegram-service' });
     return false;
   }
 
   // Check required config
   if (!config.bot_token || !config.chat_id) {
-    console.log('Telegram config incomplete (missing bot_token or chat_id)');
+    logger.debug('Telegram config incomplete (missing bot_token or chat_id)', { component: 'telegram-service' });
     return false;
   }
 
   // Check cooldown
   if (isInCooldown('door_open', deviceId, config.cooldown_minutes)) {
-    console.log(`Door alert for ${deviceName} in cooldown, skipping`);
+    logger.debug('Door alert in cooldown, skipping', { component: 'telegram-service', deviceId, deviceName });
     return false;
   }
 
@@ -178,7 +179,7 @@ Time: ${new Date().toLocaleString('en-GB')}
 
 Possible intrusion!`;
 
-  console.log(`Sending door alert to Telegram chat ${config.chat_id}`);
+  logger.info('Sending door alert to Telegram', { component: 'telegram-service', chatId: config.chat_id, deviceId, deviceName });
 
   const result = await sendTelegramMessage(
     config.bot_token,
@@ -198,9 +199,9 @@ Possible intrusion!`;
   );
 
   if (result.success) {
-    console.log(`Door alert sent to Telegram`);
+    logger.info('Door alert sent to Telegram', { component: 'telegram-service', deviceId, deviceName });
   } else {
-    console.error(`Failed to send door alert to Telegram: ${result.error}`);
+    logger.error('Failed to send door alert to Telegram', { component: 'telegram-service', deviceId, deviceName, error: result.error });
   }
 
   return result.success;

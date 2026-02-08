@@ -5,6 +5,7 @@
 
 import type { YamahaDeviceInfo, YamahaMainStatus } from './yamaha-types';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 const YXC_BASE = '/YamahaExtendedControl/v1';
 
@@ -25,7 +26,7 @@ export class YamahaClient {
       });
 
       if (!response.ok) {
-        console.error(`YXC request failed: ${response.status} ${response.statusText}`);
+        logger.error('YXC request failed', { component: 'yamaha-client', status: response.status, statusText: response.statusText });
         return null;
       }
 
@@ -33,13 +34,13 @@ export class YamahaClient {
 
       // YXC returns response_code 0 for success
       if (data.response_code !== 0) {
-        console.error(`YXC error response: ${data.response_code}`);
+        logger.error('YXC error response', { component: 'yamaha-client', responseCode: data.response_code });
         return null;
       }
 
       return data;
     } catch (error: unknown) {
-      console.error(`YXC request error (${path}):`, getErrorMessage(error));
+      logger.error('YXC request error', { component: 'yamaha-client', path, error: getErrorMessage(error) });
       return null;
     }
   }

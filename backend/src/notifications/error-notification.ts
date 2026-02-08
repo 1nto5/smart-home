@@ -1,5 +1,6 @@
 import { getTelegramConfig, logTelegram } from '../db/database';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 type Severity = 'critical' | 'warning';
 
@@ -45,7 +46,7 @@ export async function notifyError({ component, error, severity }: ErrorNotificat
   // Check cooldown
   const lastNotify = cooldownMap.get(component);
   if (lastNotify && Date.now() - lastNotify < COOLDOWN_MS) {
-    console.log(`Error alert for ${component} in cooldown, skipping`);
+    logger.debug('Error alert in cooldown, skipping', { component: 'error-notification', alertComponent: component });
     return false;
   }
 
@@ -87,14 +88,14 @@ Time: ${timestamp}`;
     );
 
     if (data.ok) {
-      console.log(`Error alert sent: ${component} (${severity})`);
+      logger.info('Error alert sent', { component: 'error-notification', alertComponent: component, severity });
     } else {
-      console.error(`Failed to send error alert: ${data.description}`);
+      logger.error('Failed to send error alert', { component: 'error-notification', alertComponent: component, error: data.description });
     }
 
     return data.ok;
   } catch (err: unknown) {
-    console.error('Error sending notification:', getErrorMessage(err));
+    logger.error('Error sending notification', { component: 'error-notification', error: getErrorMessage(err) });
     return false;
   }
 }

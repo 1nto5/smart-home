@@ -10,6 +10,7 @@ import { getCurrentTimeWindow, getPresetForTimeWindow } from './time-windows';
 import { broadcast } from '../ws/broadcast';
 import { createPendingAction, removePendingForDevice } from './pending-service';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 // In-memory cache of last known online state
 const lastOnlineState = new Map<string, boolean>();
@@ -34,7 +35,7 @@ export function initOnlineStateCache(): void {
     lastOnlineState.set(lamp.id, lamp.online === 1);
   }
 
-  console.log(`Initialized online state cache for ${lamps.length} lamps`);
+  logger.info('Initialized online state cache', { component: 'online-trigger', lampCount: lamps.length });
 }
 
 /**
@@ -69,7 +70,7 @@ export async function checkOnlineTransitions(): Promise<void> {
 
       // Detect offline -> online transition
       if (!wasOnline && isNowOnline) {
-        console.log(`Lamp ${lamp.name} came online`);
+        logger.info('Lamp came online', { component: 'online-trigger', deviceId: lamp.id, deviceName: lamp.name });
         await handleLampCameOnline(lamp.id, lamp.name);
       }
 
@@ -87,7 +88,7 @@ export async function checkOnlineTransitions(): Promise<void> {
       const now = Date.now();
       const lastLog = lastErrorLogged.get(lamp.id) || 0;
       if (now - lastLog > ERROR_LOG_INTERVAL) {
-        console.error(`Error checking ${lamp.name}:`, getErrorMessage(e));
+        logger.error('Error checking lamp online state', { component: 'online-trigger', deviceId: lamp.id, deviceName: lamp.name, error: getErrorMessage(e) });
         lastErrorLogged.set(lamp.id, now);
       }
       // Mark as offline on error
@@ -103,18 +104,18 @@ async function handleLampCameOnline(deviceId: string, name: string): Promise<voi
   const timeWindow = getCurrentTimeWindow();
   const preset = getPresetForTimeWindow(timeWindow);
 
-  console.log(`Applying ${preset} to ${name} (time window: ${timeWindow})`);
+  logger.info('Applying preset to lamp after coming online', { component: 'online-trigger', deviceId, deviceName: name, preset, timeWindow });
 
   try {
     const success = await applyPresetToLamp(deviceId, preset);
     if (success) {
       removePendingForDevice(deviceId);
     } else {
-      console.error(`Failed to apply ${preset} to ${name} after coming online`);
+      logger.error('Failed to apply preset after coming online', { component: 'online-trigger', deviceId, deviceName: name, preset });
       createPendingAction(deviceId, preset);
     }
   } catch (e: unknown) {
-    console.error(`Error applying ${preset} to ${name}:`, getErrorMessage(e));
+    logger.error('Error applying preset to lamp', { component: 'online-trigger', deviceId, deviceName: name, preset, error: getErrorMessage(e) });
     createPendingAction(deviceId, preset);
   }
 }

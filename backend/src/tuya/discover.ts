@@ -1,9 +1,10 @@
 import TuyAPI from 'tuyapi';
 import { initDatabase, getDb } from '../db/database';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 async function main() {
-  console.log('Initializing database...');
+  logger.info('Initializing database', { component: 'discover' });
   initDatabase();
 
   const db = getDb();
@@ -15,18 +16,18 @@ async function main() {
   } | null;
 
   if (!gateway) {
-    console.error('Gateway not found');
+    logger.error('Gateway not found', { component: 'discover' });
     process.exit(1);
   }
 
-  console.log('\nGateway info:');
-  console.log('  ID:', gateway.id);
-  console.log('  Name:', gateway.name);
-  console.log('  Local Key:', gateway.local_key);
-  console.log('  Current IP:', gateway.ip || '(not set)');
+  logger.info('Gateway info', {
+    component: 'discover',
+    deviceId: gateway.id,
+    deviceName: gateway.name,
+    currentIp: gateway.ip || '(not set)',
+  });
 
-  console.log('\nStarting UDP discovery (this may take up to 30 seconds)...');
-  console.log('Make sure you are on the same network as the gateway.\n');
+  logger.info('Starting UDP discovery', { component: 'discover' });
 
   const device = new TuyAPI({
     id: gateway.id,
@@ -34,7 +35,7 @@ async function main() {
   });
 
   device.on('error', (err: Error) => {
-    console.error('Error:', err.message);
+    logger.error('Discovery error', { component: 'discover', error: err.message });
   });
 
   try {
@@ -43,21 +44,17 @@ async function main() {
     const ip = device.device?.ip;
 
     if (ip) {
-      console.log('✓ Found device at IP:', ip);
+      logger.info('Device found', { component: 'discover', ip });
 
       // Save to database
       db.run('UPDATE devices SET ip = ? WHERE id = ?', [ip, gateway.id]);
-      console.log('✓ IP saved to database');
+      logger.info('IP saved to database', { component: 'discover' });
     } else {
-      console.log('✗ Device found but no IP returned');
+      logger.warn('Device found but no IP returned', { component: 'discover' });
     }
   } catch (error: unknown) {
-    console.error('✗ Discovery failed:', getErrorMessage(error));
-    console.log('\nTroubleshooting:');
-    console.log('1. Make sure you are on the same WiFi network as the gateway');
-    console.log('2. Check if UDP ports 6666/6667 are open');
-    console.log('3. Try power cycling the gateway');
-    console.log('4. Verify the local_key is correct');
+    logger.error('Discovery failed', { component: 'discover', error: getErrorMessage(error) });
+    logger.info('Troubleshooting: ensure same WiFi network, UDP ports 6666/6667 open, try power cycling gateway, verify local_key', { component: 'discover' });
   } finally {
     device.disconnect();
     process.exit(0);

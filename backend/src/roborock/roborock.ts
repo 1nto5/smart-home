@@ -8,6 +8,7 @@ import { config } from '../config';
 import { deviceCircuits, CircuitOpenError } from '../utils/circuit-breaker';
 import { getErrorMessage } from '../utils/errors';
 import { fetchWithTimeout, TIMEOUTS } from '../utils/fetch-timeout';
+import { logger } from '../utils/logger';
 
 // In Docker, use service name; locally use localhost
 const BRIDGE_URL = config.roborock.bridgeUrl;
@@ -72,9 +73,9 @@ export async function getStatus(): Promise<RoborockStatus | null> {
     });
   } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for roborock: ${error.message}`);
+      logger.warn(`Circuit open for roborock: ${error.message}`, { component: 'roborock' });
     } else {
-      console.error('Roborock status error:', getErrorMessage(error));
+      logger.error('Roborock status error', { component: 'roborock', error: getErrorMessage(error) });
     }
     return null;
   }
@@ -95,13 +96,13 @@ async function sendCommand(cmd: string): Promise<boolean> {
       }, TIMEOUTS.ROBOROCK);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
     });
-    console.log(`Roborock: ${cmd}`);
+    logger.info(`Roborock command: ${cmd}`, { component: 'roborock', action: cmd });
     return true;
   } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
-      console.warn(`Circuit open for roborock: ${error.message}`);
+      logger.warn(`Circuit open for roborock: ${error.message}`, { component: 'roborock' });
     } else {
-      console.error(`Roborock command ${cmd} error:`, getErrorMessage(error));
+      logger.error(`Roborock command ${cmd} error`, { component: 'roborock', action: cmd, error: getErrorMessage(error) });
     }
     return false;
   }
@@ -151,7 +152,7 @@ export async function getCleanSummary(): Promise<CleanSummary | null> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as CleanSummary;
   } catch (error: unknown) {
-    console.error('Roborock clean-summary error:', getErrorMessage(error));
+    logger.error('Roborock clean-summary error', { component: 'roborock', error: getErrorMessage(error) });
     return null;
   }
 }
@@ -165,7 +166,7 @@ export async function getRooms(): Promise<RoomsResponse | null> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as RoomsResponse;
   } catch (error: unknown) {
-    console.error('Roborock rooms error:', getErrorMessage(error));
+    logger.error('Roborock rooms error', { component: 'roborock', error: getErrorMessage(error) });
     return null;
   }
 }
@@ -179,7 +180,7 @@ export async function getVolume(): Promise<{ volume: number } | null> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as { volume: number };
   } catch (error: unknown) {
-    console.error('Roborock volume error:', getErrorMessage(error));
+    logger.error('Roborock volume error', { component: 'roborock', error: getErrorMessage(error) });
     return null;
   }
 }
@@ -197,7 +198,7 @@ export async function setVolume(volume: number): Promise<boolean> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
-    console.error('Roborock set-volume error:', getErrorMessage(error));
+    logger.error('Roborock set-volume error', { component: 'roborock', error: getErrorMessage(error) });
     return false;
   }
 }
@@ -215,7 +216,7 @@ export async function setFanSpeed(mode: number): Promise<boolean> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
-    console.error('Roborock set-fan-speed error:', getErrorMessage(error));
+    logger.error('Roborock set-fan-speed error', { component: 'roborock', error: getErrorMessage(error) });
     return false;
   }
 }
@@ -233,7 +234,7 @@ export async function setMopMode(mode: number): Promise<boolean> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
-    console.error('Roborock set-mop-mode error:', getErrorMessage(error));
+    logger.error('Roborock set-mop-mode error', { component: 'roborock', error: getErrorMessage(error) });
     return false;
   }
 }
@@ -251,7 +252,7 @@ export async function cleanSegments(segments: number[]): Promise<boolean> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
-    console.error('Roborock clean-segments error:', getErrorMessage(error));
+    logger.error('Roborock clean-segments error', { component: 'roborock', error: getErrorMessage(error) });
     return false;
   }
 }
@@ -265,7 +266,7 @@ export async function getConsumables(): Promise<Consumables | null> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as Consumables;
   } catch (error: unknown) {
-    console.error('Roborock consumables error:', getErrorMessage(error));
+    logger.error('Roborock consumables error', { component: 'roborock', error: getErrorMessage(error) });
     return null;
   }
 }
@@ -283,7 +284,7 @@ export async function resetConsumable(consumable: string): Promise<boolean> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return true;
   } catch (error: unknown) {
-    console.error('Roborock reset-consumable error:', getErrorMessage(error));
+    logger.error('Roborock reset-consumable error', { component: 'roborock', error: getErrorMessage(error) });
     return false;
   }
 }

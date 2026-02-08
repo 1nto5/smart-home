@@ -10,7 +10,7 @@
   let displayName = $derived(compact ? getSimplifiedName(device.name, device.category) : fullName);
   let dialogOpen = $state(false);
 
-  let parsedStatus = $derived(() => {
+  let parsedStatus = $derived.by<Record<string, number | string | boolean> | null>(() => {
     if (!device.last_status) return null;
     try { return JSON.parse(device.last_status); }
     catch { return null; }
@@ -33,7 +33,7 @@
   const defaultIcon = Smartphone;
   const LOW_BATTERY_THRESHOLD = 15;
 
-  function getStatusInfo(status: Record<string, any> | null, category: string): { text: string; alert: boolean; color: string; lowBattery: boolean; batteryPercent?: number } {
+  function getStatusInfo(status: Record<string, number | string | boolean> | null, category: string): { text: string; alert: boolean; color: string; lowBattery: boolean; batteryPercent?: number } {
     if (!status) {
       if (category === 'sj' || category === 'mcs') return { text: 'Monitoring', alert: false, color: 'text-content-tertiary', lowBattery: false };
       return { text: 'No data', alert: false, color: 'text-content-tertiary', lowBattery: false };
@@ -43,14 +43,14 @@
       case 'sj': {
         const waterValue = status['1'];
         const isWet = waterValue === 'alarm' || waterValue === '1' || waterValue === 1;
-        const battery = status['4'];
+        const battery = status['4'] !== undefined ? Number(status['4']) : undefined;
         const lowBattery = battery !== undefined && battery <= LOW_BATTERY_THRESHOLD;
         if (isWet) return { text: 'Water detected!', alert: true, color: 'text-error', lowBattery, batteryPercent: battery };
         return { text: lowBattery ? `Dry · ${battery}%` : 'Dry', alert: false, color: 'text-success', lowBattery, batteryPercent: battery };
       }
       case 'mcs': {
         const isOpen = status['101'] === true || status['1'] === true;
-        const battery = status['103'] || status['4'];
+        const battery = (status['103'] || status['4']) !== undefined ? Number(status['103'] || status['4']) : undefined;
         const lowBattery = battery !== undefined && battery <= LOW_BATTERY_THRESHOLD;
         return {
           text: lowBattery ? `${isOpen ? 'Open' : 'Closed'} · ${battery}%` : (isOpen ? 'Open' : 'Closed'),
@@ -61,9 +61,9 @@
         };
       }
       case 'wsdcg': {
-        const temp = status['103'];
-        const humidity = status['101'];
-        const battery = status['102'];
+        const temp = status['103'] !== undefined ? Number(status['103']) : undefined;
+        const humidity = status['101'] !== undefined ? Number(status['101']) : undefined;
+        const battery = status['102'] !== undefined ? Number(status['102']) : undefined;
         const lowBattery = battery !== undefined && battery <= LOW_BATTERY_THRESHOLD;
         if (temp !== undefined && humidity !== undefined) {
           const humidityVal = (humidity / 100).toFixed(1);
@@ -76,14 +76,14 @@
     }
   }
 
-  let config = $derived(() => {
+  let config = $derived.by(() => {
     if (isWindowSensor) {
       return { label: 'Window', icon: Square };
     }
     return categoryConfig[device.category] || { label: device.category, icon: defaultIcon };
   });
-  let statusInfo = $derived(getStatusInfo(parsedStatus(), device.category));
-  let SensorIcon = $derived(config().icon);
+  let statusInfo = $derived(getStatusInfo(parsedStatus, device.category));
+  let SensorIcon = $derived(config.icon);
 </script>
 
 <!-- Card -->
@@ -129,13 +129,13 @@
           {/if}
         </div>
         <p class="font-display text-2xl mt-3 {statusInfo.color} {statusInfo.alert ? 'neon-text' : ''}">{statusInfo.text}</p>
-        <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">{config().label} Sensor</p>
+        <p class="text-sm text-content-tertiary mt-1 uppercase tracking-wider">{config.label} Sensor</p>
       </div>
     {/if}
 
     <!-- Climate sensor details -->
     {#if device.category === 'wsdcg'}
-      {@const status = parsedStatus()}
+      {@const status = parsedStatus}
       {#if status}
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-xl p-4 text-center bg-surface-recessed border border-stroke-subtle">
@@ -170,7 +170,7 @@
 
     <!-- Battery status -->
     {#if device.category === 'sj' || device.category === 'mcs'}
-      {@const status = parsedStatus()}
+      {@const status = parsedStatus}
       {#if status}
         {@const battery = status['4'] || status['103']}
         {#if battery !== undefined}
@@ -197,7 +197,7 @@
     <div class="pt-4 border-t border-stroke-subtle space-y-2">
       <div class="flex justify-between items-center">
         <span class="text-xs text-content-tertiary uppercase tracking-wider">Type</span>
-        <span class="text-sm font-medium text-content-primary">{config().label}</span>
+        <span class="text-sm font-medium text-content-primary">{config.label}</span>
       </div>
       <div class="flex justify-between items-center">
         <span class="text-xs text-content-tertiary uppercase tracking-wider">Online</span>

@@ -1,5 +1,6 @@
 import { getGatewayConnectionStatus, reconnectGateway } from './tuya-local';
 import { notifyError } from '../notifications/error-notification';
+import { logger } from '../utils/logger';
 
 const CHECK_INTERVAL_MS = 60_000; // 60 seconds
 const MAX_FAILURES_BEFORE_ALERT = 3;
@@ -16,20 +17,20 @@ async function checkGateway(): Promise<void> {
   if (connected) {
     // Reset failure counter on successful connection
     if (consecutiveFailures > 0) {
-      console.log('🔌 Gateway connection restored');
+      logger.info('Gateway connection restored', { component: 'gateway-watchdog' });
       consecutiveFailures = 0;
     }
     return;
   }
 
   consecutiveFailures++;
-  console.log(`🔌 Gateway disconnected (attempt ${consecutiveFailures}/${MAX_FAILURES_BEFORE_ALERT})`);
+  logger.warn('Gateway disconnected', { component: 'gateway-watchdog', attempt: consecutiveFailures, maxAttempts: MAX_FAILURES_BEFORE_ALERT });
 
   // Attempt reconnect
   const success = await reconnectGateway();
 
   if (success) {
-    console.log('🔌 Gateway reconnected successfully');
+    logger.info('Gateway reconnected successfully', { component: 'gateway-watchdog' });
     consecutiveFailures = 0;
     return;
   }
@@ -49,11 +50,11 @@ async function checkGateway(): Promise<void> {
  */
 export function startGatewayWatchdog(): void {
   if (watchdogInterval) {
-    console.log('⚠️ Gateway watchdog already running');
+    logger.warn('Gateway watchdog already running', { component: 'gateway-watchdog' });
     return;
   }
 
-  console.log(`🐕 Starting gateway watchdog (every ${CHECK_INTERVAL_MS / 1000}s)`);
+  logger.info('Starting gateway watchdog', { component: 'gateway-watchdog', intervalMs: CHECK_INTERVAL_MS });
   watchdogInterval = setInterval(checkGateway, CHECK_INTERVAL_MS);
 }
 
@@ -64,6 +65,6 @@ export function stopGatewayWatchdog(): void {
   if (watchdogInterval) {
     clearInterval(watchdogInterval);
     watchdogInterval = null;
-    console.log('🐕 Gateway watchdog stopped');
+    logger.info('Gateway watchdog stopped', { component: 'gateway-watchdog' });
   }
 }

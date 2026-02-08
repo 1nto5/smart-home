@@ -6,6 +6,7 @@
 import { getSchedulesByTime, applyPresetToAllLamps } from './schedule-service';
 import { getHeaterSchedulesByTime, applyPresetToAllHeaters } from './heater-schedule-service';
 import { isOverrideActive } from './heater-override';
+import { logger } from '../utils/logger';
 
 let schedulerInterval: Timer | null = null;
 let lastTriggeredMinute: string = '';
@@ -15,11 +16,11 @@ let lastTriggeredMinute: string = '';
  */
 export function startScheduler(): void {
   if (schedulerInterval) {
-    console.log('Scheduler already running');
+    logger.info('Scheduler already running', { component: 'scheduler' });
     return;
   }
 
-  console.log('Starting scheduler (checks every 1 min)');
+  logger.info('Starting scheduler (checks every 1 min)', { component: 'scheduler' });
 
   schedulerInterval = setInterval(() => {
     const now = new Date();
@@ -36,7 +37,7 @@ export function startScheduler(): void {
       lastTriggeredMinute = currentTime;
 
       for (const schedule of lampSchedules) {
-        console.log(`Triggering lamp schedule "${schedule.name}" (${schedule.preset}) at ${currentTime}`);
+        logger.info('Triggering lamp schedule', { component: 'scheduler', scheduleName: schedule.name, preset: schedule.preset, time: currentTime });
         applyPresetToAllLamps(schedule.preset, schedule.id);
       }
     }
@@ -48,7 +49,7 @@ export function startScheduler(): void {
         lastTriggeredMinute = currentTime;
 
         for (const schedule of heaterSchedules) {
-          console.log(`Triggering heater schedule "${schedule.name}" (${schedule.preset_id}) at ${currentTime}`);
+          logger.info('Triggering heater schedule', { component: 'scheduler', scheduleName: schedule.name, presetId: schedule.preset_id, time: currentTime });
           applyPresetToAllHeaters(schedule.preset_id, schedule.id);
         }
       }

@@ -69,6 +69,9 @@
 
   /* Slider */
   --color-slider-track: #e4e4e7;
+
+  /* Gradients */
+  --gradient-color-temp: linear-gradient(to right, #f97316, #fbbf24, #fef3c7, #e0f2fe, #7dd3fc);
 }
 
 /* ===== DARK THEME ===== */
@@ -125,6 +128,9 @@
 
   /* Slider */
   --color-slider-track: #27272a;
+
+  /* Gradients */
+  --gradient-color-temp: linear-gradient(to right, #ea580c, #f59e0b, #fde68a, #bae6fd, #38bdf8);
 }
 
 /* ===== TAILWIND THEME ===== */

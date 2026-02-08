@@ -1,12 +1,19 @@
 import { test, expect, describe } from 'bun:test';
 import {
   DeviceUpdateSchema,
+  DeviceControlSchema,
   LampPresetSchema,
   LampPresetUpdateSchema,
+  LampControlSchema,
   HeaterPresetSchema,
   HeaterOverrideSchema,
   LampScheduleSchema,
   RoborockCommandSchema,
+  YamahaControlSchema,
+  AutomationSchema,
+  TelegramConfigSchema,
+  AirPurifierControlSchema,
+  WsMessageSchema,
 } from '../validation/schemas';
 
 describe('DeviceUpdateSchema', () => {
@@ -215,5 +222,210 @@ describe('RoborockCommandSchema', () => {
   test('rejects invalid command', () => {
     const result = RoborockCommandSchema.safeParse({ cmd: 'invalid' });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('DeviceControlSchema', () => {
+  test('accepts DPS control', () => {
+    const result = DeviceControlSchema.safeParse({ dps: 1, value: true });
+    expect(result.success).toBe(true);
+  });
+
+  test('accepts string value', () => {
+    const result = DeviceControlSchema.safeParse({ dps: 4, value: 'color' });
+    expect(result.success).toBe(true);
+  });
+
+  test('accepts numeric value', () => {
+    const result = DeviceControlSchema.safeParse({ dps: 4, value: 210 });
+    expect(result.success).toBe(true);
+  });
+
+  test('accepts cloud command control', () => {
+    const result = DeviceControlSchema.safeParse({
+      commands: [{ code: 'switch_led', value: true }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  test('rejects empty commands array', () => {
+    const result = DeviceControlSchema.safeParse({ commands: [] });
+    expect(result.success).toBe(false);
+  });
+
+  test('rejects missing dps and commands', () => {
+    const result = DeviceControlSchema.safeParse({ value: true });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('LampControlSchema', () => {
+  test('accepts power only', () => {
+    expect(LampControlSchema.safeParse({ power: true }).success).toBe(true);
+  });
+
+  test('accepts brightness only', () => {
+    expect(LampControlSchema.safeParse({ brightness: 50 }).success).toBe(true);
+  });
+
+  test('accepts colorTemp only', () => {
+    expect(LampControlSchema.safeParse({ colorTemp: 4000 }).success).toBe(true);
+  });
+
+  test('rejects brightness out of range', () => {
+    expect(LampControlSchema.safeParse({ brightness: 0 }).success).toBe(false);
+    expect(LampControlSchema.safeParse({ brightness: 101 }).success).toBe(false);
+  });
+
+  test('rejects colorTemp out of range', () => {
+    expect(LampControlSchema.safeParse({ colorTemp: 1000 }).success).toBe(false);
+    expect(LampControlSchema.safeParse({ colorTemp: 7000 }).success).toBe(false);
+  });
+});
+
+describe('YamahaControlSchema', () => {
+  test('accepts power control', () => {
+    expect(YamahaControlSchema.safeParse({ power: true }).success).toBe(true);
+  });
+
+  test('accepts volume control', () => {
+    expect(YamahaControlSchema.safeParse({ volume: 50 }).success).toBe(true);
+  });
+
+  test('accepts mute control', () => {
+    expect(YamahaControlSchema.safeParse({ mute: true }).success).toBe(true);
+  });
+
+  test('accepts multiple controls', () => {
+    const result = YamahaControlSchema.safeParse({
+      power: true,
+      volume: 30,
+      input: 'tv',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  test('rejects volume out of range', () => {
+    expect(YamahaControlSchema.safeParse({ volume: -1 }).success).toBe(false);
+    expect(YamahaControlSchema.safeParse({ volume: 101 }).success).toBe(false);
+  });
+});
+
+describe('AutomationSchema', () => {
+  test('accepts valid automation', () => {
+    const result = AutomationSchema.safeParse({
+      name: 'Turn on lights',
+      trigger_type: 'device_state',
+      trigger_device_id: 'abc123',
+      trigger_condition: 'open',
+      actions: '[]',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  test('accepts schedule trigger', () => {
+    const result = AutomationSchema.safeParse({
+      name: 'Morning routine',
+      trigger_type: 'schedule',
+      trigger_condition: '06:00',
+      actions: '[{"type":"lamp"}]',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  test('accepts sunrise/sunset triggers', () => {
+    expect(AutomationSchema.safeParse({
+      name: 'Sunset lights',
+      trigger_type: 'sunset',
+      trigger_condition: '+30',
+      actions: '[]',
+    }).success).toBe(true);
+  });
+
+  test('rejects invalid trigger type', () => {
+    expect(AutomationSchema.safeParse({
+      name: 'Test',
+      trigger_type: 'invalid',
+      trigger_condition: 'test',
+      actions: '[]',
+    }).success).toBe(false);
+  });
+
+  test('rejects empty name', () => {
+    expect(AutomationSchema.safeParse({
+      name: '',
+      trigger_type: 'schedule',
+      trigger_condition: '06:00',
+      actions: '[]',
+    }).success).toBe(false);
+  });
+});
+
+describe('TelegramConfigSchema', () => {
+  test('accepts partial config', () => {
+    expect(TelegramConfigSchema.safeParse({ enabled: true }).success).toBe(true);
+  });
+
+  test('accepts full config', () => {
+    expect(TelegramConfigSchema.safeParse({
+      enabled: true,
+      flood_alerts: true,
+      door_alerts: false,
+      error_alerts: true,
+      cooldown_minutes: 5,
+    }).success).toBe(true);
+  });
+
+  test('rejects cooldown out of range', () => {
+    expect(TelegramConfigSchema.safeParse({ cooldown_minutes: 0 }).success).toBe(false);
+    expect(TelegramConfigSchema.safeParse({ cooldown_minutes: 61 }).success).toBe(false);
+  });
+});
+
+describe('AirPurifierControlSchema', () => {
+  test('accepts power control', () => {
+    expect(AirPurifierControlSchema.safeParse({ power: true }).success).toBe(true);
+  });
+
+  test('accepts mode control', () => {
+    expect(AirPurifierControlSchema.safeParse({ mode: 'auto' }).success).toBe(true);
+    expect(AirPurifierControlSchema.safeParse({ mode: 'silent' }).success).toBe(true);
+    expect(AirPurifierControlSchema.safeParse({ mode: 'favorite' }).success).toBe(true);
+  });
+
+  test('rejects invalid mode', () => {
+    expect(AirPurifierControlSchema.safeParse({ mode: 'turbo' }).success).toBe(false);
+  });
+
+  test('accepts fan_speed in range', () => {
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 0 }).success).toBe(true);
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 16 }).success).toBe(true);
+  });
+
+  test('rejects fan_speed out of range', () => {
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 17 }).success).toBe(false);
+  });
+});
+
+describe('WsMessageSchema', () => {
+  test('accepts request_snapshot', () => {
+    const result = WsMessageSchema.safeParse({ type: 'request_snapshot' });
+    expect(result.success).toBe(true);
+  });
+
+  test('rejects unknown message type', () => {
+    const result = WsMessageSchema.safeParse({ type: 'unknown' });
+    expect(result.success).toBe(false);
+  });
+
+  test('rejects empty object', () => {
+    const result = WsMessageSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+
+  test('rejects non-object', () => {
+    expect(WsMessageSchema.safeParse('request_snapshot').success).toBe(false);
+    expect(WsMessageSchema.safeParse(123).success).toBe(false);
+    expect(WsMessageSchema.safeParse(null).success).toBe(false);
   });
 });

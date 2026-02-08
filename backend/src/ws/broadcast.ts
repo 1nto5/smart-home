@@ -3,17 +3,18 @@
  */
 
 import type { ServerWebSocket } from 'bun';
+import { logger } from '../utils/logger';
 
 const clients = new Set<ServerWebSocket<unknown>>();
 
 export function addClient(ws: ServerWebSocket<unknown>): void {
   clients.add(ws);
-  console.log(`WebSocket client connected (total: ${clients.size})`);
+  logger.info('WebSocket client connected', { component: 'websocket', clientCount: clients.size });
 }
 
 export function removeClient(ws: ServerWebSocket<unknown>): void {
   clients.delete(ws);
-  console.log(`WebSocket client disconnected (total: ${clients.size})`);
+  logger.info('WebSocket client disconnected', { component: 'websocket', clientCount: clients.size });
 }
 
 export function broadcast(data: object): void {

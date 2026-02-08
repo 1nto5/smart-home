@@ -6,6 +6,7 @@ import { sendDeviceCommand, getDeviceStatus as getLocalStatus } from '../tuya/tu
 import { translateName } from '../utils/translations';
 import { DeviceUpdateSchema, DeviceControlSchema } from '../validation/schemas';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
+import { logger } from '../utils/logger';
 
 const devices = new Hono();
 
@@ -71,7 +72,7 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
   };
 
   if ('dps' in body) {
-    console.log(`Local control ${id}: dps ${body.dps} = ${body.value}`);
+    logger.debug('Local control', { component: 'devices-route', deviceId: id, dps: body.dps, value: body.value });
     try {
       const success = await sendDeviceCommand(id, body.dps, body.value);
       if (success) {
@@ -82,13 +83,13 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
       }
     } catch (e: unknown) {
       const err = e as Error;
-      console.error(`Local control error for ${id}:`, err.message);
+      logger.error('Local control error', { component: 'devices-route', deviceId: id, error: err.message });
       return c.json({ success: false, error: err.message }, 500);
     }
   }
 
   // Cloud command control
-  console.log(`Cloud control ${id}:`, body.commands);
+  logger.debug('Cloud control', { component: 'devices-route', deviceId: id, commands: body.commands });
   try {
     const success = await sendCommand(id, body.commands);
     if (success) {
@@ -99,7 +100,7 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
     }
   } catch (e: unknown) {
     const err = e as Error;
-    console.error(`Cloud control error for ${id}:`, err.message);
+    logger.error('Cloud control error', { component: 'devices-route', deviceId: id, error: err.message });
     return c.json({ success: false, error: err.message }, 500);
   }
 });
@@ -134,7 +135,7 @@ devices.get('/:id/info', async (c) => {
     return c.json(info);
   } catch (e: unknown) {
     const err = e as Error;
-    console.error(`Info error for ${id}:`, err.message);
+    logger.error('Info error', { component: 'devices-route', deviceId: id, error: err.message });
     return c.json({ error: err.message }, 500);
   }
 });

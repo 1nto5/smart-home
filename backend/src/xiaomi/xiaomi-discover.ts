@@ -5,6 +5,7 @@
 
 import miio from 'miio';
 import { getDb } from '../db/database';
+import { logger } from '../utils/logger';
 
 interface DiscoveredDevice {
   id: string;
@@ -22,7 +23,7 @@ const DISCOVERY_COOLDOWN = 60_000;
  */
 export async function discoverXiaomiDevices(timeout = 30000): Promise<DiscoveredDevice[]> {
   return new Promise((resolve) => {
-    console.log(`Discovering Xiaomi devices for ${timeout / 1000}s...`);
+    logger.debug('Discovering Xiaomi devices', { component: 'xiaomi-discover', timeout: timeout / 1000 });
 
     const discoveredDevices: DiscoveredDevice[] = [];
     const browser = miio.browse();
@@ -39,7 +40,7 @@ export async function discoverXiaomiDevices(timeout = 30000): Promise<Discovered
       // Avoid duplicates
       if (!discoveredDevices.find(d => d.id === discovered.id)) {
         discoveredDevices.push(discovered);
-        console.log(`Found: ${discovered.id} at ${discovered.address} (${discovered.model || 'unknown model'})`);
+        logger.debug('Found device', { component: 'xiaomi-discover', deviceId: discovered.id, address: discovered.address, model: discovered.model || 'unknown' });
       }
     });
 
@@ -78,7 +79,7 @@ export async function refreshDeviceIps(timeout = 15000): Promise<Map<string, str
     if (currentIp && currentIp !== device.address) {
       db.run('UPDATE xiaomi_devices SET ip = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [device.address, device.id]);
       changes.set(device.id, device.address);
-      console.log(`Updated IP for ${device.id}: ${currentIp} -> ${device.address}`);
+      logger.info('Updated device IP', { component: 'xiaomi-discover', deviceId: device.id, oldIp: currentIp, newIp: device.address });
     }
   }
 
@@ -102,7 +103,7 @@ export async function findAndUpdateDeviceIp(deviceId: string, timeout = 10000): 
   if (device) {
     const db = getDb();
     db.run('UPDATE xiaomi_devices SET ip = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [device.address, deviceId]);
-    console.log(`Updated IP for ${deviceId}: ${device.address}`);
+    logger.info('Updated device IP', { component: 'xiaomi-discover', deviceId, newIp: device.address });
     return device.address;
   }
 
@@ -134,15 +135,14 @@ export function saveXiaomiDevice(
       updated_at = CURRENT_TIMESTAMP
   `, [id, name, ip, token, model, category]);
 
-  console.log(`Saved Xiaomi device: ${name} (${id})`);
+  logger.info('Saved Xiaomi device', { component: 'xiaomi-discover', deviceId: id, deviceName: name });
 }
 
 // CLI discovery
 if (import.meta.main) {
   (async () => {
     const devices = await discoverXiaomiDevices(20000);
-    console.log('\n=== Discovered Devices ===');
-    console.log(JSON.stringify(devices, null, 2));
+    logger.info('Discovered devices', { component: 'xiaomi-discover', count: devices.length, devices });
     process.exit(0);
   })();
 }

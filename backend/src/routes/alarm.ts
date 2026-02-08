@@ -6,6 +6,7 @@ import {
   acknowledgeAlarm,
   acknowledgeAllAlarms,
 } from '../db/database';
+import { logger } from '../utils/logger';
 
 const alarm = new Hono();
 
@@ -18,14 +19,14 @@ alarm.get('/', (c) => {
 // Arm alarm
 alarm.post('/arm', (c) => {
   const config = setAlarmArmed(true);
-  console.log('Alarm ARMED');
+  logger.info('Alarm ARMED', { component: 'alarm-route' });
   return c.json(config);
 });
 
 // Disarm alarm
 alarm.post('/disarm', (c) => {
   const config = setAlarmArmed(false);
-  console.log('Alarm DISARMED');
+  logger.info('Alarm DISARMED', { component: 'alarm-route' });
   return c.json(config);
 });
 

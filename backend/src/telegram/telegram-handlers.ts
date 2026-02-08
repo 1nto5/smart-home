@@ -76,6 +76,7 @@ import {
 import { getCachedPurifierStatus } from '../xiaomi/air-purifier';
 import { getCachedRoborockStatus } from '../roborock/roborock';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 /**
  * Handle text commands
@@ -157,7 +158,7 @@ export async function handleCallbackQuery(
         break;
     }
   } catch (error: unknown) {
-    console.error('Callback handler error:', getErrorMessage(error));
+    logger.error('Callback handler error', { component: 'telegram-handlers', error: getErrorMessage(error) });
     await answerCallbackQuery(callbackId, '❌ Error occurred');
     return;
   }
@@ -217,11 +218,11 @@ async function handleAlarmAction(
 ): Promise<void> {
   if (action === 'arm') {
     setAlarmArmed(true);
-    console.log('Telegram: Alarm ARMED');
+    logger.info('Alarm ARMED', { component: 'telegram-handlers', action: 'arm' });
     broadcastHomeStatus();
   } else if (action === 'disarm') {
     setAlarmArmed(false);
-    console.log('Telegram: Alarm DISARMED');
+    logger.info('Alarm DISARMED', { component: 'telegram-handlers', action: 'disarm' });
     broadcastHomeStatus();
   }
 
@@ -244,7 +245,7 @@ async function handleAlarmAcknowledge(
   }
 
   acknowledgeAlarm(alarmId, 'telegram');
-  console.log(`Telegram: Alarm ${alarmId} acknowledged`);
+  logger.info('Alarm acknowledged', { component: 'telegram-handlers', alarmId });
 
   await editMessage(chatId, messageId, '✅ <b>Alarm acknowledged</b>\n\nNotifications stopped.', backToMenuKeyboard());
 }
@@ -257,7 +258,7 @@ async function handleAlarmAcknowledgeAll(
   messageId: number
 ): Promise<void> {
   const count = acknowledgeAllAlarms(undefined, 'telegram');
-  console.log(`Telegram: ${count} alarm(s) acknowledged`);
+  logger.info('Alarm(s) acknowledged', { component: 'telegram-handlers', count });
 
   await editMessage(
     chatId,
@@ -276,7 +277,7 @@ async function handleAlarmDisarmAndAcknowledge(
 ): Promise<void> {
   setAlarmArmed(false);
   const count = acknowledgeAllAlarms(undefined, 'telegram');
-  console.log(`Telegram: Alarm DISARMED + ${count} alarm(s) acknowledged`);
+  logger.info('Alarm DISARMED + alarm(s) acknowledged', { component: 'telegram-handlers', count });
 
   await editMessage(
     chatId,
@@ -306,7 +307,7 @@ async function handleLampAction(
   const [subAction, param] = args;
 
   if (subAction === 'preset' && param) {
-    console.log(`Telegram: Applying lamp preset ${param}`);
+    logger.info('Applying lamp preset', { component: 'telegram-handlers', preset: param });
     const result = await applyPresetToAllLamps(param);
     const menu = lampsKeyboard();
     const totalCount = result.success.length + result.pending.length + result.failed.length;
@@ -322,7 +323,7 @@ async function handleLampAction(
   }
 
   if (subAction === 'toggle' && param) {
-    console.log(`Telegram: Toggling lamp ${param}`);
+    logger.info('Toggling lamp', { component: 'telegram-handlers', deviceId: param });
     const success = await toggleLamp(param);
 
     // Update status in DB and broadcast
@@ -359,7 +360,7 @@ async function handleHeaterAction(
   const [subAction, param, param2] = args;
 
   if (subAction === 'preset' && param) {
-    console.log(`Telegram: Applying heater preset ${param}`);
+    logger.info('Applying heater preset', { component: 'telegram-handlers', preset: param });
     const result = await applyPresetToAllHeaters(param);
     const menu = heatersKeyboard();
     const totalCount = result.success.length + result.pending.length + result.failed.length;
@@ -383,7 +384,7 @@ async function handleHeaterAction(
   if (subAction === 'set' && param && param2) {
     const deviceId = param;
     const temp = parseFloat(param2);
-    console.log(`Telegram: Setting heater ${deviceId} to ${temp}°C`);
+    logger.info('Setting heater temperature', { component: 'telegram-handlers', deviceId, temp });
     const success = await applyTempToHeater(deviceId, temp);
     const result = heaterDeviceKeyboard(deviceId);
     const statusText = success ? `✅ Set to ${temp}°C` : `❌ Failed to set temperature`;
@@ -437,7 +438,7 @@ async function handleRoborockAction(
       20: 'Bedroom', 21: 'Wardrobe', 22: 'Kids Room',
     };
     const roomName = roomNames[segmentId] || `Room ${segmentId}`;
-    console.log(`Telegram: Starting room cleaning for ${roomName} (segment ${segmentId})`);
+    logger.info('Starting room cleaning', { component: 'telegram-handlers', roomName, segmentId });
     const roomResult = await cleanSegments([segmentId]);
     if (roomResult) {
       const cached = getCachedRoborockStatus();
@@ -541,7 +542,7 @@ async function handleRoborockAction(
     }
   }
 
-  console.log(`Telegram: Roborock ${actionName} - ${actionResult ? 'success' : 'failed'}`);
+  logger.info('Roborock action', { component: 'telegram-handlers', action: actionName, success: actionResult });
   if (actionResult) {
     const cached = getCachedRoborockStatus();
     if (cached) broadcastRoborockStatus(cached);
@@ -654,7 +655,7 @@ async function handlePurifierAction(
     return;
   }
 
-  console.log(`Telegram: Purifier ${actionName} - ${success ? 'success' : 'failed'}`);
+  logger.info('Purifier action', { component: 'telegram-handlers', action: actionName, success });
   if (success) {
     const cached = getCachedPurifierStatus();
     if (cached) broadcastPurifierStatus(cached);
@@ -828,7 +829,7 @@ Subwoofer: ${(status.subwoofer_volume ?? 0) > 0 ? '+' : ''}${status.subwoofer_vo
     return;
   }
 
-  console.log(`Telegram: Soundbar ${actionName} - ${success ? 'success' : 'failed'}`);
+  logger.info('Soundbar action', { component: 'telegram-handlers', action: actionName, success });
   // Refresh status to trigger WS broadcast
   if (success) getSoundbarStatus(soundbar.id).catch(() => {});
   const menu = soundbarKeyboard();
@@ -899,11 +900,11 @@ async function handleAutomationCallback(
       await editMessage(chatId, messageId, '✅ Confirmed (no actions defined)', backToMenuKeyboard());
     }
 
-    console.log(`Telegram: Automation "${pending.name}" confirmed`);
+    logger.info('Automation confirmed', { component: 'telegram-handlers', automationName: pending.name });
   } else {
     updateAutomationPendingStatus(pendingId, 'declined');
     await editMessage(chatId, messageId, '❌ Automation cancelled', backToMenuKeyboard());
-    console.log(`Telegram: Automation "${pending.name}" declined`);
+    logger.info('Automation declined', { component: 'telegram-handlers', automationName: pending.name });
   }
 }
 

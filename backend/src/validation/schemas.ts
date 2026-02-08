@@ -197,6 +197,14 @@ export const CleanupConfigSchema = z.object({
   automationLogDays: z.number().int().min(1).max(365).optional(),
 });
 
+// === WEBSOCKET SCHEMAS ===
+
+export const WsMessageSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('request_snapshot') }),
+]);
+
+export type WsMessage = z.infer<typeof WsMessageSchema>;
+
 // Type exports for use in route handlers
 export type DeviceUpdate = z.infer<typeof DeviceUpdateSchema>;
 export type DeviceControl = z.infer<typeof DeviceControlSchema>;

@@ -288,7 +288,7 @@
               step={500}
               inputStep={100}
               color="--color-lights"
-              gradient="linear-gradient(to right, #f97316, #fbbf24, #fef3c7, #e0f2fe, #7dd3fc)"
+              gradient="var(--gradient-color-temp)"
               ariaLabel="Color temperature"
               ariaValueText="{displayColorTemp} Kelvin"
               oninput={handleColorTempInput}

@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { TelegramConfigSchema, TelegramTestSchema } from '../validation/schemas';
 import { getTelegramConfig, updateTelegramConfig, getTelegramLog } from '../db/database';
 import { sendTestTelegram } from '../notifications/telegram-service';
+import { logger } from '../utils/logger';
 
 const telegram = new Hono();
 
@@ -20,7 +21,8 @@ telegram.patch('/config', zValidator('json', TelegramConfigSchema), async (c) =>
   const body = c.req.valid('json');
   const config = updateTelegramConfig(body);
 
-  console.log('Telegram config updated:', {
+  logger.info('Telegram config updated', {
+    component: 'telegram-route',
     enabled: config.enabled,
     hasToken: !!config.bot_token,
     hasChatId: !!config.chat_id,

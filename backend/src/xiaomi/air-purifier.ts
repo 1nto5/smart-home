@@ -6,6 +6,7 @@
 import miio, { type MiioDevice } from 'miio';
 import { getDb } from '../db/database';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 import { broadcastPurifierStatus } from '../ws/device-broadcast';
 import { findAndUpdateDeviceIp } from './xiaomi-discover';
 
@@ -76,7 +77,7 @@ export async function connectPurifier(): Promise<boolean> {
 
   const device = getPurifier();
   if (!device || !device.token || !device.ip) {
-    console.error('Air Purifier not configured or missing token/ip');
+    logger.error('Air Purifier not configured or missing token/ip', { component: 'air-purifier' });
     return false;
   }
 
@@ -86,10 +87,10 @@ export async function connectPurifier(): Promise<boolean> {
       token: device.token,
     });
 
-    console.log(`Connected to Air Purifier 3C (${device.id})`);
+    logger.info('Connected to Air Purifier 3C', { component: 'air-purifier', deviceId: device.id });
     return true;
   } catch (error: unknown) {
-    console.error('Failed to connect to Air Purifier:', getErrorMessage(error));
+    logger.error('Failed to connect to Air Purifier', { component: 'air-purifier', error: getErrorMessage(error) });
     // Trigger IP discovery async (don't wait)
     if (device?.id) {
       findAndUpdateDeviceIp(device.id).catch(() => {});
@@ -149,7 +150,7 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     broadcastPurifierStatus(status);
     return status;
   } catch (error: unknown) {
-    console.error('Failed to get purifier status:', getErrorMessage(error));
+    logger.error('Failed to get purifier status', { component: 'air-purifier', error: getErrorMessage(error) });
     // Disconnect stale connection so next call reconnects
     purifierConnection?.destroy();
     purifierConnection = null;
@@ -171,10 +172,10 @@ export async function setPurifierPower(on: boolean): Promise<boolean> {
       purifierConnection.call('set_properties', [{ siid: 2, piid: 1, value: on }]),
       MIIO_TIMEOUT, 'setPurifierPower',
     );
-    console.log(`Air Purifier: Power ${on ? 'on' : 'off'}`);
+    logger.info('Set purifier power', { component: 'air-purifier', action: on ? 'on' : 'off' });
     return true;
   } catch (error: unknown) {
-    console.error('Failed to set purifier power:', getErrorMessage(error));
+    logger.error('Failed to set purifier power', { component: 'air-purifier', error: getErrorMessage(error) });
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -198,10 +199,10 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
       purifierConnection.call('set_properties', [{ siid: 2, piid: 4, value: modeValue }]),
       MIIO_TIMEOUT, 'setPurifierMode',
     );
-    console.log(`Air Purifier: Mode set to ${mode}`);
+    logger.info('Set purifier mode', { component: 'air-purifier', mode });
     return true;
   } catch (error: unknown) {
-    console.error('Failed to set purifier mode:', getErrorMessage(error));
+    logger.error('Failed to set purifier mode', { component: 'air-purifier', error: getErrorMessage(error) });
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -226,10 +227,10 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
       purifierConnection.call('set_properties', [{ siid: 9, piid: 3, value: clampedRpm }]),
       MIIO_TIMEOUT, 'setPurifierFanSpeed',
     );
-    console.log(`Air Purifier: Fan speed set to ${clampedRpm} RPM`);
+    logger.info('Set purifier fan speed', { component: 'air-purifier', rpm: clampedRpm });
     return true;
   } catch (error: unknown) {
-    console.error('Failed to set purifier fan speed:', getErrorMessage(error));
+    logger.error('Failed to set purifier fan speed', { component: 'air-purifier', error: getErrorMessage(error) });
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -252,10 +253,10 @@ export async function setLedBrightness(level: number): Promise<boolean> {
       purifierConnection.call('set_properties', [{ siid: 7, piid: 2, value: clamped }]),
       MIIO_TIMEOUT, 'setLedBrightness',
     );
-    console.log(`Air Purifier: LED brightness set to ${clamped}`);
+    logger.info('Set LED brightness', { component: 'air-purifier', level: clamped });
     return true;
   } catch (error: unknown) {
-    console.error('Failed to set LED brightness:', getErrorMessage(error));
+    logger.error('Failed to set LED brightness', { component: 'air-purifier', error: getErrorMessage(error) });
     purifierConnection?.destroy();
     purifierConnection = null;
     return false;
@@ -269,6 +270,6 @@ export function disconnectPurifier(): void {
   if (purifierConnection) {
     purifierConnection.destroy();
     purifierConnection = null;
-    console.log('Disconnected from Air Purifier');
+    logger.info('Disconnected from Air Purifier', { component: 'air-purifier' });
   }
 }

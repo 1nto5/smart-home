@@ -8,6 +8,7 @@ import {
 } from '../db/database';
 import { translateDeviceName } from '../utils/translations';
 import type { ActiveAlarm, AlarmType } from '../db/database';
+import { logger } from '../utils/logger';
 
 const NOTIFICATION_INTERVAL_MS = 30_000; // 30 seconds
 
@@ -66,7 +67,7 @@ Triggered: ${formatTime(alarm.triggered_at)}
 
   const success = await sendMessage(config.chat_id, message, acknowledgeKeyboard(alarm.id));
   if (success) {
-    console.log(`🔔 Alarm notification sent: ${alarm.alarm_type} - ${alarm.device_name}`);
+    logger.info('Alarm notification sent', { component: 'alarm-service', alarmType: alarm.alarm_type, deviceName: alarm.device_name });
   }
   return success;
 }
@@ -81,7 +82,7 @@ async function checkAndNotify(): Promise<void> {
     return;
   }
 
-  console.log(`🚨 ${activeAlarms.length} active alarm(s) - sending notifications`);
+  logger.info('Active alarm(s) - sending notifications', { component: 'alarm-service', count: activeAlarms.length });
 
   for (const alarm of activeAlarms) {
     await sendAlarmNotification(alarm);
@@ -93,11 +94,11 @@ async function checkAndNotify(): Promise<void> {
  */
 export function startAlarmNotificationLoop(): void {
   if (notificationInterval) {
-    console.log('⚠️ Alarm notification loop already running');
+    logger.warn('Alarm notification loop already running', { component: 'alarm-service' });
     return;
   }
 
-  console.log(`🚨 Starting alarm notification loop (every ${NOTIFICATION_INTERVAL_MS / 1000}s)`);
+  logger.info('Starting alarm notification loop', { component: 'alarm-service', intervalSeconds: NOTIFICATION_INTERVAL_MS / 1000 });
 
   notificationInterval = setInterval(checkAndNotify, NOTIFICATION_INTERVAL_MS);
 }
@@ -109,7 +110,7 @@ export function stopAlarmNotificationLoop(): void {
   if (notificationInterval) {
     clearInterval(notificationInterval);
     notificationInterval = null;
-    console.log('🚨 Alarm notification loop stopped');
+    logger.info('Alarm notification loop stopped', { component: 'alarm-service' });
   }
 }
 
@@ -124,7 +125,7 @@ export async function triggerAlarm(
 ): Promise<number | null> {
   // Check if there's already an active alarm for this device
   if (hasActiveAlarmForDevice(deviceId)) {
-    console.log(`⚠️ Active alarm already exists for ${deviceName}`);
+    logger.warn('Active alarm already exists for device', { component: 'alarm-service', deviceId, deviceName });
     return null;
   }
 
@@ -139,7 +140,7 @@ export async function triggerAlarm(
 
   // Create the alarm record
   const alarmId = createActiveAlarm(alarmType, deviceId, deviceName);
-  console.log(`🚨 New ${alarmType} alarm created (ID: ${alarmId}) - ${deviceName}`);
+  logger.info('New alarm created', { component: 'alarm-service', alarmType, alarmId, deviceId, deviceName });
 
   // Get the alarm we just created for notification
   const activeAlarms = getActiveAlarms();

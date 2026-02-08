@@ -1,6 +1,7 @@
 import { getDb } from './database';
 import { config } from '../config';
 import { getErrorMessage } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 export interface RetentionConfig {
   sensorHistoryDays: number;
@@ -31,31 +32,31 @@ export function cleanupOldData(retention: RetentionConfig = config.retention): C
     `DELETE FROM sensor_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
     [retention.sensorHistoryDays]
   ).changes;
-  if (sensorHistory > 0) console.log(`[maintenance] sensor_history: deleted ${sensorHistory} rows (>${retention.sensorHistoryDays} days)`);
+  if (sensorHistory > 0) logger.info('sensor_history cleanup', { component: 'maintenance', deletedRows: sensorHistory, retentionDays: retention.sensorHistoryDays });
 
   const deviceHistory = db.run(
     `DELETE FROM device_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
     [retention.deviceHistoryDays]
   ).changes;
-  if (deviceHistory > 0) console.log(`[maintenance] device_history: deleted ${deviceHistory} rows (>${retention.deviceHistoryDays} days)`);
+  if (deviceHistory > 0) logger.info('device_history cleanup', { component: 'maintenance', deletedRows: deviceHistory, retentionDays: retention.deviceHistoryDays });
 
   const contactHistory = db.run(
     `DELETE FROM contact_history WHERE recorded_at < datetime('now', '-' || ? || ' days')`,
     [retention.contactHistoryDays]
   ).changes;
-  if (contactHistory > 0) console.log(`[maintenance] contact_history: deleted ${contactHistory} rows (>${retention.contactHistoryDays} days)`);
+  if (contactHistory > 0) logger.info('contact_history cleanup', { component: 'maintenance', deletedRows: contactHistory, retentionDays: retention.contactHistoryDays });
 
   const telegramLog = db.run(
     `DELETE FROM telegram_log WHERE sent_at < datetime('now', '-' || ? || ' days')`,
     [retention.telegramLogDays]
   ).changes;
-  if (telegramLog > 0) console.log(`[maintenance] telegram_log: deleted ${telegramLog} rows (>${retention.telegramLogDays} days)`);
+  if (telegramLog > 0) logger.info('telegram_log cleanup', { component: 'maintenance', deletedRows: telegramLog, retentionDays: retention.telegramLogDays });
 
   const automationLog = db.run(
     `DELETE FROM automation_log WHERE executed_at < datetime('now', '-' || ? || ' days')`,
     [retention.automationLogDays]
   ).changes;
-  if (automationLog > 0) console.log(`[maintenance] automation_log: deleted ${automationLog} rows (>${retention.automationLogDays} days)`);
+  if (automationLog > 0) logger.info('automation_log cleanup', { component: 'maintenance', deletedRows: automationLog, retentionDays: retention.automationLogDays });
 
   const totalDeleted = sensorHistory + deviceHistory + contactHistory + telegramLog + automationLog;
 
@@ -63,7 +64,7 @@ export function cleanupOldData(retention: RetentionConfig = config.retention): C
   db.run('VACUUM');
   const sizeAfter = (db.query("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()").get() as { size: number }).size;
   const savedMB = (sizeBefore - sizeAfter) / (1024 * 1024);
-  if (savedMB > 0.1) console.log(`[maintenance] VACUUM reclaimed ${savedMB.toFixed(2)} MB`);
+  if (savedMB > 0.1) logger.info('VACUUM reclaimed space', { component: 'maintenance', reclaimedMB: parseFloat(savedMB.toFixed(2)) });
 
   return {
     sensorHistory,
@@ -127,12 +128,12 @@ export function getDbStats(): DbStats {
 let maintenanceInterval: ReturnType<typeof setInterval> | null = null;
 
 function runMaintenance(): void {
-  console.log('[maintenance] Running scheduled cleanup...');
+  logger.info('Running scheduled cleanup', { component: 'maintenance' });
   try {
     const result = cleanupOldData();
-    console.log(`[maintenance] Cleanup complete: ${result.totalDeleted} records deleted in ${result.duration}ms`);
+    logger.info('Cleanup complete', { component: 'maintenance', totalDeleted: result.totalDeleted, duration: result.duration });
   } catch (error: unknown) {
-    console.error('[maintenance] Cleanup failed:', getErrorMessage(error));
+    logger.error('Cleanup failed', { component: 'maintenance', error: getErrorMessage(error) });
   }
 }
 
@@ -145,13 +146,13 @@ export function startMaintenanceScheduler(): void {
   // Then run every 24 hours
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   maintenanceInterval = setInterval(runMaintenance, TWENTY_FOUR_HOURS);
-  console.log('[maintenance] Scheduler started (runs every 24h)');
+  logger.info('Scheduler started (runs every 24h)', { component: 'maintenance' });
 }
 
 export function stopMaintenanceScheduler(): void {
   if (maintenanceInterval) {
     clearInterval(maintenanceInterval);
     maintenanceInterval = null;
-    console.log('[maintenance] Scheduler stopped');
+    logger.info('Scheduler stopped', { component: 'maintenance' });
   }
 }

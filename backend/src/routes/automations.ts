@@ -10,6 +10,7 @@ import {
   toggleAutomation,
   getAutomationLog,
 } from '../db/database';
+import { logger } from '../utils/logger';
 
 const automations = new Hono();
 
@@ -40,7 +41,7 @@ automations.get('/:id', (c) => {
 automations.post('/', zValidator('json', AutomationSchema), async (c) => {
   const body = c.req.valid('json');
   const automation = createAutomation(body);
-  console.log(`Created automation: ${automation.name}`);
+  logger.info('Created automation', { component: 'automations-route', automationName: automation.name });
   return c.json(automation, 201);
 });
 
@@ -52,7 +53,7 @@ automations.patch('/:id', zValidator('json', AutomationUpdateSchema), async (c) 
   if (!automation) {
     return c.json({ error: 'Automation not found' }, 404);
   }
-  console.log(`Updated automation: ${automation.name}`);
+  logger.info('Updated automation', { component: 'automations-route', automationName: automation.name });
   return c.json(automation);
 });
 
@@ -63,7 +64,7 @@ automations.delete('/:id', (c) => {
   if (!deleted) {
     return c.json({ error: 'Automation not found' }, 404);
   }
-  console.log(`Deleted automation: ${id}`);
+  logger.info('Deleted automation', { component: 'automations-route', automationId: id });
   return c.json({ success: true });
 });
 
@@ -74,7 +75,7 @@ automations.patch('/:id/toggle', (c) => {
   if (!automation) {
     return c.json({ error: 'Automation not found' }, 404);
   }
-  console.log(`Toggled automation: ${automation.name} -> ${automation.enabled ? 'enabled' : 'disabled'}`);
+  logger.info('Toggled automation', { component: 'automations-route', automationName: automation.name, enabled: !!automation.enabled });
   return c.json(automation);
 });
 
