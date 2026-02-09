@@ -160,29 +160,29 @@ export async function deleteLampPreset(id: string): Promise<{ success: boolean }
 
 // Schedules
 export async function getSchedules(): Promise<Schedule[]> {
-  return fetcher('/schedules');
+  return fetcher('/presets/schedules/list');
 }
 
 export async function createSchedule(name: string, preset: string, time: string): Promise<Schedule> {
-  return fetcher('/schedules', {
+  return fetcher('/presets/schedules', {
     method: 'POST',
     body: JSON.stringify({ name, preset, time }),
   });
 }
 
 export async function deleteSchedule(id: number): Promise<{ success: boolean }> {
-  return fetcher(`/schedules/${id}`, { method: 'DELETE' });
+  return fetcher(`/presets/schedules/${id}`, { method: 'DELETE' });
 }
 
 export async function toggleSchedule(id: number): Promise<Schedule> {
-  return fetcher(`/schedules/${id}/toggle`, { method: 'PATCH' });
+  return fetcher(`/presets/schedules/${id}/toggle`, { method: 'PATCH' });
 }
 
 export async function updateSchedule(
   id: number,
   updates: { name?: string; preset?: string; time?: string }
 ): Promise<Schedule> {
-  return fetcher(`/schedules/${id}`, {
+  return fetcher(`/presets/schedules/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(updates),
   });
