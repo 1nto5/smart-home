@@ -1,14 +1,17 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { getAutomations, createAutomation, deleteAutomation, toggleAutomation, updateAutomation, getAutomationLog, getTuyaDevices, getHeaterPresets } from '$lib/api';
+  import { getAutomations, createAutomation, deleteAutomation, toggleAutomation, updateAutomation, getAutomationLog } from '$lib/api';
+  import { store } from '$lib/stores.svelte';
   import { Zap, Plus, Trash2, Clock, Pencil, X, MessageCircle, DoorOpen, Wind, Save } from 'lucide-svelte';
-  import type { Automation, AutomationLog, TuyaDevice, HeaterPreset, AutomationAction, QuietWindow } from '$lib/types';
+  import type { Automation, AutomationLog, AutomationAction, QuietWindow } from '$lib/types';
 
   let automations = $state<Automation[]>([]);
   let automationLog = $state<AutomationLog[]>([]);
-  let contactSensors = $state<TuyaDevice[]>([]);
-  let heaterPresets = $state<HeaterPreset[]>([]);
   let loading = $state(false);
+
+  // Derive from global store (loaded in layout, always up-to-date via WebSocket)
+  let contactSensors = $derived(store.tuyaDevices.filter(d => d.category === 'mcs'));
+  let heaterPresets = $derived(store.heaterPresets);
 
   // Form state
   let showForm = $state(false);
@@ -24,7 +27,7 @@
   let formUseTelegram = $state(false);
   let formQuietWindows = $state<QuietWindow[]>([]);
 
-  // Load data on mount
+  // Load automation-specific data on mount
   $effect(() => {
     if (browser) {
       loadData();
@@ -32,16 +35,12 @@
   });
 
   async function loadData() {
-    const [autos, log, devices, presets] = await Promise.all([
+    const [autos, log] = await Promise.all([
       getAutomations(),
       getAutomationLog(20),
-      getTuyaDevices(),
-      getHeaterPresets(),
     ]);
     automations = autos;
     automationLog = log;
-    contactSensors = devices.filter(d => d.category === 'mcs');
-    heaterPresets = presets;
   }
 
   function resetForm() {
