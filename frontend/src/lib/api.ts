@@ -384,7 +384,7 @@ export async function disarmAlarm(): Promise<AlarmStatus> {
 
 // Home status
 export async function getHomeStatus(): Promise<HomeStatusData> {
-  return fetcher('/home-status');
+  return fetcher('/sensors/home-status');
 }
 
 // Automations
