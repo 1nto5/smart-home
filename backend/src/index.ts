@@ -142,16 +142,6 @@ app.route('/api/telegram', telegramRoutes);
 app.route('/api/admin', adminRoutes);
 app.route('/api/purifier', purifierRoutes);
 
-// Legacy route aliases for backwards compatibility
-app.get('/api/rooms', (c) => c.redirect('/api/devices/rooms/list'));
-app.get('/api/schedules', (c) => c.redirect('/api/presets/schedules/list'));
-app.get('/api/pending-actions', (c) => c.redirect('/api/presets/pending-actions'));
-app.get('/api/home-status', (c) => c.redirect('/api/sensors/home-status'));
-app.get('/api/contacts/history', (c) => c.redirect('/api/sensors/contacts/history'));
-app.get('/api/heater-presets', (c) => c.redirect('/api/heater/presets'));
-app.get('/api/heater-schedules', (c) => c.redirect('/api/heater/schedules'));
-app.get('/api/heater-override', (c) => c.redirect('/api/heater/override'));
-
 // WebSocket for real-time status updates
 const { upgradeWebSocket, websocket } = createBunWebSocket();
 
