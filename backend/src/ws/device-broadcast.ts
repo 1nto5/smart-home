@@ -68,45 +68,45 @@ export function broadcastPurifierStatus(status: PurifierStatus): boolean {
 }
 
 // Home status (computed aggregate)
-export function broadcastHomeStatus(): void {
-  // Lazy import to avoid circular dependency
-  const { computeHomeStatus } = require('../db/home-status');
+export async function broadcastHomeStatus(): Promise<void> {
+  // Dynamic import to avoid circular dependency
+  const { computeHomeStatus } = await import('../db/home-status');
   broadcast({ type: 'home_status', status: computeHomeStatus() });
 }
 
 // Pending actions (lamp)
-export function broadcastPendingActions(): void {
-  const { getPendingActions } = require('../scheduling/pending-service');
+export async function broadcastPendingActions(): Promise<void> {
+  const { getPendingActions } = await import('../scheduling/pending-service');
   broadcast({ type: 'pending_actions', actions: getPendingActions() });
 }
 
 // Pending actions (heater)
-export function broadcastPendingHeaterActions(): void {
-  const { getPendingHeaterActions } = require('../scheduling/heater-pending-service');
+export async function broadcastPendingHeaterActions(): Promise<void> {
+  const { getPendingHeaterActions } = await import('../scheduling/heater-pending-service');
   broadcast({ type: 'pending_heater_actions', actions: getPendingHeaterActions() });
 }
 
 // Schedules (lamp)
-export function broadcastSchedulesChanged(): void {
-  const { getSchedules } = require('../scheduling/schedule-service');
+export async function broadcastSchedulesChanged(): Promise<void> {
+  const { getSchedules } = await import('../scheduling/schedule-service');
   broadcast({ type: 'schedules_changed', schedules: getSchedules() });
 }
 
 // Schedules (heater)
-export function broadcastHeaterSchedulesChanged(): void {
-  const { getHeaterSchedules } = require('../scheduling/heater-schedule-service');
+export async function broadcastHeaterSchedulesChanged(): Promise<void> {
+  const { getHeaterSchedules } = await import('../scheduling/heater-schedule-service');
   broadcast({ type: 'heater_schedules_changed', schedules: getHeaterSchedules() });
 }
 
 // Heater presets
-export function broadcastHeaterPresetsChanged(): void {
-  const { getHeaterPresets } = require('../scheduling/heater-presets');
+export async function broadcastHeaterPresetsChanged(): Promise<void> {
+  const { getHeaterPresets } = await import('../scheduling/heater-presets');
   broadcast({ type: 'heater_presets_changed', presets: getHeaterPresets() });
 }
 
 // Heater override
-export function broadcastHeaterOverrideChanged(): void {
-  const { getHeaterOverride } = require('../scheduling/heater-override');
+export async function broadcastHeaterOverrideChanged(): Promise<void> {
+  const { getHeaterOverride } = await import('../scheduling/heater-override');
   broadcast({ type: 'heater_override_changed', override: getHeaterOverride() });
 }
 

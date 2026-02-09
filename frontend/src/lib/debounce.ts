@@ -2,13 +2,13 @@
  * Creates a debounced function that delays invoking `fn` until after `wait` ms
  * have elapsed since the last call. Returns a tuple of [debouncedFn, cancel].
  */
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
+export function debounce<A extends unknown[], R>(
+  fn: (...args: A) => R,
   wait: number
-): [(...args: Parameters<T>) => void, () => void] {
+): [(...args: A) => void, () => void] {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  const debounced = (...args: Parameters<T>) => {
+  const debounced = (...args: A) => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       timeoutId = null;

@@ -91,11 +91,11 @@ export function getDeviceConfig(category: string): DeviceConfig | null {
 /**
  * Parse DPS values to human-readable format
  */
-export function parseDps(category: string, dps: Record<string, any>): Record<string, any> {
+export function parseDps(category: string, dps: Record<string, unknown>): Record<string, unknown> {
   const config = getDeviceConfig(category);
   if (!config) return dps;
 
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(dps)) {
     const mapping = config.dps.find(m => m.dps === parseInt(key));
     if (mapping) {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { Thermometer, Flame, Home, Wind } from 'lucide-svelte';
+  import { Thermometer, Flame, Wind } from 'lucide-svelte';
 
   let status = $derived(store.homeStatus);
   let purifier = $derived(store.airPurifier);

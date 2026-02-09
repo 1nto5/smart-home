@@ -120,9 +120,9 @@
       createPresetPower = true;
       showNewPresetForm = false;
       await refreshPresets();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      alert(e.message || 'Failed to create preset');
+      alert(e instanceof Error ? e.message : 'Failed to create preset');
     }
     creatingPreset = false;
   }

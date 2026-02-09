@@ -1,10 +1,9 @@
 <script lang="ts">
   import type { RoborockStatus } from '$lib/types';
   import { sendRoborockCommand, getRoborockRooms, getRoborockVolume, setRoborockVolume, setRoborockFanSpeed, setRoborockMopMode, cleanRoborockSegments, getRoborockConsumables, resetRoborockConsumable } from '$lib/api';
-  import { store } from '$lib/stores.svelte';
   import { debounce } from '$lib/debounce';
   import DeviceDialog from './DeviceDialog.svelte';
-  import { VolumeX, Volume2, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin, RotateCcw } from 'lucide-svelte';
+  import { VolumeX, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin, RotateCcw } from 'lucide-svelte';
   import DeviceSlider from './DeviceSlider.svelte';
   import StatusRow from './StatusRow.svelte';
   import type { ComponentType } from 'svelte';
@@ -269,7 +268,7 @@
       <div class="flex gap-1 bg-surface-recessed rounded-lg p-1 border border-stroke-subtle">
         {#each [{ id: 'controls', label: 'Controls' }, { id: 'rooms', label: 'Rooms' }, { id: 'settings', label: 'Settings' }] as tab}
           <button
-            onclick={() => activeTab = tab.id as any}
+            onclick={() => activeTab = tab.id as 'controls' | 'rooms' | 'settings'}
             class="flex-1 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap
                    {activeTab === tab.id ? 'glow-robot power-btn-on' : 'text-content-secondary hover:text-content-primary'}"
           >

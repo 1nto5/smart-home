@@ -23,14 +23,12 @@ import {
   setAlarmArmed,
   getAlarmConfig,
   getDb,
-  getHomeStatus,
   acknowledgeAlarm,
   acknowledgeAllAlarms,
   getAutomationPending,
   updateAutomationPendingStatus,
 } from '../db/database';
 import { executeConfirmedActions, type TriggerContext } from '../automations/automation-actions';
-import { getLampPresets, getHeaterPresets } from '../scheduling';
 import {
   applyPresetToAllLamps,
   applyPresetToAllHeaters,
@@ -70,7 +68,6 @@ import {
   broadcastLampStatus,
   broadcastRoborockStatus,
   broadcastPurifierStatus,
-  broadcastYamahaStatus,
   broadcastHomeStatus,
 } from '../ws/device-broadcast';
 import { getCachedPurifierStatus } from '../xiaomi/air-purifier';
@@ -913,7 +910,6 @@ async function handleAutomationCallback(
  */
 async function sendStatusMessage(chatId: number, messageId?: number): Promise<void> {
   const alarm = getAlarmConfig();
-  const homeStatus = getHomeStatus();
 
   const db = getDb();
 
