@@ -29,7 +29,8 @@
   role="region"
   aria-live="polite"
   aria-label="Notifications"
-  class="fixed top-0 left-0 right-0 p-3 md:top-4 md:left-auto md:right-4 md:p-0 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none"
+  class="fixed top-0 left-0 right-0 md:top-4 md:left-auto md:right-4 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none"
+  class:toast-bar={toasts.length > 0}
 >
   {#each toasts as toast (toast.id)}
     {@const Icon = getIcon(toast.type)}
@@ -70,6 +71,18 @@
   @media (min-width: 768px) {
     .animate-slide-in {
       animation: slide-up 0.2s ease-out;
+    }
+  }
+  .toast-bar {
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border-default);
+    padding: calc(env(safe-area-inset-top) + 0.75rem) 0.75rem 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .toast-bar {
+      background: transparent;
+      border-bottom: none;
+      padding: 0;
     }
   }
 </style>
