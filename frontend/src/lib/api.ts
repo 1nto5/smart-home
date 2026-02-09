@@ -190,11 +190,11 @@ export async function updateSchedule(
 
 // Pending Actions
 export async function getPendingActions(): Promise<PendingAction[]> {
-  return fetcher('/pending-actions');
+  return fetcher('/presets/pending-actions');
 }
 
 export async function clearPendingActions(): Promise<{ success: boolean }> {
-  return fetcher('/pending-actions', { method: 'DELETE' });
+  return fetcher('/presets/pending-actions', { method: 'DELETE' });
 }
 
 // Tuya devices
