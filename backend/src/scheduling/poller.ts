@@ -23,8 +23,8 @@ import { logger } from '../utils/logger';
 import { config } from '../config';
 
 let pollerInterval: Timer | null = null;
-let doorPollerInterval: Timer | null = null;
-let comprehensiveInterval: Timer | null = null;
+let _doorPollerInterval: Timer | null = null;
+let _comprehensiveInterval: Timer | null = null;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = config.tuya.gatewayId;
@@ -209,7 +209,7 @@ async function pollDoorSensors(): Promise<void> {
           }
         }
       }
-    } catch (e: unknown) {
+    } catch {
       // Suppress frequent errors for door polling
     }
   }
@@ -287,12 +287,12 @@ export async function startPoller(): Promise<void> {
   }, 15_000);
 
   // Door fast-poller: every 5 seconds
-  doorPollerInterval = setInterval(async () => {
+  _doorPollerInterval = setInterval(async () => {
     await pollDoorSensors().catch(() => {});
   }, 5_000);
 
   // Comprehensive refresh: every 15 minutes
-  comprehensiveInterval = setInterval(async () => {
+  _comprehensiveInterval = setInterval(async () => {
     await comprehensiveRefresh();
   }, 900_000);
 }

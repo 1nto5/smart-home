@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { getDb } from '../db/database';
-import { sendCommand, getDeviceStatus as getCloudStatus, getDeviceInfo } from '../tuya/tuya-api';
+import { sendCommand, getDeviceInfo } from '../tuya/tuya-api';
 import { sendDeviceCommand, getDeviceStatus as getLocalStatus } from '../tuya/tuya-local';
 import { translateName } from '../utils/translations';
 import { DeviceUpdateSchema, DeviceControlSchema } from '../validation/schemas';

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { getAutomations, createAutomation, deleteAutomation, toggleAutomation, updateAutomation, getAutomationLog, getTuyaDevices, getHeaterPresets } from '$lib/api';
-  import { Zap, Plus, Trash2, Power, Clock, Pencil, X, MessageCircle, DoorOpen, Thermometer, Volume2, Wind, Save } from 'lucide-svelte';
+  import { Zap, Plus, Trash2, Clock, Pencil, X, MessageCircle, DoorOpen, Wind, Save } from 'lucide-svelte';
   import type { Automation, AutomationLog, TuyaDevice, HeaterPreset, AutomationAction, QuietWindow } from '$lib/types';
 
   let automations = $state<Automation[]>([]);
@@ -148,7 +148,7 @@
       if (editingId) {
         await updateAutomation(editingId, data);
       } else {
-        await createAutomation(data as any);
+        await createAutomation(data as Omit<Automation, 'id' | 'created_at'>);
       }
       await loadData();
       closeForm();
@@ -187,13 +187,6 @@
       case 'telegram_prompt': return 'Ask Telegram';
       default: return action.type;
     }
-  }
-
-  function formatTrigger(automation: Automation): string {
-    if (automation.trigger_type === 'aqi_threshold') {
-      return `AQI ${automation.trigger_condition} ${automation.trigger_device_id}`;
-    }
-    return `${getSensorName(automation.trigger_device_id)} = ${automation.trigger_condition}`;
   }
 
   function formatTime(dateStr: string): string {

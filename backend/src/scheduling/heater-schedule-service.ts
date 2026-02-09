@@ -4,7 +4,7 @@
  */
 
 import { getDb, setHeaterPreset } from '../db/database';
-import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp, type HeaterPreset } from './heater-presets';
+import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp } from './heater-presets';
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
 import { broadcastTuyaStatus, broadcastPendingHeaterActions, broadcastHomeStatus } from '../ws/device-broadcast';

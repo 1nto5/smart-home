@@ -4,7 +4,7 @@
   import { theme } from '$lib/theme.svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw, Workflow, WifiOff } from 'lucide-svelte';
+  import { Home, Thermometer, Lightbulb, Zap, Sun, Moon, Monitor, Shield, ShieldOff, RefreshCw, WifiOff } from 'lucide-svelte';
   import Toaster from '$lib/components/Toaster.svelte';
   import { notify } from '$lib/toast.svelte';
   import type { ComponentType } from 'svelte';

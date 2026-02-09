@@ -7,7 +7,7 @@ import { getDb, logAutomation, createAutomationPending, type Automation } from '
 import { applyPresetToAllHeaters, applyTempToHeater } from '../scheduling/heater-schedule-service';
 import { setPurifierPower, setPurifierMode } from '../xiaomi/air-purifier';
 import { setSoundbarPower } from '../yamaha/yamaha-soundbar';
-import { sendMessage, editMessage } from '../telegram/telegram-bot';
+import { sendMessage } from '../telegram/telegram-bot';
 import { getTelegramConfig } from '../db/database';
 import { getErrorMessage } from '../utils/errors';
 import { logger } from '../utils/logger';

@@ -6,7 +6,7 @@ import { getErrorMessage } from '../utils/errors';
 import { logger } from '../utils/logger';
 
 // Convert cloud API status (code/value array) to DPS format
-function cloudStatusToDps(status: Array<{ code: string; value: string | number | boolean }>, category: string): Record<string, string | number | boolean> {
+function cloudStatusToDps(status: Array<{ code: string; value: string | number | boolean }>, _category: string): Record<string, string | number | boolean> {
   const dps: Record<string, string | number | boolean> = {};
   for (const item of status) {
     switch (item.code) {

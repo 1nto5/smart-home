@@ -1,12 +1,6 @@
 import { getAlarmConfig, getDb } from '../db/database';
 import { getLampPresets, getHeaterPresets } from '../scheduling';
 
-type SensorReading = {
-  temperature: number | null;
-  humidity: number | null;
-  battery: number | null;
-  recorded_at: string;
-};
 
 type InlineKeyboard = { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> };
 

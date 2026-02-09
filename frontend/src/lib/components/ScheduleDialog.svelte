@@ -66,10 +66,6 @@
     deleting = false;
   }
 
-  function getPresetName(presetId: string): string {
-    const preset = presets.find(p => p.id === presetId);
-    return preset?.name ?? presetId;
-  }
 </script>
 
 <DeviceDialog {open} {onclose} title="Edit Schedule">

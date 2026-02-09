@@ -31,7 +31,7 @@ export function getToasts() {
 }
 
 export function showApplyResult(result: ApplyResult, name: string) {
-  const { success, pending, failed } = result;
+  const { pending, failed } = result;
   if (failed.length > 0) {
     addToast(`${name}: ${failed.length} failed`, 'error');
   } else if (pending.length > 0) {

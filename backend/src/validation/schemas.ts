@@ -143,7 +143,7 @@ export const RoborockResetConsumableSchema = z.object({
 
 // === AUTOMATION SCHEMAS ===
 
-const QuietWindowSchema = z.object({
+const _QuietWindowSchema = z.object({
   start: TimeStringSchema,
   end: TimeStringSchema,
 });

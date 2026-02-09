@@ -3,7 +3,6 @@
  */
 
 import { getDb, getHomeStatus } from './database';
-import { translateName } from '../utils/translations';
 import { getLampPresets, getHeaterPresets, getHeaterOverride } from '../scheduling';
 
 export interface ComputedHomeStatus {

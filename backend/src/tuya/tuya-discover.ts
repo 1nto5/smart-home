@@ -27,7 +27,7 @@ export async function discoverTuyaGatewayIp(deviceId: string, key: string, timeo
       logger.info('Gateway IP updated', { component: 'tuya-discover', deviceId, ip });
       return ip;
     }
-  } catch (e) {
+  } catch {
     // Discovery failed silently
   } finally {
     device.disconnect();
