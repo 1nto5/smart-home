@@ -25,6 +25,7 @@ function createStore() {
   let initialLoadComplete = $state(false);
   const error = $state<string | null>(null);
   let wsConnected = $state(false);
+  let lastUpdated = $state<Date | null>(null);
 
   function connectWebSocket() {
     if (ws?.readyState === WebSocket.OPEN) return;
@@ -161,6 +162,7 @@ function createStore() {
             break;
           }
         }
+        lastUpdated = new Date();
       } catch { /* ignore parse errors */ }
     };
   }
@@ -183,6 +185,7 @@ function createStore() {
     get initialLoadComplete() { return initialLoadComplete; },
     get error() { return error; },
     get wsConnected() { return wsConnected; },
+    get lastUpdated() { return lastUpdated; },
 
     initWebSocket() {
       connectWebSocket();
@@ -317,6 +320,7 @@ function createStore() {
         this.refreshHomeStatus(),
       ]);
       loading = false;
+      lastUpdated = new Date();
       initialLoadComplete = true;
       // Signal to app.html that Svelte is ready - hide initial loader, show app
       if (typeof document !== 'undefined') {
