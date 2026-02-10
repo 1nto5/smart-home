@@ -111,6 +111,11 @@
 
       <!-- Utility Buttons -->
       <div class="flex items-center gap-1">
+        {#if store.lastUpdated}
+          <span class="text-xs text-content-tertiary tabular-nums">
+            {store.lastUpdated.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </span>
+        {/if}
         <!-- Refresh Button -->
         <button
           onclick={handleRefresh}
