@@ -178,7 +178,11 @@ app.get('/ws', upgradeWebSocket((c) => {
         if (result.data.type === 'request_snapshot') {
           ws.send(JSON.stringify(buildStateSnapshot()));
         } else if (result.data.type === 'request_refresh') {
-          triggerComprehensiveRefresh();
+          triggerComprehensiveRefresh().then(result => {
+            if (!result.triggered) {
+              ws.send(JSON.stringify({ type: 'refresh_skipped', nextAvailableIn: result.nextAvailableIn }));
+            }
+          });
         }
       } catch { /* ignore malformed JSON */ }
     },

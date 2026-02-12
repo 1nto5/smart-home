@@ -1,6 +1,7 @@
 import { getLamps, getRoborockStatus, getSchedules, getPendingActions, getTuyaDevices, getYamahaDevices, getAirPurifierStatus, getHeaterPresets, getHeaterSchedules, getPendingHeaterActions, getHeaterOverride, getHomeStatus } from './api';
 import type { Lamp, RoborockStatus, Schedule, PendingAction, LampStatus, TuyaDevice, YamahaDevice, AirPurifierStatus, HeaterPreset, HeaterSchedule, PendingHeaterAction, HeaterOverride, HomeStatusData, WsMessage } from './types';
 import { AUTH_TOKEN } from './config';
+import { notify } from './toast.svelte';
 
 // WebSocket connection state
 let ws: WebSocket | null = null;
@@ -166,6 +167,10 @@ function createStore() {
           }
           case 'refresh_complete': {
             lastDeviceFetch = new Date(msg.lastDeviceFetch);
+            break;
+          }
+          case 'refresh_skipped': {
+            notify.info(`Refresh available in ${msg.nextAvailableIn}s`);
             break;
           }
         }

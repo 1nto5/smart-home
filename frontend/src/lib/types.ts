@@ -240,4 +240,5 @@ export type WsMessage =
   | { type: 'heater_presets_changed'; presets: HeaterPreset[] }
   | { type: 'heater_override_changed'; override: HeaterOverride }
   | { type: 'refresh_complete'; lastDeviceFetch: string }
+  | { type: 'refresh_skipped'; nextAvailableIn: number }
   | { type: 'full_state_snapshot'; lamps: Lamp[]; tuyaDevices: TuyaDevice[]; yamahaDevices: YamahaDevice[]; roborock: RoborockStatus | null; airPurifier: AirPurifierStatus | null; schedules: Schedule[]; pendingActions: PendingAction[]; heaterPresets: HeaterPreset[]; heaterSchedules: HeaterSchedule[]; pendingHeaterActions: PendingHeaterAction[]; heaterOverride: HeaterOverride | null; homeStatus: HomeStatusData | null; lastDeviceFetch: string | null };
