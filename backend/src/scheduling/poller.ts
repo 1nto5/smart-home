@@ -228,17 +228,28 @@ export function getLastDeviceFetch(): string | null {
   return lastComprehensiveRefreshAt;
 }
 
+export interface RefreshResult {
+  triggered: boolean;
+  nextAvailableIn: number;
+}
+
 /** Trigger a comprehensive refresh (debounced, 30s min interval) */
-export async function triggerComprehensiveRefresh(): Promise<void> {
-  if (refreshRunning) return;
+export async function triggerComprehensiveRefresh(): Promise<RefreshResult> {
+  if (refreshRunning) {
+    return { triggered: false, nextAvailableIn: Math.ceil((REFRESH_DEBOUNCE_MS - (Date.now() - lastRefreshTime)) / 1000) };
+  }
   const now = Date.now();
-  if (now - lastRefreshTime < REFRESH_DEBOUNCE_MS) return;
+  const elapsed = now - lastRefreshTime;
+  if (elapsed < REFRESH_DEBOUNCE_MS) {
+    return { triggered: false, nextAvailableIn: Math.ceil((REFRESH_DEBOUNCE_MS - elapsed) / 1000) };
+  }
 
   refreshRunning = true;
   lastRefreshTime = now;
   try {
     await comprehensiveRefresh();
     broadcastRefreshComplete(lastComprehensiveRefreshAt!);
+    return { triggered: true, nextAvailableIn: 0 };
   } finally {
     refreshRunning = false;
   }
