@@ -39,7 +39,7 @@ export {
 } from './pending-service';
 
 export { startScheduler } from './scheduler';
-export { startPoller } from './poller';
+export { startPoller, getLastDeviceFetch, triggerComprehensiveRefresh } from './poller';
 
 export { getCurrentTimeWindow, getPresetForTimeWindow, type TimeWindow } from './time-windows';
 export { initOnlineStateCache, checkOnlineTransitions } from './online-trigger';

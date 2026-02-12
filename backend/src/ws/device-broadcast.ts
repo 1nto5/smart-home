@@ -110,6 +110,11 @@ export async function broadcastHeaterOverrideChanged(): Promise<void> {
   broadcast({ type: 'heater_override_changed', override: getHeaterOverride() });
 }
 
+// Refresh complete (after manual trigger)
+export function broadcastRefreshComplete(lastDeviceFetch: string): void {
+  broadcast({ type: 'refresh_complete', lastDeviceFetch });
+}
+
 // Lamp status (from xiaomi)
 export function broadcastLampStatus(deviceId: string, status: object): void {
   broadcast({ type: 'lamp_status', deviceId, status });

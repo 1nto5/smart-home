@@ -59,8 +59,6 @@
       theme.init();
       initOfflineSupport();
       store.initWebSocket();
-      // Initial load as fallback (WS snapshot will hydrate most data)
-      store.refreshAll();
       loadAlarmStatus();
     }
   });
@@ -111,9 +109,9 @@
 
       <!-- Utility Buttons -->
       <div class="flex items-center gap-1">
-        {#if store.lastUpdated}
+        {#if store.lastDeviceFetch}
           <span class="text-xs text-content-tertiary tabular-nums">
-            {store.lastUpdated.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {store.lastDeviceFetch.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </span>
         {/if}
         <!-- Refresh Button -->

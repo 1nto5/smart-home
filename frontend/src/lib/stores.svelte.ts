@@ -25,7 +25,7 @@ function createStore() {
   let initialLoadComplete = $state(false);
   const error = $state<string | null>(null);
   let wsConnected = $state(false);
-  let lastUpdated = $state<Date | null>(null);
+  let lastDeviceFetch = $state<Date | null>(null);
 
   function connectWebSocket() {
     if (ws?.readyState === WebSocket.OPEN) return;
@@ -153,6 +153,9 @@ function createStore() {
             pendingHeaterActions = msg.pendingHeaterActions;
             heaterOverride = msg.heaterOverride;
             homeStatus = msg.homeStatus;
+            if (msg.lastDeviceFetch) {
+              lastDeviceFetch = new Date(msg.lastDeviceFetch);
+            }
             if (!initialLoadComplete) {
               initialLoadComplete = true;
               if (typeof document !== 'undefined') {
@@ -161,8 +164,11 @@ function createStore() {
             }
             break;
           }
+          case 'refresh_complete': {
+            lastDeviceFetch = new Date(msg.lastDeviceFetch);
+            break;
+          }
         }
-        lastUpdated = new Date();
       } catch { /* ignore parse errors */ }
     };
   }
@@ -185,7 +191,7 @@ function createStore() {
     get initialLoadComplete() { return initialLoadComplete; },
     get error() { return error; },
     get wsConnected() { return wsConnected; },
-    get lastUpdated() { return lastUpdated; },
+    get lastDeviceFetch() { return lastDeviceFetch; },
 
     initWebSocket() {
       connectWebSocket();
@@ -303,8 +309,15 @@ function createStore() {
       }
     },
 
+    requestRefresh() {
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'request_refresh' }));
+      }
+    },
+
     async refreshAll() {
       loading = true;
+      this.requestRefresh();
       await Promise.all([
         this.refreshLamps(),
         this.refreshRoborock(),
@@ -320,7 +333,6 @@ function createStore() {
         this.refreshHomeStatus(),
       ]);
       loading = false;
-      lastUpdated = new Date();
       initialLoadComplete = true;
       // Signal to app.html that Svelte is ready - hide initial loader, show app
       if (typeof document !== 'undefined') {

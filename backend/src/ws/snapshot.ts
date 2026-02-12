@@ -13,6 +13,7 @@ import { getHeaterPresets } from '../scheduling/heater-presets';
 import { getHeaterSchedules } from '../scheduling/heater-schedule-service';
 import { getPendingHeaterActions } from '../scheduling/heater-pending-service';
 import { getHeaterOverride } from '../scheduling/heater-override';
+import { getLastDeviceFetch } from '../scheduling/poller';
 import { translateName } from '../utils/translations';
 
 export function buildStateSnapshot(): object {
@@ -42,5 +43,6 @@ export function buildStateSnapshot(): object {
     pendingHeaterActions: getPendingHeaterActions(),
     heaterOverride: getHeaterOverride(),
     homeStatus: computeHomeStatus(),
+    lastDeviceFetch: getLastDeviceFetch(),
   };
 }
