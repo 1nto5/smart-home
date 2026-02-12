@@ -32,7 +32,7 @@ import { getHealthStatus } from './health/health-service';
 import { startGatewayWatchdog, stopGatewayWatchdog } from './tuya/gateway-watchdog';
 import { startMaintenanceScheduler, stopMaintenanceScheduler } from './db/maintenance';
 import { disconnectAll } from './tuya/tuya-local';
-import { refreshLampPresetsCache, startScheduler, startPoller } from './scheduling';
+import { refreshLampPresetsCache, startScheduler, startPoller, triggerComprehensiveRefresh } from './scheduling';
 
 // Import route modules
 import {
@@ -177,6 +177,8 @@ app.get('/ws', upgradeWebSocket((c) => {
 
         if (result.data.type === 'request_snapshot') {
           ws.send(JSON.stringify(buildStateSnapshot()));
+        } else if (result.data.type === 'request_refresh') {
+          triggerComprehensiveRefresh();
         }
       } catch { /* ignore malformed JSON */ }
     },

@@ -201,6 +201,7 @@ export const CleanupConfigSchema = z.object({
 
 export const WsMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('request_snapshot') }),
+  z.object({ type: z.literal('request_refresh') }),
 ]);
 
 export type WsMessage = z.infer<typeof WsMessageSchema>;

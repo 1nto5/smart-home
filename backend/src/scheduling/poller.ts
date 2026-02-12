@@ -17,7 +17,7 @@ import { evaluateSensorTrigger, evaluateAqiTrigger } from '../automations/automa
 import { getPurifierStatus } from '../xiaomi/air-purifier';
 import { getStatus as getRoborockStatus } from '../roborock/roborock';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
-import { broadcastHomeStatus } from '../ws/device-broadcast';
+import { broadcastHomeStatus, broadcastRefreshComplete } from '../ws/device-broadcast';
 import { getErrorMessage } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { config } from '../config';
@@ -25,6 +25,12 @@ import { config } from '../config';
 let pollerInterval: Timer | null = null;
 let _doorPollerInterval: Timer | null = null;
 let _comprehensiveInterval: Timer | null = null;
+
+// Track when devices were last polled
+let lastComprehensiveRefreshAt: string | null = null;
+let refreshRunning = false;
+let lastRefreshTime = 0;
+const REFRESH_DEBOUNCE_MS = 30_000;
 
 // Gateway ID for local Zigbee device access
 const GATEWAY_ID = config.tuya.gatewayId;
@@ -176,6 +182,8 @@ async function comprehensiveRefresh(): Promise<void> {
   // Broadcast updated home status after all refreshes
   broadcastHomeStatus();
 
+  lastComprehensiveRefreshAt = new Date().toISOString();
+
   const elapsed = Date.now() - start;
   logger.info('Comprehensive refresh complete', { component: 'poller', duration: elapsed });
 }
@@ -212,6 +220,27 @@ async function pollDoorSensors(): Promise<void> {
     } catch {
       // Suppress frequent errors for door polling
     }
+  }
+}
+
+/** Get the timestamp of the last comprehensive device refresh */
+export function getLastDeviceFetch(): string | null {
+  return lastComprehensiveRefreshAt;
+}
+
+/** Trigger a comprehensive refresh (debounced, 30s min interval) */
+export async function triggerComprehensiveRefresh(): Promise<void> {
+  if (refreshRunning) return;
+  const now = Date.now();
+  if (now - lastRefreshTime < REFRESH_DEBOUNCE_MS) return;
+
+  refreshRunning = true;
+  lastRefreshTime = now;
+  try {
+    await comprehensiveRefresh();
+    broadcastRefreshComplete(lastComprehensiveRefreshAt!);
+  } finally {
+    refreshRunning = false;
   }
 }
 

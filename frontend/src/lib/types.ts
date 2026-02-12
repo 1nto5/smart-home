@@ -239,4 +239,5 @@ export type WsMessage =
   | { type: 'heater_schedules_changed'; schedules: HeaterSchedule[] }
   | { type: 'heater_presets_changed'; presets: HeaterPreset[] }
   | { type: 'heater_override_changed'; override: HeaterOverride }
-  | { type: 'full_state_snapshot'; lamps: Lamp[]; tuyaDevices: TuyaDevice[]; yamahaDevices: YamahaDevice[]; roborock: RoborockStatus | null; airPurifier: AirPurifierStatus | null; schedules: Schedule[]; pendingActions: PendingAction[]; heaterPresets: HeaterPreset[]; heaterSchedules: HeaterSchedule[]; pendingHeaterActions: PendingHeaterAction[]; heaterOverride: HeaterOverride | null; homeStatus: HomeStatusData | null };
+  | { type: 'refresh_complete'; lastDeviceFetch: string }
+  | { type: 'full_state_snapshot'; lamps: Lamp[]; tuyaDevices: TuyaDevice[]; yamahaDevices: YamahaDevice[]; roborock: RoborockStatus | null; airPurifier: AirPurifierStatus | null; schedules: Schedule[]; pendingActions: PendingAction[]; heaterPresets: HeaterPreset[]; heaterSchedules: HeaterSchedule[]; pendingHeaterActions: PendingHeaterAction[]; heaterOverride: HeaterOverride | null; homeStatus: HomeStatusData | null; lastDeviceFetch: string | null };
