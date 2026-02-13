@@ -45,6 +45,12 @@ purifier.post('/control', zValidator('json', AirPurifierControlSchema), async (c
   }
 
   const allSuccess = Object.values(results).every((v) => v);
+
+  // Refresh status so WS broadcast reflects the new state
+  if (allSuccess) {
+    getPurifierStatus().catch(() => {});
+  }
+
   return c.json({ success: allSuccess, results });
 });
 
