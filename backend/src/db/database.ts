@@ -457,6 +457,11 @@ export function initDatabase(): Database {
     }
   }
 
+  // Migration: Add last_trigger_met column for AQI transition detection
+  if (!automationsCols.some(c => c.name === 'last_trigger_met')) {
+    db.run('ALTER TABLE automations ADD COLUMN last_trigger_met INTEGER DEFAULT NULL');
+  }
+
   // Migration: Rename heater "off" preset to "frost", create new "off" preset for power control
   // Check if we have the old "off" preset with temperature (5°C) and no "frost" preset
   const offPreset = db.query("SELECT * FROM heater_presets WHERE id = 'off'").get() as { target_temp: number } | null;
@@ -835,6 +840,7 @@ export interface Automation {
   telegram_prompt: string | null;
   telegram_action_yes: string | null;
   quiet_windows: string | null; // JSON array of {start: string, end: string}
+  last_trigger_met?: number | null;
   created_at: string;
 }
 
@@ -903,6 +909,9 @@ export function updateAutomation(id: number, updates: Partial<Omit<Automation, '
 
   if (fields.length === 0) return getAutomation(id);
 
+  // Reset transition state so edited automation re-evaluates fresh
+  fields.push('last_trigger_met = NULL');
+
   values.push(id);
   database.run(`UPDATE automations SET ${fields.join(', ')} WHERE id = ?`, values);
   return getAutomation(id);
@@ -916,7 +925,7 @@ export function deleteAutomation(id: number): boolean {
 
 export function toggleAutomation(id: number): Automation | null {
   const database = getDb();
-  database.run('UPDATE automations SET enabled = CASE WHEN enabled = 1 THEN 0 ELSE 1 END WHERE id = ?', [id]);
+  database.run('UPDATE automations SET enabled = CASE WHEN enabled = 1 THEN 0 ELSE 1 END, last_trigger_met = NULL WHERE id = ?', [id]);
   return getAutomation(id);
 }
 
