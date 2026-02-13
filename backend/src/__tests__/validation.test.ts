@@ -398,12 +398,13 @@ describe('AirPurifierControlSchema', () => {
   });
 
   test('accepts fan_speed in range', () => {
-    expect(AirPurifierControlSchema.safeParse({ fan_speed: 0 }).success).toBe(true);
-    expect(AirPurifierControlSchema.safeParse({ fan_speed: 16 }).success).toBe(true);
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 300 }).success).toBe(true);
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 2200 }).success).toBe(true);
   });
 
   test('rejects fan_speed out of range', () => {
-    expect(AirPurifierControlSchema.safeParse({ fan_speed: 17 }).success).toBe(false);
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 299 }).success).toBe(false);
+    expect(AirPurifierControlSchema.safeParse({ fan_speed: 2201 }).success).toBe(false);
   });
 });
 
