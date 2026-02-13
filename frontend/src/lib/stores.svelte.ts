@@ -208,6 +208,12 @@ function createStore() {
       lampStatuses = newStatuses;
     },
 
+    updateAirPurifierStatus(update: Partial<AirPurifierStatus>) {
+      if (airPurifier) {
+        airPurifier = { ...airPurifier, ...update };
+      }
+    },
+
     async refreshLamps() {
       try {
         lamps = await getLamps();

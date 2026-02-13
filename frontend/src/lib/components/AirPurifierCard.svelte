@@ -12,36 +12,20 @@
   let status = $derived(store.airPurifier);
   let dialogOpen = $state(false);
 
-  // Optimistic states
+  // Preview states (slider values held during user interaction)
+  let previewFanSpeed = $state<number | null>(null);
+  let previewLedBrightness = $state<number | null>(null);
+  // Optimistic states (discrete controls)
   let optimisticPower = $state<boolean | null>(null);
   let optimisticMode = $state<string | null>(null);
-  let optimisticFanSpeed = $state<number | null>(null);
-  let optimisticLedBrightness = $state<number | null>(null);
   let isPowerPending = $state(false);
   let pendingMode = $state<string | null>(null);
 
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
-  let displayFanSpeed = $derived(optimisticFanSpeed ?? status?.fan_speed ?? 300);
-  let displayLedBrightness = $derived(optimisticLedBrightness ?? status?.led_brightness ?? 8);
-
-  // Clear optimistic states when WS update arrives with fresh device data
-  $effect(() => {
-    if (status) {
-      // Access individual fields so the effect re-runs on any status change
-      void status.power;
-      void status.mode;
-      void status.fan_speed;
-      void status.led_brightness;
-      optimisticPower = null;
-      optimisticMode = null;
-      optimisticFanSpeed = null;
-      optimisticLedBrightness = null;
-      isPowerPending = false;
-      pendingMode = null;
-    }
-  });
+  let displayFanSpeed = $derived(previewFanSpeed ?? status?.fan_speed ?? 300);
+  let displayLedBrightness = $derived(previewLedBrightness ?? status?.led_brightness ?? 8);
 
   async function togglePower() {
     const newPower = !displayPower;
@@ -49,12 +33,12 @@
     isPowerPending = true;
     try {
       await controlAirPurifier({ power: newPower });
-      isPowerPending = false;
+      store.updateAirPurifierStatus({ power: newPower });
     } catch (e) {
       console.error(e);
-      optimisticPower = null;
-      isPowerPending = false;
     }
+    optimisticPower = null;
+    isPowerPending = false;
   }
 
   async function setMode(mode: string) {
@@ -62,44 +46,44 @@
     pendingMode = mode;
     try {
       await controlAirPurifier({ mode });
-      pendingMode = null;
+      store.updateAirPurifierStatus({ mode });
     } catch (e) {
       console.error(e);
       optimisticMode = null;
-      pendingMode = null;
     }
+    pendingMode = null;
   }
 
   // Debounced LED brightness control
   const [sendLedBrightnessDebounced] = debounce(async (level: number) => {
     try {
       await controlAirPurifier({ led_brightness: level });
+      store.updateAirPurifierStatus({ led_brightness: level });
     } catch (e) {
       console.error(e);
-      optimisticLedBrightness = null;
     }
+    previewLedBrightness = null;
   }, 300);
 
   function handleLedBrightnessInput(level: number) {
-    const clamped = Math.max(0, Math.min(8, Math.round(level)));
-    optimisticLedBrightness = clamped;
-    sendLedBrightnessDebounced(clamped);
+    previewLedBrightness = Math.max(0, Math.min(8, Math.round(level)));
+    sendLedBrightnessDebounced(previewLedBrightness);
   }
 
   // Debounced fan speed control
   const [sendFanSpeedDebounced] = debounce(async (rpm: number) => {
     try {
       await controlAirPurifier({ fan_speed: rpm });
+      store.updateAirPurifierStatus({ fan_speed: rpm });
     } catch (e) {
       console.error(e);
-      optimisticFanSpeed = null;
     }
+    previewFanSpeed = null;
   }, 300);
 
   function handleFanSpeedInput(rpm: number) {
-    const clamped = Math.max(300, Math.min(2200, Math.round(rpm)));
-    optimisticFanSpeed = clamped;
-    sendFanSpeedDebounced(clamped);
+    previewFanSpeed = Math.max(300, Math.min(2200, Math.round(rpm)));
+    sendFanSpeedDebounced(previewFanSpeed);
   }
 
   function aqiColor(aqi: number): string {
