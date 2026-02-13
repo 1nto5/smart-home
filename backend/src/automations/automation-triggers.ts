@@ -8,6 +8,11 @@ import { executeAutomationActions, type TriggerContext } from './automation-acti
 import { getErrorMessage } from '../utils/errors';
 import { logger } from '../utils/logger';
 
+function updateLastTriggerMet(automationId: number, met: boolean): void {
+  const db = getDb();
+  db.run('UPDATE automations SET last_trigger_met = ? WHERE id = ?', [met ? 1 : 0, automationId]);
+}
+
 interface QuietWindow {
   start: string;
   end: string;
@@ -147,26 +152,35 @@ export async function evaluateAqiTrigger(currentAqi: number): Promise<void> {
     const threshold = parseInt(automation.trigger_device_id || '0', 10);
     const condition = automation.trigger_condition;
 
-    let shouldTrigger = false;
+    let conditionMet = false;
 
     if (condition === 'above') {
-      shouldTrigger = currentAqi > threshold;
+      conditionMet = currentAqi > threshold;
     } else if (condition === 'below') {
-      shouldTrigger = currentAqi <= threshold;
+      conditionMet = currentAqi <= threshold;
     }
 
-    if (shouldTrigger) {
-      const quietCheck = isInQuietWindow(automation.quiet_windows);
-      if (quietCheck.inQuiet) {
-        logger.info('AQI automation skipped - in quiet window', { component: 'automation-triggers', automationName: automation.name, quietStart: quietCheck.window?.start, quietEnd: quietCheck.window?.end });
-        continue;
-      }
-      logger.info('AQI trigger fired', { component: 'automation-triggers', currentAqi, condition, threshold });
-      try {
-        await executeAutomationActions(automation, context);
-      } catch (error: unknown) {
-        logger.error('Failed to execute AQI automation', { component: 'automation-triggers', automationName: automation.name, error: getErrorMessage(error) });
-      }
+    const wasMet = automation.last_trigger_met === 1;
+    const isTransition = automation.last_trigger_met === null || conditionMet !== wasMet;
+
+    // Persist new state on any transition
+    if (isTransition) {
+      updateLastTriggerMet(automation.id, conditionMet);
+    }
+
+    // Only execute actions on transition TO met
+    if (!conditionMet || !isTransition) continue;
+
+    const quietCheck = isInQuietWindow(automation.quiet_windows);
+    if (quietCheck.inQuiet) {
+      logger.info('AQI automation skipped - in quiet window', { component: 'automation-triggers', automationName: automation.name, quietStart: quietCheck.window?.start, quietEnd: quietCheck.window?.end });
+      continue;
+    }
+    logger.info('AQI trigger fired (transition)', { component: 'automation-triggers', currentAqi, condition, threshold });
+    try {
+      await executeAutomationActions(automation, context);
+    } catch (error: unknown) {
+      logger.error('Failed to execute AQI automation', { component: 'automation-triggers', automationName: automation.name, error: getErrorMessage(error) });
     }
   }
 }
