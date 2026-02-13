@@ -49,6 +49,7 @@
     isPowerPending = true;
     try {
       await controlAirPurifier({ power: newPower });
+      isPowerPending = false;
     } catch (e) {
       console.error(e);
       optimisticPower = null;
@@ -61,6 +62,7 @@
     pendingMode = mode;
     try {
       await controlAirPurifier({ mode });
+      pendingMode = null;
     } catch (e) {
       console.error(e);
       optimisticMode = null;
