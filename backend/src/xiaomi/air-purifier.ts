@@ -173,6 +173,10 @@ export async function setPurifierPower(on: boolean): Promise<boolean> {
       MIIO_TIMEOUT, 'setPurifierPower',
     );
     logger.info('Set purifier power', { component: 'air-purifier', action: on ? 'on' : 'off' });
+    if (cachedPurifierStatus) {
+      cachedPurifierStatus = { ...cachedPurifierStatus, power: on };
+      broadcastPurifierStatus(cachedPurifierStatus);
+    }
     return true;
   } catch (error: unknown) {
     logger.error('Failed to set purifier power', { component: 'air-purifier', error: getErrorMessage(error) });
@@ -200,6 +204,10 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
       MIIO_TIMEOUT, 'setPurifierMode',
     );
     logger.info('Set purifier mode', { component: 'air-purifier', mode });
+    if (cachedPurifierStatus) {
+      cachedPurifierStatus = { ...cachedPurifierStatus, mode };
+      broadcastPurifierStatus(cachedPurifierStatus);
+    }
     return true;
   } catch (error: unknown) {
     logger.error('Failed to set purifier mode', { component: 'air-purifier', error: getErrorMessage(error) });
@@ -228,6 +236,10 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
       MIIO_TIMEOUT, 'setPurifierFanSpeed',
     );
     logger.info('Set purifier fan speed', { component: 'air-purifier', rpm: clampedRpm });
+    if (cachedPurifierStatus) {
+      cachedPurifierStatus = { ...cachedPurifierStatus, fan_speed: clampedRpm };
+      broadcastPurifierStatus(cachedPurifierStatus);
+    }
     return true;
   } catch (error: unknown) {
     logger.error('Failed to set purifier fan speed', { component: 'air-purifier', error: getErrorMessage(error) });
@@ -254,6 +266,10 @@ export async function setLedBrightness(level: number): Promise<boolean> {
       MIIO_TIMEOUT, 'setLedBrightness',
     );
     logger.info('Set LED brightness', { component: 'air-purifier', level: clamped });
+    if (cachedPurifierStatus) {
+      cachedPurifierStatus = { ...cachedPurifierStatus, led_brightness: clamped };
+      broadcastPurifierStatus(cachedPurifierStatus);
+    }
     return true;
   } catch (error: unknown) {
     logger.error('Failed to set LED brightness', { component: 'air-purifier', error: getErrorMessage(error) });
