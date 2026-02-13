@@ -21,6 +21,10 @@
   let isPowerPending = $state(false);
   let pendingMode = $state<string | null>(null);
 
+  // Request IDs to handle concurrent calls (user corrects before previous completes)
+  let powerRequestId = 0;
+  let modeRequestId = 0;
+
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
@@ -28,30 +32,42 @@
   let displayLedBrightness = $derived(previewLedBrightness ?? status?.led_brightness ?? 8);
 
   async function togglePower() {
+    const thisRequest = ++powerRequestId;
     const newPower = !displayPower;
     optimisticPower = newPower;
     isPowerPending = true;
     try {
       await controlAirPurifier({ power: newPower });
-      store.updateAirPurifierStatus({ power: newPower });
+      if (powerRequestId === thisRequest) {
+        store.updateAirPurifierStatus({ power: newPower });
+      }
     } catch (e) {
       console.error(e);
     }
-    optimisticPower = null;
-    isPowerPending = false;
+    if (powerRequestId === thisRequest) {
+      optimisticPower = null;
+      isPowerPending = false;
+    }
   }
 
   async function setMode(mode: string) {
+    const thisRequest = ++modeRequestId;
     optimisticMode = mode;
     pendingMode = mode;
     try {
       await controlAirPurifier({ mode });
-      store.updateAirPurifierStatus({ mode });
+      if (modeRequestId === thisRequest) {
+        store.updateAirPurifierStatus({ mode });
+      }
     } catch (e) {
       console.error(e);
-      optimisticMode = null;
+      if (modeRequestId === thisRequest) {
+        optimisticMode = null;
+      }
     }
-    pendingMode = null;
+    if (modeRequestId === thisRequest) {
+      pendingMode = null;
+    }
   }
 
   // Debounced LED brightness control
@@ -129,7 +145,7 @@
     <!-- Power toggle -->
     <button
       onclick={(e) => { e.stopPropagation(); togglePower(); }}
-      disabled={!status || isPowerPending}
+      disabled={!status}
       class="power-btn glow-air relative {displayPower ? 'power-btn-on' : ''}
              disabled:opacity-40 disabled:cursor-not-allowed"
     >
@@ -197,8 +213,7 @@
               {@const ModeIcon = mode.icon}
               <button
                 onclick={() => setMode(mode.value)}
-                disabled={pendingMode !== null}
-                class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium relative disabled:opacity-50
+                class="py-3 rounded-lg transition-all flex flex-col items-center gap-1.5 font-medium relative
                        {displayMode === mode.value ? 'glow-air power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
               >
                 <ModeIcon class="w-5 h-5 {pendingMode === mode.value ? 'animate-spin' : ''}" />

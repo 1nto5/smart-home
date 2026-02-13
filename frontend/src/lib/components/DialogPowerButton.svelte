@@ -18,7 +18,7 @@
 
 <button
   {onclick}
-  disabled={disabled || isPending}
+  disabled={disabled}
   class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider transition-all relative overflow-hidden disabled:opacity-50
          {isOn ? `${glowClass} power-btn-on` : 'bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong'}"
 >
