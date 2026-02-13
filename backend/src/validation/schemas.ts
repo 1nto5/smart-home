@@ -183,7 +183,7 @@ export const TelegramTestSchema = z.object({
 export const AirPurifierControlSchema = z.object({
   power: z.boolean().optional(),
   mode: z.enum(['auto', 'silent', 'favorite']).optional(),
-  fan_speed: z.number().int().min(0).max(16).optional(),
+  fan_speed: z.number().int().min(300).max(2200).optional(),
   led_brightness: z.number().int().min(0).max(8).optional(),
 });
 
