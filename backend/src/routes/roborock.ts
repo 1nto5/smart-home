@@ -75,6 +75,11 @@ roborock.post('/command', zValidator('json', RoborockCommandSchema), async (c) =
       break;
   }
 
+  // Refresh status so WS broadcast reflects the new state
+  if (success) {
+    setTimeout(() => getStatus().catch(() => {}), 1000);
+  }
+
   return c.json({ success, command: cmd });
 });
 
@@ -107,6 +112,9 @@ roborock.post('/volume', zValidator('json', RoborockVolumeSchema), async (c) => 
 roborock.post('/fan-speed', zValidator('json', RoborockFanSpeedSchema), async (c) => {
   const { mode } = c.req.valid('json');
   const success = await setFanSpeed(mode);
+  if (success) {
+    setTimeout(() => getStatus().catch(() => {}), 1000);
+  }
   return c.json({ success, mode });
 });
 
@@ -114,6 +122,9 @@ roborock.post('/fan-speed', zValidator('json', RoborockFanSpeedSchema), async (c
 roborock.post('/mop-mode', zValidator('json', RoborockMopModeSchema), async (c) => {
   const { mode } = c.req.valid('json');
   const success = await setMopMode(mode);
+  if (success) {
+    setTimeout(() => getStatus().catch(() => {}), 1000);
+  }
   return c.json({ success, mode });
 });
 
@@ -121,6 +132,9 @@ roborock.post('/mop-mode', zValidator('json', RoborockMopModeSchema), async (c) 
 roborock.post('/clean-segments', zValidator('json', RoborockCleanSegmentsSchema), async (c) => {
   const { segments } = c.req.valid('json');
   const success = await cleanSegments(segments);
+  if (success) {
+    setTimeout(() => getStatus().catch(() => {}), 1000);
+  }
   return c.json({ success, segments });
 });
 
