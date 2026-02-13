@@ -84,6 +84,12 @@ yamaha.post('/:id/control', async (c) => {
   }
 
   const allSuccess = Object.values(results).every((v) => v);
+
+  // Refresh status so WS broadcast reflects the new state
+  if (allSuccess) {
+    getSoundbarStatus(id).catch(() => {});
+  }
+
   return c.json({ success: allSuccess, results, device_id: id });
 });
 
