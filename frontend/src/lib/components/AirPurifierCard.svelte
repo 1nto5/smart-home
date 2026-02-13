@@ -26,44 +26,56 @@
   let displayFanSpeed = $derived(optimisticFanSpeed ?? status?.fan_speed ?? 300);
   let displayLedBrightness = $derived(optimisticLedBrightness ?? status?.led_brightness ?? 8);
 
+  // Clear optimistic states when WS update arrives with fresh device data
+  $effect(() => {
+    if (status) {
+      // Access individual fields so the effect re-runs on any status change
+      void status.power;
+      void status.mode;
+      void status.fan_speed;
+      void status.led_brightness;
+      optimisticPower = null;
+      optimisticMode = null;
+      optimisticFanSpeed = null;
+      optimisticLedBrightness = null;
+      isPowerPending = false;
+      pendingMode = null;
+    }
+  });
+
   async function togglePower() {
     const newPower = !displayPower;
     optimisticPower = newPower;
     isPowerPending = true;
     try {
       await controlAirPurifier({ power: newPower });
-      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
       optimisticPower = null;
+      isPowerPending = false;
     }
-    isPowerPending = false;
-    optimisticPower = null;
   }
 
   async function setMode(mode: string) {
-    const oldMode = displayMode;
     optimisticMode = mode;
     pendingMode = mode;
     try {
       await controlAirPurifier({ mode });
-      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
-      optimisticMode = oldMode;
+      optimisticMode = null;
+      pendingMode = null;
     }
-    pendingMode = null;
   }
 
   // Debounced LED brightness control
   const [sendLedBrightnessDebounced] = debounce(async (level: number) => {
     try {
       await controlAirPurifier({ led_brightness: level });
-      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
+      optimisticLedBrightness = null;
     }
-    optimisticLedBrightness = null;
   }, 300);
 
   function handleLedBrightnessInput(level: number) {
@@ -76,11 +88,10 @@
   const [sendFanSpeedDebounced] = debounce(async (rpm: number) => {
     try {
       await controlAirPurifier({ fan_speed: rpm });
-      // WS broadcast will update purifier status
     } catch (e) {
       console.error(e);
+      optimisticFanSpeed = null;
     }
-    optimisticFanSpeed = null;
   }, 300);
 
   function handleFanSpeedInput(rpm: number) {
