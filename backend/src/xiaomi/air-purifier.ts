@@ -44,6 +44,25 @@ interface PurifierStatus {
 // Module-level cached status for instant API responses
 let cachedPurifierStatus: PurifierStatus | null = null;
 
+// Guard: after a setter updates a field, prevent the poller from overwriting it
+// with stale MiOT data for a short window (device takes time to register changes)
+const recentlySetAt: Partial<Record<keyof PurifierStatus, number>> = {};
+const RECENTLY_SET_TTL = 15_000; // 15 seconds
+
+function markRecentlySet(field: keyof PurifierStatus): void {
+  recentlySetAt[field] = Date.now();
+}
+
+function isRecentlySet(field: keyof PurifierStatus): boolean {
+  const ts = recentlySetAt[field];
+  if (!ts) return false;
+  if (Date.now() - ts > RECENTLY_SET_TTL) {
+    delete recentlySetAt[field];
+    return false;
+  }
+  return true;
+}
+
 export function getCachedPurifierStatus(): PurifierStatus | null {
   return cachedPurifierStatus;
 }
@@ -139,12 +158,20 @@ export async function getPurifierStatus(): Promise<PurifierStatus | null> {
     const ledValue = getValue(7, 2) as number | undefined;
 
     const status: PurifierStatus = {
-      power: (getValue(2, 1) as boolean | undefined) ?? false,
-      mode: MODE_MAP[modeValue as number] ?? 'unknown',
+      power: isRecentlySet('power') && cachedPurifierStatus
+        ? cachedPurifierStatus.power
+        : (getValue(2, 1) as boolean | undefined) ?? false,
+      mode: isRecentlySet('mode') && cachedPurifierStatus
+        ? cachedPurifierStatus.mode
+        : MODE_MAP[modeValue as number] ?? 'unknown',
       aqi: (getValue(3, 4) as number | undefined) ?? 0,
       filter_life: (getValue(4, 3) as number | undefined) ?? 0,
-      fan_speed: favoriteRpm ?? 300,  // RPM value (300-2200)
-      led_brightness: ledValue ?? 8,
+      fan_speed: isRecentlySet('fan_speed') && cachedPurifierStatus
+        ? cachedPurifierStatus.fan_speed
+        : favoriteRpm ?? 300,
+      led_brightness: isRecentlySet('led_brightness') && cachedPurifierStatus
+        ? cachedPurifierStatus.led_brightness
+        : ledValue ?? 8,
     };
     cachedPurifierStatus = status;
     broadcastPurifierStatus(status);
@@ -173,6 +200,7 @@ export async function setPurifierPower(on: boolean): Promise<boolean> {
       MIIO_TIMEOUT, 'setPurifierPower',
     );
     logger.info('Set purifier power', { component: 'air-purifier', action: on ? 'on' : 'off' });
+    markRecentlySet('power');
     if (cachedPurifierStatus) {
       cachedPurifierStatus = { ...cachedPurifierStatus, power: on };
       broadcastPurifierStatus(cachedPurifierStatus);
@@ -204,6 +232,7 @@ export async function setPurifierMode(mode: 'auto' | 'silent' | 'favorite'): Pro
       MIIO_TIMEOUT, 'setPurifierMode',
     );
     logger.info('Set purifier mode', { component: 'air-purifier', mode });
+    markRecentlySet('mode');
     if (cachedPurifierStatus) {
       cachedPurifierStatus = { ...cachedPurifierStatus, mode };
       broadcastPurifierStatus(cachedPurifierStatus);
@@ -236,6 +265,7 @@ export async function setPurifierFanSpeed(rpm: number): Promise<boolean> {
       MIIO_TIMEOUT, 'setPurifierFanSpeed',
     );
     logger.info('Set purifier fan speed', { component: 'air-purifier', rpm: clampedRpm });
+    markRecentlySet('fan_speed');
     if (cachedPurifierStatus) {
       cachedPurifierStatus = { ...cachedPurifierStatus, fan_speed: clampedRpm };
       broadcastPurifierStatus(cachedPurifierStatus);
@@ -266,6 +296,7 @@ export async function setLedBrightness(level: number): Promise<boolean> {
       MIIO_TIMEOUT, 'setLedBrightness',
     );
     logger.info('Set LED brightness', { component: 'air-purifier', level: clamped });
+    markRecentlySet('led_brightness');
     if (cachedPurifierStatus) {
       cachedPurifierStatus = { ...cachedPurifierStatus, led_brightness: clamped };
       broadcastPurifierStatus(cachedPurifierStatus);
