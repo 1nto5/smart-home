@@ -46,7 +46,7 @@
   </button>
 
   <div
-    class="flex-1 h-10 rounded-lg overflow-hidden relative {gradient ? '' : 'bg-surface-recessed border border-stroke-default'}"
+    class="flex-1 h-12 rounded-lg overflow-hidden relative {gradient ? '' : 'bg-surface-recessed border border-stroke-default'}"
     style={gradient ? `background: ${gradient}` : ''}
   >
     {#if !gradient}
@@ -56,8 +56,8 @@
       ></div>
     {/if}
     <div
-      class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-150"
-      style="left: clamp(0px, calc({percent}% - 8px), calc(100% - 16px)); {gradient
+      class="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full transition-all duration-150"
+      style="left: clamp(0px, calc({percent}% - 10px), calc(100% - 20px)); {gradient
         ? 'background: white; border: 2px solid var(--color-text-primary); box-shadow: 0 2px 6px rgba(0,0,0,0.3)'
         : `background: var(${color}); box-shadow: 0 0 10px var(${color})`}"
     ></div>
