@@ -413,52 +413,34 @@ input[type="range"] {
   appearance: none;
   background: transparent;
   cursor: pointer;
-  height: 20px;
+  touch-action: none;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-slider-track);
+  height: 100%;
+  background: transparent;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  margin-top: -6px;
-  transition: transform 0.2s;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+  width: 28px;
+  height: 44px;
+  background: transparent;
+  border-radius: 8px;
 }
 
 input[type="range"]::-moz-range-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-slider-track);
+  height: 100%;
+  background: transparent;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--color-accent);
+  width: 28px;
+  height: 44px;
+  background: transparent;
   border: none;
-}
-
-/* Audio slider - purple thumb */
-input[type="range"].slider-audio::-webkit-slider-thumb {
-  background: var(--color-audio-text);
-  box-shadow: 0 0 8px var(--color-audio-glow);
-}
-input[type="range"].slider-audio::-moz-range-thumb {
-  background: var(--color-audio-text);
-  box-shadow: 0 0 8px var(--color-audio-glow);
+  border-radius: 8px;
 }
 
 /* Checkbox toggle */
