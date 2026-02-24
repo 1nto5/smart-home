@@ -6,15 +6,22 @@
   import DeviceSlider from './DeviceSlider.svelte';
   import StatusRow from './StatusRow.svelte';
   import DialogPowerButton from './DialogPowerButton.svelte';
-  import { debounce } from '$lib/debounce';
+  import { useDebouncedControl } from '$lib/use-debounced-control.svelte';
 
   let { compact = false }: { compact?: boolean } = $props();
   let status = $derived(store.airPurifier);
   let dialogOpen = $state(false);
 
-  // Preview states (slider values held during user interaction)
-  let previewFanSpeed = $state<number | null>(null);
-  let previewLedBrightness = $state<number | null>(null);
+  // Debounced slider controls
+  const fanSpeedCtrl = useDebouncedControl(async (rpm) => {
+    await controlAirPurifier({ fan_speed: rpm });
+    store.updateAirPurifierStatus({ fan_speed: rpm });
+  }, { clamp: [300, 2200] });
+  const ledBrightnessCtrl = useDebouncedControl(async (level) => {
+    await controlAirPurifier({ led_brightness: level });
+    store.updateAirPurifierStatus({ led_brightness: level });
+  }, { clamp: [0, 8] });
+
   // Optimistic states (discrete controls)
   let optimisticPower = $state<boolean | null>(null);
   let optimisticMode = $state<string | null>(null);
@@ -28,8 +35,8 @@
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? false);
   let displayMode = $derived(optimisticMode ?? status?.mode ?? 'auto');
-  let displayFanSpeed = $derived(previewFanSpeed ?? status?.fan_speed ?? 300);
-  let displayLedBrightness = $derived(previewLedBrightness ?? status?.led_brightness ?? 8);
+  let displayFanSpeed = $derived(fanSpeedCtrl.preview ?? status?.fan_speed ?? 300);
+  let displayLedBrightness = $derived(ledBrightnessCtrl.preview ?? status?.led_brightness ?? 8);
 
   async function togglePower() {
     const thisRequest = ++powerRequestId;
@@ -68,38 +75,6 @@
     if (modeRequestId === thisRequest) {
       pendingMode = null;
     }
-  }
-
-  // Debounced LED brightness control
-  const [sendLedBrightnessDebounced] = debounce(async (level: number) => {
-    try {
-      await controlAirPurifier({ led_brightness: level });
-      store.updateAirPurifierStatus({ led_brightness: level });
-    } catch (e) {
-      console.error(e);
-    }
-    previewLedBrightness = null;
-  }, 300);
-
-  function handleLedBrightnessInput(level: number) {
-    previewLedBrightness = Math.max(0, Math.min(8, Math.round(level)));
-    sendLedBrightnessDebounced(previewLedBrightness);
-  }
-
-  // Debounced fan speed control
-  const [sendFanSpeedDebounced] = debounce(async (rpm: number) => {
-    try {
-      await controlAirPurifier({ fan_speed: rpm });
-      store.updateAirPurifierStatus({ fan_speed: rpm });
-    } catch (e) {
-      console.error(e);
-    }
-    previewFanSpeed = null;
-  }, 300);
-
-  function handleFanSpeedInput(rpm: number) {
-    previewFanSpeed = Math.max(300, Math.min(2200, Math.round(rpm)));
-    sendFanSpeedDebounced(previewFanSpeed);
   }
 
   function aqiColor(aqi: number): string {
@@ -240,7 +215,7 @@
               step={100}
               inputStep={50}
               color="--color-air"
-              oninput={handleFanSpeedInput}
+              oninput={fanSpeedCtrl.handle}
             />
           </div>
         {/if}
@@ -259,7 +234,7 @@
             min={0}
             max={8}
             color="--color-air"
-            oninput={handleLedBrightnessInput}
+            oninput={ledBrightnessCtrl.handle}
           />
         </div>
 

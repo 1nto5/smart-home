@@ -3,7 +3,7 @@
   import { controlLamp, discoverLampIp } from '$lib/api';
   import { store } from '$lib/stores.svelte';
   import { translateDeviceName } from '$lib/translations';
-  import { debounce } from '$lib/debounce';
+  import { useDebouncedControl } from '$lib/use-debounced-control.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Power, Sun, Moon, Sparkles, Search } from 'lucide-svelte';
   import DeviceSlider from './DeviceSlider.svelte';
@@ -22,17 +22,23 @@
   let isPowerPending = $state(false);
   let activePreset = $state<string | null>(null);
 
-  // Local slider state for preview
-  let previewBrightness = $state<number | null>(null);
-  let previewColorTemp = $state<number | null>(null);
+  // Debounced slider controls
+  const brightness = useDebouncedControl(async (value) => {
+    await controlLamp(lamp.id, { brightness: value });
+    if (status) store.updateLampStatus(lamp.id, { ...status, brightness: value });
+  });
+  const colorTemp = useDebouncedControl(async (value) => {
+    await controlLamp(lamp.id, { color_temp: value });
+    if (status) store.updateLampStatus(lamp.id, { ...status, color_temp: value });
+  });
 
   // IP discovery state
   let isDiscovering = $state(false);
 
   // Display values (preview or actual) - only show as on if lamp is online
   let displayPower = $derived(isOnline ? (optimisticPower ?? status?.power ?? false) : false);
-  let displayBrightness = $derived(previewBrightness ?? status?.brightness ?? 0);
-  let displayColorTemp = $derived(previewColorTemp ?? status?.color_temp ?? 0);
+  let displayBrightness = $derived(brightness.preview ?? status?.brightness ?? 0);
+  let displayColorTemp = $derived(colorTemp.preview ?? status?.color_temp ?? 0);
 
   async function togglePower(e: MouseEvent) {
     e.stopPropagation();
@@ -47,37 +53,6 @@
       optimisticPower = null;
     }
     isPowerPending = false;
-  }
-
-  // Debounced slider API calls
-  const [sendBrightnessDebounced] = debounce(async (value: number) => {
-    try {
-      await controlLamp(lamp.id, { brightness: value });
-      if (status) store.updateLampStatus(lamp.id, { ...status, brightness: value });
-    } catch (e) {
-      console.error(e);
-    }
-    previewBrightness = null;
-  }, 300);
-
-  const [sendColorTempDebounced] = debounce(async (value: number) => {
-    try {
-      await controlLamp(lamp.id, { color_temp: value });
-      if (status) store.updateLampStatus(lamp.id, { ...status, color_temp: value });
-    } catch (e) {
-      console.error(e);
-    }
-    previewColorTemp = null;
-  }, 300);
-
-  function handleBrightnessInput(value: number) {
-    previewBrightness = value;
-    sendBrightnessDebounced(value);
-  }
-
-  function handleColorTempInput(value: number) {
-    previewColorTemp = value;
-    sendColorTempDebounced(value);
   }
 
   // Preset definitions
@@ -271,7 +246,7 @@
               color="--color-lights"
               ariaLabel="Brightness"
               ariaValueText="{displayBrightness}%"
-              oninput={handleBrightnessInput}
+              oninput={brightness.handle}
             />
           </div>
 
@@ -291,7 +266,7 @@
               gradient="var(--gradient-color-temp)"
               ariaLabel="Color temperature"
               ariaValueText="{displayColorTemp} Kelvin"
-              oninput={handleColorTempInput}
+              oninput={colorTemp.handle}
               minBtnClass="bg-surface-recessed border border-stroke-default text-orange-400 hover:border-orange-400/50"
               maxBtnClass="bg-surface-recessed border border-stroke-default text-sky-400 hover:border-sky-400/50"
             />

@@ -7,6 +7,20 @@ import { notify } from './toast.svelte';
 let ws: WebSocket | null = null;
 let wsReconnectDelay = 1000;
 
+// Pending refresh promise (for requestRefreshAndWait)
+let pendingRefresh: {
+  resolve: (result: 'completed' | 'skipped' | 'timeout' | 'disconnected') => void;
+  timeoutId: ReturnType<typeof setTimeout>;
+} | null = null;
+
+function resolvePendingRefresh(result: 'completed' | 'skipped' | 'disconnected') {
+  if (pendingRefresh) {
+    clearTimeout(pendingRefresh.timeoutId);
+    pendingRefresh.resolve(result);
+    pendingRefresh = null;
+  }
+}
+
 // Use object with properties for Svelte 5 module state
 function createStore() {
   let lamps = $state<Lamp[]>([]);
@@ -28,6 +42,14 @@ function createStore() {
   let wsConnected = $state(false);
   let lastDeviceFetch = $state<Date | null>(null);
 
+  async function safeRefresh<T>(fetcher: () => Promise<T>, setter: (v: T) => void, label: string): Promise<void> {
+    try {
+      setter(await fetcher());
+    } catch (e) {
+      console.error(`Failed to fetch ${label}:`, e);
+    }
+  }
+
   function connectWebSocket() {
     if (ws?.readyState === WebSocket.OPEN) return;
 
@@ -46,6 +68,7 @@ function createStore() {
     ws.onclose = () => {
       console.log(`WebSocket disconnected, reconnecting in ${wsReconnectDelay}ms`);
       wsConnected = false;
+      resolvePendingRefresh('disconnected');
       setTimeout(connectWebSocket, wsReconnectDelay);
       wsReconnectDelay = Math.min(wsReconnectDelay * 2, 30000);
     };
@@ -167,10 +190,12 @@ function createStore() {
           }
           case 'refresh_complete': {
             lastDeviceFetch = new Date(msg.lastDeviceFetch);
+            resolvePendingRefresh('completed');
             break;
           }
           case 'refresh_skipped': {
             notify.info(`Refresh available in ${msg.nextAvailableIn}s`);
+            resolvePendingRefresh('skipped');
             break;
           }
         }
@@ -217,13 +242,10 @@ function createStore() {
     async refreshLamps() {
       try {
         lamps = await getLamps();
-        // Parse cached last_status into lampStatuses map
         const newStatuses = new Map(lampStatuses);
         for (const lamp of lamps) {
           if (lamp.last_status) {
-            try {
-              newStatuses.set(lamp.id, JSON.parse(lamp.last_status));
-            } catch { /* ignore parse errors */ }
+            try { newStatuses.set(lamp.id, JSON.parse(lamp.last_status)); } catch { /* ignore */ }
           }
         }
         lampStatuses = newStatuses;
@@ -233,97 +255,45 @@ function createStore() {
     },
 
     async refreshRoborock() {
-      try {
-        roborock = await getRoborockStatus();
-      } catch {
-        roborock = null;
-      }
-    },
-
-    async refreshSchedules() {
-      try {
-        schedules = await getSchedules();
-      } catch (e) {
-        console.error('Failed to fetch schedules:', e);
-      }
-    },
-
-    async refreshPending() {
-      try {
-        pendingActions = await getPendingActions();
-      } catch (e) {
-        console.error('Failed to fetch pending actions:', e);
-      }
-    },
-
-    async refreshTuya() {
-      try {
-        tuyaDevices = await getTuyaDevices();
-      } catch (e) {
-        console.error('Failed to fetch Tuya devices:', e);
-      }
-    },
-
-    async refreshYamaha() {
-      try {
-        yamahaDevices = await getYamahaDevices();
-      } catch (e) {
-        console.error('Failed to fetch Yamaha devices:', e);
-      }
+      try { roborock = await getRoborockStatus(); } catch { roborock = null; }
     },
 
     async refreshAirPurifier() {
-      try {
-        airPurifier = await getAirPurifierStatus();
-      } catch {
-        airPurifier = null;
-      }
+      try { airPurifier = await getAirPurifierStatus(); } catch { airPurifier = null; }
     },
 
-    async refreshHeaterPresets() {
-      try {
-        heaterPresets = await getHeaterPresets();
-      } catch (e) {
-        console.error('Failed to fetch heater presets:', e);
-      }
-    },
-
-    async refreshHeaterSchedules() {
-      try {
-        heaterSchedules = await getHeaterSchedules();
-      } catch (e) {
-        console.error('Failed to fetch heater schedules:', e);
-      }
-    },
-
-    async refreshPendingHeater() {
-      try {
-        pendingHeaterActions = await getPendingHeaterActions();
-      } catch (e) {
-        console.error('Failed to fetch pending heater actions:', e);
-      }
-    },
-
-    async refreshHeaterOverride() {
-      try {
-        heaterOverride = await getHeaterOverride();
-      } catch (e) {
-        console.error('Failed to fetch heater override:', e);
-      }
-    },
-
-    async refreshHomeStatus() {
-      try {
-        homeStatus = await getHomeStatus();
-      } catch (e) {
-        console.error('Failed to fetch home status:', e);
-      }
-    },
+    refreshSchedules: () => safeRefresh(getSchedules, v => schedules = v, 'schedules'),
+    refreshPending: () => safeRefresh(getPendingActions, v => pendingActions = v, 'pending actions'),
+    refreshTuya: () => safeRefresh(getTuyaDevices, v => tuyaDevices = v, 'Tuya devices'),
+    refreshYamaha: () => safeRefresh(getYamahaDevices, v => yamahaDevices = v, 'Yamaha devices'),
+    refreshHeaterPresets: () => safeRefresh(getHeaterPresets, v => heaterPresets = v, 'heater presets'),
+    refreshHeaterSchedules: () => safeRefresh(getHeaterSchedules, v => heaterSchedules = v, 'heater schedules'),
+    refreshPendingHeater: () => safeRefresh(getPendingHeaterActions, v => pendingHeaterActions = v, 'pending heater actions'),
+    refreshHeaterOverride: () => safeRefresh(getHeaterOverride, v => heaterOverride = v, 'heater override'),
+    refreshHomeStatus: () => safeRefresh(getHomeStatus, v => homeStatus = v, 'home status'),
 
     requestRefresh() {
       if (ws?.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'request_refresh' }));
       }
+    },
+
+    requestRefreshAndWait(timeoutMs = 30_000): Promise<'completed' | 'skipped' | 'timeout' | 'disconnected'> {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return Promise.resolve('disconnected');
+      }
+      if (pendingRefresh) {
+        clearTimeout(pendingRefresh.timeoutId);
+        pendingRefresh.resolve('timeout');
+      }
+      return new Promise((resolve) => {
+        const timeoutId = setTimeout(() => {
+          pendingRefresh = null;
+          resolve('timeout');
+        }, timeoutMs);
+        pendingRefresh = { resolve, timeoutId };
+        ws!.send(JSON.stringify({ type: 'request_refresh' }));
+      });
     },
 
     async refreshAll() {
