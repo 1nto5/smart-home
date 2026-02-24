@@ -69,10 +69,8 @@ mock.module('../utils/errors', () => ({
   hasErrorCode: () => false,
 }));
 
-mock.module('../utils/logger', () => ({
-  logger: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
-  setLogLevel: () => {}, getLogLevel: () => 1, createTimer: () => ({ elapsed: () => 0 }), withTiming: () => {},
-}));
+// Note: do NOT mock ../utils/logger - the real logger is harmless (just console output)
+// and mocking it leaks across test files in Bun, breaking logger.test.ts
 
 const timeWindows = await import('../scheduling/time-windows');
 
