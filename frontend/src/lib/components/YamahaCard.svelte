@@ -2,7 +2,7 @@
   import type { YamahaDevice, YamahaStatus } from '$lib/types';
   import { controlYamaha } from '$lib/api';
   import { translateDeviceName } from '$lib/translations';
-  import { debounce } from '$lib/debounce';
+  import { useDebouncedControl } from '$lib/use-debounced-control.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
   import { Volume2, VolumeX, Tv, Bluetooth, Mic, Radio } from 'lucide-svelte';
   import DeviceSlider from './DeviceSlider.svelte';
@@ -20,14 +20,20 @@
   let pendingInput = $state<string | null>(null);
   let pendingProgram = $state<string | null>(null);
 
-  // Local slider state
-  let previewVolume = $state<number | null>(null);
-  let previewSubwooferVol = $state<number | null>(null);
+  // Debounced slider controls
+  const volumeCtrl = useDebouncedControl(async (vol) => {
+    await controlYamaha(device.id, { volume: vol });
+    if (status) status = { ...status, volume: vol };
+  });
+  const subwooferCtrl = useDebouncedControl(async (vol) => {
+    await controlYamaha(device.id, { subwoofer_volume: vol });
+    if (status) status = { ...status, subwoofer_volume: vol };
+  });
 
   // Display values
   let displayPower = $derived(optimisticPower ?? status?.power ?? 'standby');
-  let displayVolume = $derived(previewVolume ?? status?.volume ?? 0);
-  let displaySubwooferVol = $derived(previewSubwooferVol ?? status?.subwoofer_volume ?? 0);
+  let displayVolume = $derived(volumeCtrl.preview ?? status?.volume ?? 0);
+  let displaySubwooferVol = $derived(subwooferCtrl.preview ?? status?.subwoofer_volume ?? 0);
 
   // Parse cached status from DB (updated via WS broadcasts)
   $effect(() => {
@@ -48,32 +54,6 @@
       optimisticPower = null;
     }
     isPowerPending = false;
-  }
-
-  const [sendVolumeDebounced] = debounce(async (vol: number) => {
-    try {
-      await controlYamaha(device.id, { volume: vol });
-      if (status) status = { ...status, volume: vol };
-    } catch (e) { console.error(e); }
-    previewVolume = null;
-  }, 300);
-
-  const [sendSubwooferDebounced] = debounce(async (vol: number) => {
-    try {
-      await controlYamaha(device.id, { subwoofer_volume: vol });
-      if (status) status = { ...status, subwoofer_volume: vol };
-    } catch (e) { console.error(e); }
-    previewSubwooferVol = null;
-  }, 300);
-
-  function handleVolumeInput(vol: number) {
-    previewVolume = vol;
-    sendVolumeDebounced(vol);
-  }
-
-  function handleSubwooferInput(vol: number) {
-    previewSubwooferVol = vol;
-    sendSubwooferDebounced(vol);
   }
 
   async function toggleMute() {
@@ -213,7 +193,7 @@
             max={100}
             step={5}
             color="--color-audio"
-            oninput={handleVolumeInput}
+            oninput={volumeCtrl.handle}
           >
             {#snippet after()}
               <button
@@ -243,7 +223,7 @@
             min={-4}
             max={4}
             color="--color-audio"
-            oninput={handleSubwooferInput}
+            oninput={subwooferCtrl.handle}
           />
         </div>
 

@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "test": "bun test src/__tests__/circuit-breaker.test.ts src/__tests__/errors.test.ts src/__tests__/validation.test.ts src/__tests__/logger.test.ts src/__tests__/error-handler.test.ts src/__tests__/fetch-timeout.test.ts src/__tests__/pending-service.test.ts src/__tests__/heater-override.test.ts && bun test src/__tests__/database-ops.test.ts && bun test src/__tests__/automation-actions.test.ts && bun test src/__tests__/time-windows.test.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

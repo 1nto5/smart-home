@@ -20,9 +20,14 @@
 
   async function handleRefresh() {
     isRefreshing = true;
-    await store.refreshAll();
+    const result = await store.requestRefreshAndWait();
+    if (result === 'disconnected') {
+      await store.refreshAll();
+    } else if (result === 'timeout') {
+      notify.error('Refresh timed out');
+    }
     await loadAlarmStatus();
-    setTimeout(() => isRefreshing = false, 500);
+    isRefreshing = false;
   }
 
   async function loadAlarmStatus() {

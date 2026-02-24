@@ -18,6 +18,8 @@ import { getPurifierStatus } from '../xiaomi/air-purifier';
 import { getStatus as getRoborockStatus } from '../roborock/roborock';
 import { broadcastTuyaStatus } from '../ws/device-broadcast';
 import { broadcastHomeStatus, broadcastRefreshComplete } from '../ws/device-broadcast';
+import { broadcast } from '../ws/broadcast';
+import { buildStateSnapshot } from '../ws/snapshot';
 import { getErrorMessage } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { config } from '../config';
@@ -248,10 +250,41 @@ export async function triggerComprehensiveRefresh(): Promise<RefreshResult> {
   lastRefreshTime = now;
   try {
     await comprehensiveRefresh();
+    broadcast(buildStateSnapshot());
     broadcastRefreshComplete(lastComprehensiveRefreshAt!);
     return { triggered: true, nextAvailableIn: 0 };
   } finally {
     refreshRunning = false;
+  }
+}
+
+/** Process a batch of pending actions (heater or lamp) with unified retry logic */
+async function processPending<T extends { id: number; device_id: string }>(opts: {
+  label: string;
+  getActions: () => T[];
+  apply: (action: T) => Promise<unknown>;
+  getPreset: (action: T) => string;
+  remove: (id: number) => void;
+  increment: (id: number) => boolean;
+}): Promise<void> {
+  const actions = opts.getActions();
+  if (actions.length === 0) return;
+
+  logger.debug(`Checking pending ${opts.label} actions`, { component: 'poller', count: actions.length });
+
+  for (const action of actions) {
+    try {
+      const success = await opts.apply(action);
+      if (success) {
+        opts.remove(action.id);
+        logger.info(`Applied pending ${opts.label} action`, { component: 'poller', deviceId: action.device_id, preset: opts.getPreset(action) });
+      } else {
+        opts.increment(action.id);
+      }
+    } catch (error: unknown) {
+      logger.error(`Poller ${opts.label} error`, { component: 'poller', deviceId: action.device_id, error: getErrorMessage(error) });
+      opts.increment(action.id);
+    }
   }
 }
 
@@ -281,49 +314,23 @@ export async function startPoller(): Promise<void> {
     // Check for lamp online transitions
     await checkOnlineTransitions().catch(e => logger.error('Online check error', { component: 'poller', error: e.message }));
 
-    // Process pending heater actions
-    const pendingHeaters = getPendingHeaterActions();
-    if (pendingHeaters.length > 0) {
-      logger.debug('Checking pending heater actions', { component: 'poller', count: pendingHeaters.length });
-
-      for (const action of pendingHeaters) {
-        try {
-          const success = await applyPresetToHeater(action.device_id, action.preset_id);
-
-          if (success) {
-            removePendingHeaterAction(action.id);
-            logger.info('Applied pending heater action', { component: 'poller', deviceId: action.device_id, presetId: action.preset_id });
-          } else {
-            incrementHeaterRetryCount(action.id);
-          }
-        } catch (error: unknown) {
-          logger.error('Poller heater error', { component: 'poller', deviceId: action.device_id, error: getErrorMessage(error) });
-          incrementHeaterRetryCount(action.id);
-        }
-      }
-    }
-
-    // Process pending lamp actions
-    const pendingLamps = getPendingActions();
-    if (pendingLamps.length > 0) {
-      logger.debug('Checking pending lamp actions', { component: 'poller', count: pendingLamps.length });
-
-      for (const action of pendingLamps) {
-        try {
-          const success = await applyPresetToLamp(action.device_id, action.preset);
-
-          if (success) {
-            removePendingAction(action.id);
-            logger.info('Applied pending lamp action', { component: 'poller', deviceId: action.device_id, preset: action.preset });
-          } else {
-            incrementRetryCount(action.id);
-          }
-        } catch (error: unknown) {
-          logger.error('Poller lamp error', { component: 'poller', deviceId: action.device_id, error: getErrorMessage(error) });
-          incrementRetryCount(action.id);
-        }
-      }
-    }
+    // Process pending heater + lamp actions
+    await processPending({
+      label: 'heater',
+      getActions: getPendingHeaterActions,
+      apply: (a) => applyPresetToHeater(a.device_id, a.preset_id),
+      getPreset: (a) => a.preset_id,
+      remove: removePendingHeaterAction,
+      increment: incrementHeaterRetryCount,
+    });
+    await processPending({
+      label: 'lamp',
+      getActions: getPendingActions,
+      apply: (a) => applyPresetToLamp(a.device_id, a.preset),
+      getPreset: (a) => a.preset,
+      remove: removePendingAction,
+      increment: incrementRetryCount,
+    });
   }, 15_000);
 
   // Door fast-poller: every 5 seconds

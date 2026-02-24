@@ -8,8 +8,8 @@ import { getHeaterPreset, isValidHeaterPreset, getEffectiveTemp } from './heater
 import { createPendingHeaterAction } from './heater-pending-service';
 import { sendDeviceCommand, getDeviceStatus } from '../tuya/tuya-local';
 import { broadcastTuyaStatus, broadcastPendingHeaterActions, broadcastHomeStatus } from '../ws/device-broadcast';
-import { getErrorMessage } from '../utils/errors';
 import { logger } from '../utils/logger';
+import { withRetry } from '../utils/retry';
 
 export interface HeaterSchedule {
   id: number;
@@ -160,19 +160,10 @@ function getAllTrvIds(): string[] {
  * Auto-wakes device if it's turned off (DPS 1 = false).
  */
 export async function applyTempToHeater(deviceId: string, targetTemp: number): Promise<HeaterApplyResult> {
-  const MAX_RETRIES = 2;
-  const RETRY_DELAY_MS = 2000;
-
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
+  try {
+    return await withRetry(async () => {
       const status = await getDeviceStatus(deviceId);
-      if (!status) {
-        if (attempt < MAX_RETRIES) {
-          await Bun.sleep(RETRY_DELAY_MS);
-          continue;
-        }
-        return 'offline'; // TRV is offline after all retries
-      }
+      if (!status) throw Object.assign(new Error('offline'), { _offline: true });
 
       // Auto-wake: if device is off (DPS 1 = false), turn it on first
       const switchState = status?.dps?.['1'];
@@ -187,28 +178,15 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
 
       const tempValue = Math.round(targetTemp * TRV_DPS.TEMP_SCALE);
       const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
+      if (!success) throw new Error('command failed');
 
-      if (success) {
-        logger.debug('Set TRV temperature', { component: 'heater-schedule', deviceId, targetTemp });
-        broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
-        return 'success';
-      }
-
-      if (attempt < MAX_RETRIES) {
-        await Bun.sleep(RETRY_DELAY_MS);
-        continue;
-      }
-      return 'failed'; // command failed after all retries
-    } catch (error: unknown) {
-      if (attempt < MAX_RETRIES) {
-        await Bun.sleep(RETRY_DELAY_MS);
-        continue;
-      }
-      logger.error('Failed to apply temperature to TRV', { component: 'heater-schedule', deviceId, targetTemp, error: getErrorMessage(error) });
-      return 'failed';
-    }
+      logger.debug('Set TRV temperature', { component: 'heater-schedule', deviceId, targetTemp });
+      broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
+      return 'success' as HeaterApplyResult;
+    }, { label: 'Failed to apply temperature to TRV' });
+  } catch (error: unknown) {
+    return (error as { _offline?: boolean })._offline ? 'offline' : 'failed';
   }
-  return 'failed';
 }
 
 /**
@@ -216,43 +194,21 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
  * Returns: 'success' | 'offline' | 'failed'
  */
 export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult> {
-  const MAX_RETRIES = 2;
-  const RETRY_DELAY_MS = 2000;
-
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
+  try {
+    return await withRetry(async () => {
       const status = await getDeviceStatus(deviceId);
-      if (!status) {
-        if (attempt < MAX_RETRIES) {
-          await Bun.sleep(RETRY_DELAY_MS);
-          continue;
-        }
-        return 'offline';
-      }
+      if (!status) throw Object.assign(new Error('offline'), { _offline: true });
 
       const success = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, false);
+      if (!success) throw new Error('command failed');
 
-      if (success) {
-        logger.debug('Turned off TRV', { component: 'heater-schedule', deviceId });
-        broadcastTuyaStatus(deviceId, 'wkf', { switchState: false });
-        return 'success';
-      }
-
-      if (attempt < MAX_RETRIES) {
-        await Bun.sleep(RETRY_DELAY_MS);
-        continue;
-      }
-      return 'failed';
-    } catch (error: unknown) {
-      if (attempt < MAX_RETRIES) {
-        await Bun.sleep(RETRY_DELAY_MS);
-        continue;
-      }
-      logger.error('Failed to turn off TRV', { component: 'heater-schedule', deviceId, error: getErrorMessage(error) });
-      return 'failed';
-    }
+      logger.debug('Turned off TRV', { component: 'heater-schedule', deviceId });
+      broadcastTuyaStatus(deviceId, 'wkf', { switchState: false });
+      return 'success' as HeaterApplyResult;
+    }, { label: 'Failed to turn off TRV' });
+  } catch (error: unknown) {
+    return (error as { _offline?: boolean })._offline ? 'offline' : 'failed';
   }
-  return 'failed';
 }
 
 /**

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { RoborockStatus } from '$lib/types';
   import { sendRoborockCommand, getRoborockRooms, getRoborockVolume, setRoborockVolume, setRoborockFanSpeed, setRoborockMopMode, cleanRoborockSegments, getRoborockConsumables, resetRoborockConsumable } from '$lib/api';
-  import { debounce } from '$lib/debounce';
+  import { useDebouncedControl } from '$lib/use-debounced-control.svelte';
   import DeviceDialog from './DeviceDialog.svelte';
   import { VolumeX, Scale, Wind, Flame, X, Droplet, Play, Pause, Home, Bot, Battery, BatteryLow, MapPin, RotateCcw } from 'lucide-svelte';
   import DeviceSlider from './DeviceSlider.svelte';
@@ -30,8 +30,11 @@
   let rooms = $state<{ segmentId: number; name: string }[]>([]);
   let selectedRooms = $state<Set<number>>(new Set());
   let volume = $state(30);
-  let previewVolume = $state<number | null>(null);
-  let displayVolume = $derived(previewVolume ?? volume);
+  const volumeCtrl = useDebouncedControl(async (vol) => {
+    await setRoborockVolume(vol);
+    volume = vol;
+  });
+  let displayVolume = $derived(volumeCtrl.preview ?? volume);
   let consumables = $state<{ mainBrushWorkTime: number; sideBrushWorkTime: number; filterWorkTime: number; sensorDirtyTime: number } | null>(null);
   let activeTab = $state<'controls' | 'rooms' | 'settings'>('controls');
 
@@ -115,21 +118,6 @@
       optimisticMopMode = null;
     }
     pendingMopMode = null;
-  }
-
-  const [sendVolumeDebounced] = debounce(async (vol: number) => {
-    try {
-      await setRoborockVolume(vol);
-      volume = vol;
-    } catch (e) {
-      console.error(e);
-    }
-    previewVolume = null;
-  }, 300);
-
-  function handleVolumeInput(newVolume: number) {
-    previewVolume = newVolume;
-    sendVolumeDebounced(newVolume);
   }
 
   function toggleRoom(segmentId: number) {
@@ -416,7 +404,7 @@
             max={100}
             step={10}
             color="--color-sensors"
-            oninput={handleVolumeInput}
+            oninput={volumeCtrl.handle}
           />
         </div>
 
