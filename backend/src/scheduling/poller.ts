@@ -124,7 +124,7 @@ async function refreshTrvStatuses(): Promise<void> {
         const battery = dps['35'] !== undefined ? Number(dps['35']) : null;
         if (currentTemp !== null) {
           recordSensorReading(trv.id, trv.name, currentTemp, null, targetTemp, battery);
-          broadcastTuyaStatus(trv.id, 'wkf', { currentTemp, targetTemp, battery });
+          broadcastTuyaStatus(trv.id, 'wkf', dps);
         }
       }
     } catch (e: unknown) {
