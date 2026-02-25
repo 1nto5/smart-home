@@ -171,7 +171,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
         logger.debug('TRV is off, turning on first', { component: 'heater-schedule', deviceId });
         const wakeSuccess = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, true);
         if (wakeSuccess) {
-          broadcastTuyaStatus(deviceId, 'wkf', { switchState: true });
+          broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '1': true });
           await Bun.sleep(500); // Give device time to wake up
         }
       }
@@ -181,7 +181,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       if (!success) throw new Error('command failed');
 
       logger.debug('Set TRV temperature', { component: 'heater-schedule', deviceId, targetTemp });
-      broadcastTuyaStatus(deviceId, 'wkf', { targetTemp });
+      broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '4': tempValue });
       return 'success' as HeaterApplyResult;
     }, { label: 'Failed to apply temperature to TRV' });
   } catch (error: unknown) {
@@ -203,7 +203,7 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
       if (!success) throw new Error('command failed');
 
       logger.debug('Turned off TRV', { component: 'heater-schedule', deviceId });
-      broadcastTuyaStatus(deviceId, 'wkf', { switchState: false });
+      broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '1': false });
       return 'success' as HeaterApplyResult;
     }, { label: 'Failed to turn off TRV' });
   } catch (error: unknown) {
