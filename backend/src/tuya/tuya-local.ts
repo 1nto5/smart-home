@@ -167,7 +167,7 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
 
     if (currentTemp !== null || switchState !== null) {
       recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
-      broadcastTuyaStatus(device.id, device.category, { switchState, currentTemp, targetTemp, battery });
+      broadcastTuyaStatus(device.id, device.category, dps);
       if (switchState === false) {
         logger.debug('TRV off', { component: 'tuya-local', deviceId: device.id, deviceName: device.name });
       } else if (currentTemp !== null) {
