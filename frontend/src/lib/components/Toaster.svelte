@@ -29,7 +29,7 @@
   role="region"
   aria-live="polite"
   aria-label="Notifications"
-  class="fixed top-0 left-0 right-0 md:top-4 md:left-auto md:right-4 z-50 flex flex-col gap-2 items-center md:items-end pointer-events-none"
+  class="fixed top-0 left-0 right-0 md:top-4 md:left-1/2 md:-translate-x-1/2 md:right-auto z-50 flex flex-col gap-2 items-center pointer-events-none"
   class:toast-bar={toasts.length > 0}
 >
   {#each toasts as toast (toast.id)}
