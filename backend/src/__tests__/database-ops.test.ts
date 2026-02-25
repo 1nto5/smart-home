@@ -244,7 +244,7 @@ mock.module('../db/database', () => ({
   createAutomation: (auto: Record<string, unknown>) => {
     const r = testDb.run(
       'INSERT INTO automations (name, enabled, trigger_type, trigger_device_id, trigger_condition, actions, telegram_prompt, telegram_action_yes, quiet_windows) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [auto.name, auto.enabled ?? 1, auto.trigger_type, auto.trigger_device_id ?? null, auto.trigger_condition, auto.actions, auto.telegram_prompt ?? null, auto.telegram_action_yes ?? null, auto.quiet_windows ?? null]
+      [auto.name, auto.enabled ?? 1, auto.trigger_type, auto.trigger_device_id ?? null, auto.trigger_condition, auto.actions, auto.telegram_prompt ?? null, auto.telegram_action_yes ?? null, auto.quiet_windows ?? null] as (string | number | null)[]
     );
     return testDb.query('SELECT * FROM automations WHERE id = ?').get(Number(r.lastInsertRowid));
   },

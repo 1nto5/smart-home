@@ -2,13 +2,9 @@ import { describe, it, expect } from 'vitest';
 import type {
   Lamp,
   LampStatus,
-  RoborockStatus,
-  TuyaDevice,
   YamahaStatus,
   WsMessage,
   AirPurifierStatus,
-  HeaterPreset,
-  Automation,
 } from './types';
 
 describe('types', () => {
