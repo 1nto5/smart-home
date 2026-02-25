@@ -1,4 +1,5 @@
 import { test, expect, describe } from 'bun:test';
+import { z } from 'zod';
 import { Hono } from 'hono';
 import {
   createApiResponse,
@@ -7,7 +8,6 @@ import {
   errorHandler,
   apiError,
   errors,
-  type ApiError,
   type ApiResponse,
 } from '../middleware/error-handler';
 
@@ -178,7 +178,6 @@ describe('errorHandler middleware', () => {
     const app = new Hono();
     app.onError(errorHandler);
     app.get('/test', () => {
-      const { z } = require('zod');
       const schema = z.object({ name: z.string() });
       schema.parse({ name: 123 });
       return new Response('ok');

@@ -45,7 +45,7 @@ mock.module('../db/database', () => ({
   updateTelegramConfig: () => ({}), logTelegram: () => {}, getTelegramLog: () => [], getLastTelegramTime: () => null,
   getUpdateOffset: () => 0, setUpdateOffset: () => {},
   getHomeStatus: () => ({ lamp_preset: null, heater_preset: null, updated_at: '' }),
-  setLampPreset: (preset: string | null) => { try { testDb.run('UPDATE home_status SET lamp_preset = ? WHERE id = 1', [preset]); } catch {} },
+  setLampPreset: (preset: string | null) => { try { testDb.run('UPDATE home_status SET lamp_preset = ? WHERE id = 1', [preset]); } catch { /* ignore */ } },
   setHeaterPreset: () => {},
   createActiveAlarm: () => 0, getActiveAlarms: () => [], acknowledgeAlarm: () => {}, acknowledgeAllAlarms: () => 0, hasActiveAlarmForDevice: () => false,
   getAutomations: () => [], getAutomation: () => null, createAutomation: () => ({}), updateAutomation: () => null, deleteAutomation: () => false, toggleAutomation: () => null,
