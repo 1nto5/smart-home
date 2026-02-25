@@ -53,13 +53,13 @@ mock.module('../db/database', () => ({
   getEnabledAutomationsForTrigger: () => [], getAutomationPending: () => null, updateAutomationPendingStatus: () => {}, expireOldPendingAutomations: () => 0,
   getAutomationLog: () => [],
   logAutomation: (name: string, device: string | null, action: string, result: string) => {
-    try { testDb.run('INSERT INTO automation_log (automation_name, trigger_device_name, action_executed, result) VALUES (?, ?, ?, ?)', [name, device, action, result]); } catch {}
+    try { testDb.run('INSERT INTO automation_log (automation_name, trigger_device_name, action_executed, result) VALUES (?, ?, ?, ?)', [name, device, action, result]); } catch { /* ignore */ }
   },
   createAutomationPending: (automationId: number, triggerDeviceName: string | null, room: string | null): number => {
     try {
       const r = testDb.run('INSERT INTO automation_pending (automation_id, trigger_device_name, room) VALUES (?, ?, ?)', [automationId, triggerDeviceName, room]);
       return Number(r.lastInsertRowid);
-    } catch { return 0; }
+    } catch { /* ignore */ return 0; }
   },
 }));
 
