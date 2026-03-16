@@ -46,6 +46,7 @@
 
   // Power toggle state
   let powerPending = $state(false);
+  let lastTempBeforeOff = $state(21);
 
   // Debounced API call
   const [sendTempDebounced, cancelDebounce] = debounce((temp: number) => {
@@ -120,7 +121,18 @@
     const currentPower = status?.['1'] === true;
     powerPending = true;
     try {
-      await controlTuyaDevice(device.id, 1, !currentPower);
+      if (currentPower) {
+        // Turning OFF: remember current target temp, then send OFF + 5C safety
+        if (serverTargetTemp !== null && serverTargetTemp > 5) {
+          lastTempBeforeOff = serverTargetTemp;
+        }
+        await controlTuyaDevice(device.id, 1, false);
+        await controlTuyaDevice(device.id, 4, 50); // 5C safety belt
+      } else {
+        // Turning ON: restore previous target temp
+        await controlTuyaDevice(device.id, 1, true);
+        await controlTuyaDevice(device.id, 4, Math.round(lastTempBeforeOff * 10));
+      }
     } catch (e) {
       console.error('Failed to toggle power:', e);
     }
@@ -283,8 +295,8 @@
       <!-- Quick Presets -->
       <div>
         <p class="text-xs text-content-tertiary uppercase tracking-wider mb-3">Quick Set</p>
-        <div class="grid grid-cols-5 gap-2">
-          {#each [5, 15, 18, 21, 24] as temp}
+        <div class="grid grid-cols-4 gap-2">
+          {#each [15, 18, 21, 24] as temp}
             <button
               onclick={() => setTempDirect(temp, true)}
               disabled={pendingPreset !== null}

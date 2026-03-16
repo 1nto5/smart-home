@@ -97,11 +97,13 @@ function createStore() {
             break;
           }
           case 'tuya_status': {
-            tuyaDevices = tuyaDevices.map(d =>
-              d.id === msg.deviceId
-                ? { ...d, last_status: JSON.stringify(msg.status), online: 1 }
-                : d
-            );
+            tuyaDevices = tuyaDevices.map(d => {
+              if (d.id !== msg.deviceId) return d;
+              // Merge new DPS into existing status (partial events only update some keys)
+              const existing = d.last_status ? JSON.parse(d.last_status) : {};
+              const merged = { ...existing, ...msg.status };
+              return { ...d, last_status: JSON.stringify(merged), online: 1 };
+            });
             break;
           }
           case 'tuya_offline': {

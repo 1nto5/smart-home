@@ -202,8 +202,11 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
       const success = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, false);
       if (!success) throw new Error('command failed');
 
+      // Also set target to 5C (50) as safety belt in case DPS 1 = false is ignored
+      await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, 50);
+
       logger.debug('Turned off TRV', { component: 'heater-schedule', deviceId });
-      broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '1': false });
+      broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '1': false, '4': 50 });
       return 'success' as HeaterApplyResult;
     }, { label: 'Failed to turn off TRV' });
   } catch (error: unknown) {

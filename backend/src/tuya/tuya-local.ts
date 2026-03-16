@@ -166,8 +166,22 @@ function handleSubdeviceEvent(cid: string, dps: DpsRecord): void {
     const battery = dps['35'] !== undefined ? Number(dps['35']) : null;
 
     if (currentTemp !== null || switchState !== null) {
+      // Merge partial DPS with stored last_status for complete state
+      const db = getDb();
+      const stored = db
+        .query('SELECT last_status FROM devices WHERE id = ?')
+        .get(device.id) as { last_status: string | null } | null;
+      const existing = stored?.last_status ? JSON.parse(stored.last_status) : {};
+      const merged = { ...existing, ...dps };
+
+      // Update DB with merged status
+      db.run(
+        'UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [JSON.stringify(merged), device.id],
+      );
+
       recordSensorReading(device.id, device.name, currentTemp, null, targetTemp, battery);
-      broadcastTuyaStatus(device.id, device.category, dps);
+      broadcastTuyaStatus(device.id, device.category, merged);
       if (switchState === false) {
         logger.debug('TRV off', { component: 'tuya-local', deviceId: device.id, deviceName: device.name });
       } else if (currentTemp !== null) {
