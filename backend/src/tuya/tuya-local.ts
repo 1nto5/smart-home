@@ -262,6 +262,11 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
     nullPayloadOnJSONError: true, // Return null instead of throwing on JSON errors
   });
 
+  // Increase TuyAPI's internal set() response timeout for Zigbee subdevice routing
+  // Default is 2 (= 2*2500 = 5s), too short for gateway -> Zigbee -> subdevice -> response chain
+  // @ts-expect-error _responseTimeout is a private TuyAPI property
+  device._responseTimeout = 5; // 5 * 2500 = 12.5s
+
   const connection: DeviceConnection = {
     device,
     connected: false,
@@ -297,12 +302,14 @@ export async function connectDevice(deviceId: string): Promise<DeviceConnection 
     }
   });
 
-  device.on('error', (error: Error) => {
-    logger.error('Device error', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: error.message });
+  device.on('error', (error: unknown) => {
+    const msg = error instanceof Error ? error.message : String(error ?? 'unknown');
+    logger.error('Device error', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, error: msg });
   });
 
   // TuyAPI types data as DPSObject; cast to access dps/cid fields
   device.on('data', (rawData) => {
+    if (rawData == null) return; // nullPayloadOnJSONError can emit null
     const data = rawData as { dps?: DpsRecord; cid?: string };
     logger.debug('Device data received', { component: 'tuya-local', deviceId, deviceName: dbDevice.name, data });
     if (data.dps) {
