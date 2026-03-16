@@ -58,17 +58,33 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
   const id = c.req.param('id');
   const body = c.req.valid('json');
 
-  // Helper: after successful command, fetch updated status and broadcast
-  const refreshAndBroadcast = async () => {
-    try {
-      const updated = await getLocalStatus(id);
-      if (updated?.dps) {
-        const db = getDb();
-        const device = db.query('SELECT category FROM devices WHERE id = ?').get(id) as { category: string } | null;
-        db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(updated.dps), id]);
-        if (device) broadcastTuyaStatus(id, device.category, updated.dps);
-      }
-    } catch { /* best-effort */ }
+  // Helper: broadcast optimistic state, then refresh actual state after delay
+  const optimisticBroadcastAndRefresh = async (dps: number, value: unknown) => {
+    const db = getDb();
+    const device = db.query('SELECT category, last_status FROM devices WHERE id = ?').get(id) as { category: string; last_status: string | null } | null;
+    if (!device) return;
+
+    // Immediately broadcast optimistic update (merge with existing state)
+    const existing = device.last_status ? JSON.parse(device.last_status) : {};
+    const merged = { ...existing, [String(dps)]: value };
+    db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(merged), id]);
+    broadcastTuyaStatus(id, device.category, merged);
+
+    // Delayed refresh to get actual device state (fire-and-forget commands
+    // need time for the gateway to relay to the Zigbee subdevice)
+    setTimeout(async () => {
+      try {
+        const updated = await getLocalStatus(id);
+        if (updated?.dps) {
+          const freshExisting = JSON.parse(
+            (db.query('SELECT last_status FROM devices WHERE id = ?').get(id) as { last_status: string | null })?.last_status ?? '{}'
+          );
+          const freshMerged = { ...freshExisting, ...updated.dps };
+          db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(freshMerged), id]);
+          broadcastTuyaStatus(id, device.category, freshMerged);
+        }
+      } catch { /* best-effort */ }
+    }, 3000);
   };
 
   if ('dps' in body) {
@@ -76,7 +92,7 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
     try {
       const success = await sendDeviceCommand(id, body.dps, body.value);
       if (success) {
-        refreshAndBroadcast();
+        optimisticBroadcastAndRefresh(body.dps, body.value);
         return c.json({ success: true, device_id: id, dps: body.dps, value: body.value, method: 'local' });
       } else {
         return c.json({ success: false, error: 'Local command failed' }, 500);
@@ -93,7 +109,18 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
   try {
     const success = await sendCommand(id, body.commands);
     if (success) {
-      refreshAndBroadcast();
+      // Cloud commands get a delayed refresh (no optimistic update needed)
+      setTimeout(async () => {
+        try {
+          const updated = await getLocalStatus(id);
+          if (updated?.dps) {
+            const db = getDb();
+            const device = db.query('SELECT category FROM devices WHERE id = ?').get(id) as { category: string } | null;
+            db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(updated.dps), id]);
+            if (device) broadcastTuyaStatus(id, device.category, updated.dps);
+          }
+        } catch { /* best-effort */ }
+      }, 1000);
       return c.json({ success: true, device_id: id, commands: body.commands, method: 'cloud' });
     } else {
       return c.json({ success: false, error: 'Cloud command failed' }, 500);
