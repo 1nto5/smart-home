@@ -459,8 +459,11 @@ export async function sendDeviceCommand(
 
     try {
       await circuit.execute(async () => {
+        // Fire-and-forget for subdevice commands: the gateway often executes
+        // the command but its response format doesn't match TuyAPI's set()
+        // resolver, causing false timeouts. We verify via status polling instead.
         return withTimeout(
-          gw.device.set({ dps, set: value, cid }),
+          gw.device.set({ dps, set: value, cid, shouldWaitForResponse: false }),
           TUYA_OPERATION_TIMEOUT_MS,
           `sendDeviceCommand(${dbDevice.name})`
         );
