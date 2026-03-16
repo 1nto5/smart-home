@@ -116,7 +116,11 @@ async function refreshTrvStatuses(): Promise<void> {
       const status = await getDeviceStatus(trv.id);
       if (status?.dps) {
         const dps = status.dps;
-        db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(dps), trv.id]);
+        // Merge with stored status to preserve keys not returned by device
+        const stored = db.query('SELECT last_status FROM devices WHERE id = ?').get(trv.id) as { last_status: string | null } | null;
+        const existing = stored?.last_status ? JSON.parse(stored.last_status) : {};
+        const merged = { ...existing, ...dps };
+        db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [JSON.stringify(merged), trv.id]);
 
         // Record to sensor history
         const currentTemp = dps['5'] !== undefined ? Number(dps['5']) / 10 : null;
@@ -124,7 +128,7 @@ async function refreshTrvStatuses(): Promise<void> {
         const battery = dps['35'] !== undefined ? Number(dps['35']) : null;
         if (currentTemp !== null) {
           recordSensorReading(trv.id, trv.name, currentTemp, null, targetTemp, battery);
-          broadcastTuyaStatus(trv.id, 'wkf', dps);
+          broadcastTuyaStatus(trv.id, 'wkf', merged);
         }
       }
     } catch (e: unknown) {
