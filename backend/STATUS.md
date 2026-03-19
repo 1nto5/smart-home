@@ -25,17 +25,17 @@
 - Purifier: `air-purifier.ts` (MIoT protocol)
 
 ### Yamaha (1 device) - YXC HTTP API
-| Name | Model | IP |
-|------|-------|-----|
-| Soundbar | YAS-306 | 10.10.10.150 |
+| Name | Model |
+|------|-------|
+| Soundbar | YAS-306 |
 
 **Control:** `yamaha-soundbar.ts` (Yamaha Extended Control API)
 **Features:** power, volume, mute, input, sound program
 
 ### Roborock (1 device) - python-roborock
-| Name | Model | IP |
-|------|-------|-----|
-| Mania | roborock.vacuum.a51 (S8) | 10.10.10.120 |
+| Name | Model |
+|------|-------|
+| Mania | roborock.vacuum.a51 (S8) |
 
 **Control:** `roborock` CLI (python-roborock)
 
