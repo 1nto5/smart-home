@@ -1,2 +1,1 @@
 - Always use a local connection to my devices rather than a cloud-based one.
-- Read `CLAUDE.local.md` for server infrastructure details, deploy commands, diagnostics, and backup procedures.

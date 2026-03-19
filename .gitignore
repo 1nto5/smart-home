@@ -22,7 +22,6 @@ data/
 .env.production
 *.local
 DEPLOYMENT.md
-CLAUDE.local.md
 
 # IDE
 .idea/
