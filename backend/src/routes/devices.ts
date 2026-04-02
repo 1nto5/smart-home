@@ -10,6 +10,9 @@ import { logger } from '../utils/logger';
 
 const devices = new Hono();
 
+// Track pending delayed refresh timers per device (cancel old before scheduling new)
+const pendingRefreshTimers = new Map<string, Timer>();
+
 // Get all devices (always returns cached DB data)
 devices.get('/', (c) => {
   const db = getDb();
@@ -72,7 +75,13 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
 
     // Delayed refresh to get actual device state (fire-and-forget commands
     // need time for the gateway to relay to the Zigbee subdevice)
-    setTimeout(async () => {
+    // Cancel any pending refresh for this device to prevent stale reads from
+    // overwriting newer optimistic state (e.g. rapid OFF then ON toggle)
+    const existingTimer = pendingRefreshTimers.get(id);
+    if (existingTimer) clearTimeout(existingTimer);
+
+    const timer = setTimeout(async () => {
+      pendingRefreshTimers.delete(id);
       try {
         const updated = await getLocalStatus(id);
         if (updated?.dps) {
@@ -85,6 +94,7 @@ devices.post('/:id/control', zValidator('json', DeviceControlSchema), async (c) 
         }
       } catch { /* best-effort */ }
     }, 3000);
+    pendingRefreshTimers.set(id, timer);
   };
 
   if ('dps' in body) {
