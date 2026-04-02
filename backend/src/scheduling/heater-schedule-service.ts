@@ -165,16 +165,15 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       const status = await getDeviceStatus(deviceId);
       if (!status) throw Object.assign(new Error('offline'), { _offline: true });
 
-      // Track the effective state for broadcasting (starts from device-reported DPS)
       const effectiveDps = { ...status.dps };
 
-      // Auto-wake: if device is off (DPS 1 = false), turn it on first
-      const switchState = status?.dps?.['1'];
+      // Auto-wake: if device is off, turn it on first
+      const switchState = status?.dps?.[TRV_DPS.SWITCH];
       if (switchState === false) {
         logger.debug('TRV is off, turning on first', { component: 'heater-schedule', deviceId });
         const wakeSuccess = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, true);
         if (wakeSuccess) {
-          effectiveDps['1'] = true;
+          effectiveDps[TRV_DPS.SWITCH] = true;
           await Bun.sleep(500); // Give device time to wake up
         }
       }
@@ -183,7 +182,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
       if (!success) throw new Error('command failed');
 
-      effectiveDps['4'] = tempValue;
+      effectiveDps[TRV_DPS.TARGET_TEMP] = tempValue;
 
       // Persist to DB so the status survives page reloads
       const db = getDb();
@@ -212,10 +211,10 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
       const success = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, false);
       if (!success) throw new Error('command failed');
 
-      // Also set target to 5C (50) as safety belt in case DPS 1 = false is ignored
+      // Also set target to 5C (50) as safety belt in case SWITCH = false is ignored
       await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, 50);
 
-      const effectiveDps = { ...status.dps, '1': false, '4': 50 };
+      const effectiveDps = { ...status.dps, [TRV_DPS.SWITCH]: false, [TRV_DPS.TARGET_TEMP]: 50 };
 
       // Persist to DB so the status survives page reloads
       const db = getDb();
