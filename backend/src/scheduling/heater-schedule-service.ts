@@ -166,7 +166,7 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       if (!status) throw Object.assign(new Error('offline'), { _offline: true });
 
       // Track the effective state for broadcasting (starts from device-reported DPS)
-      let effectiveDps = { ...status.dps };
+      const effectiveDps = { ...status.dps };
 
       // Auto-wake: if device is off (DPS 1 = false), turn it on first
       const switchState = status?.dps?.['1'];
