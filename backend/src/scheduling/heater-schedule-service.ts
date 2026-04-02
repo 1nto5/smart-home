@@ -165,13 +165,16 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       const status = await getDeviceStatus(deviceId);
       if (!status) throw Object.assign(new Error('offline'), { _offline: true });
 
+      // Track the effective state for broadcasting (starts from device-reported DPS)
+      let effectiveDps = { ...status.dps };
+
       // Auto-wake: if device is off (DPS 1 = false), turn it on first
       const switchState = status?.dps?.['1'];
       if (switchState === false) {
         logger.debug('TRV is off, turning on first', { component: 'heater-schedule', deviceId });
         const wakeSuccess = await sendDeviceCommand(deviceId, TRV_DPS.SWITCH, true);
         if (wakeSuccess) {
-          broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '1': true });
+          effectiveDps['1'] = true;
           await Bun.sleep(500); // Give device time to wake up
         }
       }
@@ -180,8 +183,15 @@ export async function applyTempToHeater(deviceId: string, targetTemp: number): P
       const success = await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, tempValue);
       if (!success) throw new Error('command failed');
 
+      effectiveDps['4'] = tempValue;
+
+      // Persist to DB so the status survives page reloads
+      const db = getDb();
+      db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [JSON.stringify(effectiveDps), deviceId]);
+
       logger.debug('Set TRV temperature', { component: 'heater-schedule', deviceId, targetTemp });
-      broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '4': tempValue });
+      broadcastTuyaStatus(deviceId, 'wkf', effectiveDps);
       return 'success' as HeaterApplyResult;
     }, { label: 'Failed to apply temperature to TRV' });
   } catch (error: unknown) {
@@ -205,8 +215,15 @@ export async function turnOffHeater(deviceId: string): Promise<HeaterApplyResult
       // Also set target to 5C (50) as safety belt in case DPS 1 = false is ignored
       await sendDeviceCommand(deviceId, TRV_DPS.TARGET_TEMP, 50);
 
+      const effectiveDps = { ...status.dps, '1': false, '4': 50 };
+
+      // Persist to DB so the status survives page reloads
+      const db = getDb();
+      db.run('UPDATE devices SET last_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [JSON.stringify(effectiveDps), deviceId]);
+
       logger.debug('Turned off TRV', { component: 'heater-schedule', deviceId });
-      broadcastTuyaStatus(deviceId, 'wkf', { ...status.dps, '1': false, '4': 50 });
+      broadcastTuyaStatus(deviceId, 'wkf', effectiveDps);
       return 'success' as HeaterApplyResult;
     }, { label: 'Failed to turn off TRV' });
   } catch (error: unknown) {
