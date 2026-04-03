@@ -7,6 +7,7 @@
   import { browser } from '$app/environment';
   import PresetDialog from '$lib/components/PresetDialog.svelte';
   import ScheduleDialog from '$lib/components/ScheduleDialog.svelte';
+  import TRVCard from '$lib/components/TRVCard.svelte';
 
   let newName = $state('');
   let newPresetId = $state('night');
@@ -20,6 +21,10 @@
 
   // TRV devices for dialog
   let trvDevices = $state<TuyaDevice[]>([]);
+
+  // Sub-tab state
+  let activeTab = $state<'devices' | 'presets' | 'schedules'>('devices');
+  let thermostats = $derived(store.tuyaDevices.filter(d => d.category === 'wkf'));
 
   // Preset dialog state
   let selectedPreset = $state<HeaterPreset | null>(null);
@@ -153,308 +158,363 @@
 </svelte:head>
 
 <div class="space-y-8 pb-24">
-  <!-- Presets -->
-  <section>
-    <div class="section-header section-header-climate">
-      <div class="section-icon glow-climate-heat">
-        <Thermometer class="w-4 h-4" />
-      </div>
-      <h2 class="section-title">Heater Presets</h2>
-      <span class="section-count">{store.heaterPresets.length}</span>
-      <div class="section-line"></div>
-      <button
-        onclick={() => showNewPresetForm = !showNewPresetForm}
-        class="ml-3 px-3 py-1.5 rounded-lg glow-climate-heat power-btn-on text-sm font-medium flex items-center gap-1.5 transition-transform hover:scale-105"
-      >
-        <Plus class="w-4 h-4" />
-        Add
-      </button>
+  <!-- Page header -->
+  <div class="section-header section-header-climate">
+    <div class="section-icon glow-climate-heat">
+      <Thermometer class="w-4 h-4" />
     </div>
+    <h2 class="section-title">Climate</h2>
+    <div class="section-line"></div>
+  </div>
 
-    <!-- New Preset Form -->
-    {#if showNewPresetForm}
-      <div class="card card-active glow-climate-heat mb-4">
-        <div class="p-4">
-          <div class="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              placeholder="Preset ID (e.g. away)"
-              bind:value={createPresetIdVal}
-              class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-device-climate-heat-text focus:outline-none transition-colors"
-            />
-            <input
-              type="text"
-              placeholder="Display name (e.g. Away)"
-              bind:value={createPresetName}
-              class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-device-climate-heat-text focus:outline-none transition-colors"
-            />
-            <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-recessed border border-stroke-subtle">
-              <input
-                type="number"
-                min="5"
-                max="30"
-                step="0.5"
-                bind:value={createPresetTemp}
-                class="bg-transparent w-16 text-content-primary text-center font-display focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <span class="text-device-climate-heat-text font-display">°C</span>
-            </div>
-            <button
-              onclick={handleCreatePreset}
-              disabled={loading || !createPresetIdVal.trim() || !createPresetName.trim()}
-              class="relative px-4 py-2.5 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider disabled:opacity-50 transition-all flex items-center gap-2"
-            >
-              <Plus class="w-4 h-4 {creatingPreset ? 'animate-spin' : ''}" />
-              Create
-              {#if creatingPreset}
-                <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
-              {/if}
-            </button>
-            <button
-              onclick={() => showNewPresetForm = false}
-              class="px-3 py-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors"
-            >
-              <X class="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button
+      class="sub-tab"
+      class:sub-tab-active={activeTab === 'devices'}
+      onclick={() => activeTab = 'devices'}
+    >
+      Urządzenia
+    </button>
+    <button
+      class="sub-tab"
+      class:sub-tab-active={activeTab === 'presets'}
+      onclick={() => activeTab = 'presets'}
+    >
+      Presety
+    </button>
+    <button
+      class="sub-tab"
+      class:sub-tab-active={activeTab === 'schedules'}
+      onclick={() => activeTab = 'schedules'}
+    >
+      Harmonogramy
+    </button>
+  </div>
+
+  <!-- Tab: Urządzenia -->
+  {#if activeTab === 'devices'}
+    <section>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {#each thermostats as device (device.id)}
+          <TRVCard {device} compact />
+        {/each}
       </div>
-    {/if}
+      {#if thermostats.length === 0}
+        <div class="card p-6 text-center">
+          <Thermometer class="w-10 h-10 mx-auto text-content-tertiary mb-2 opacity-50" />
+          <p class="text-content-tertiary">No heaters found</p>
+        </div>
+      {/if}
+    </section>
+  {/if}
 
-    <!-- Preset Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {#each store.heaterPresets as preset (preset.id)}
-        {@const isOffPreset = preset.id === 'off'}
-        <div class="card p-4 hover:border-device-climate-heat-text/30 transition-colors {isOffPreset ? 'opacity-75' : ''}">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg {isOffPreset ? 'bg-surface-recessed border border-stroke-subtle' : 'glow-climate-heat power-btn-on'} flex items-center justify-center">
-                {#if isOffPreset}
-                  <PowerOff class="w-4 h-4 text-content-tertiary" />
-                {:else}
-                  <Flame class="w-4 h-4" />
-                {/if}
+  <!-- Tab: Presety -->
+  {#if activeTab === 'presets'}
+    <!-- Presets -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <h3 class="font-display text-sm uppercase tracking-wider text-device-climate-heat-text">Heater Presets</h3>
+          <span class="section-count">{store.heaterPresets.length}</span>
+        </div>
+        <button
+          onclick={() => showNewPresetForm = !showNewPresetForm}
+          class="px-3 py-1.5 rounded-lg glow-climate-heat power-btn-on text-sm font-medium flex items-center gap-1.5 transition-transform hover:scale-105"
+        >
+          <Plus class="w-4 h-4" />
+          Add
+        </button>
+      </div>
+
+      <!-- New Preset Form -->
+      {#if showNewPresetForm}
+        <div class="card card-active glow-climate-heat mb-4">
+          <div class="p-4">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="Preset ID (e.g. away)"
+                bind:value={createPresetIdVal}
+                class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-device-climate-heat-text focus:outline-none transition-colors"
+              />
+              <input
+                type="text"
+                placeholder="Display name (e.g. Away)"
+                bind:value={createPresetName}
+                class="flex-1 bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary placeholder:text-content-tertiary focus:border-device-climate-heat-text focus:outline-none transition-colors"
+              />
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-recessed border border-stroke-subtle">
+                <input
+                  type="number"
+                  min="5"
+                  max="30"
+                  step="0.5"
+                  bind:value={createPresetTemp}
+                  class="bg-transparent w-16 text-content-primary text-center font-display focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span class="text-device-climate-heat-text font-display">°C</span>
               </div>
-              <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
-            </div>
-            <div class="flex items-center gap-1.5">
               <button
-                onclick={() => handleApplyPreset(preset.id)}
-                disabled={applyingPresetId !== null}
-                class="p-2 rounded-lg bg-surface-recessed border border-stroke-default {isOffPreset ? 'text-content-secondary hover:text-content-primary' : 'text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on'} transition-all disabled:opacity-50 relative"
-                title="Apply to all heaters"
+                onclick={handleCreatePreset}
+                disabled={loading || !createPresetIdVal.trim() || !createPresetName.trim()}
+                class="relative px-4 py-2.5 rounded-lg glow-climate-heat power-btn-on font-semibold uppercase tracking-wider disabled:opacity-50 transition-all flex items-center gap-2"
               >
-                <Play class="w-4 h-4 {applyingPresetId === preset.id ? 'animate-spin' : ''}" />
-                {#if applyingPresetId === preset.id}
+                <Plus class="w-4 h-4 {creatingPreset ? 'animate-spin' : ''}" />
+                Create
+                {#if creatingPreset}
                   <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
                 {/if}
               </button>
-              {#if !isOffPreset}
+              <button
+                onclick={() => showNewPresetForm = false}
+                class="px-3 py-2.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:border-stroke-strong transition-colors"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      {/if}
+
+      <!-- Preset Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {#each store.heaterPresets as preset (preset.id)}
+          {@const isOffPreset = preset.id === 'off'}
+          <div class="card p-4 hover:border-device-climate-heat-text/30 transition-colors {isOffPreset ? 'opacity-75' : ''}">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg {isOffPreset ? 'bg-surface-recessed border border-stroke-subtle' : 'glow-climate-heat power-btn-on'} flex items-center justify-center">
+                  {#if isOffPreset}
+                    <PowerOff class="w-4 h-4 text-content-tertiary" />
+                  {:else}
+                    <Flame class="w-4 h-4" />
+                  {/if}
+                </div>
+                <span class="font-display text-sm uppercase tracking-wider text-content-primary">{preset.name}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
                 <button
-                  onclick={() => openPresetDialog(preset)}
-                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-device-climate-heat-text hover:border-device-climate-heat-text/30 transition-all"
-                  title="Edit preset"
+                  onclick={() => handleApplyPreset(preset.id)}
+                  disabled={applyingPresetId !== null}
+                  class="p-2 rounded-lg bg-surface-recessed border border-stroke-default {isOffPreset ? 'text-content-secondary hover:text-content-primary' : 'text-device-climate-heat-text hover:glow-climate-heat hover:power-btn-on'} transition-all disabled:opacity-50 relative"
+                  title="Apply to all heaters"
                 >
-                  <Pencil class="w-4 h-4" />
-                </button>
-                <button
-                  onclick={() => handleDeletePreset(preset.id)}
-                  disabled={deletingPresetId !== null}
-                  class="relative p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
-                  title="Delete preset"
-                >
-                  <Trash2 class="w-4 h-4 {deletingPresetId === preset.id ? 'animate-spin' : ''}" />
-                  {#if deletingPresetId === preset.id}
+                  <Play class="w-4 h-4 {applyingPresetId === preset.id ? 'animate-spin' : ''}" />
+                  {#if applyingPresetId === preset.id}
                     <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
                   {/if}
                 </button>
-              {/if}
-            </div>
-          </div>
-          {#if isOffPreset}
-            <span class="font-display text-2xl text-content-tertiary">
-              Power Off
-            </span>
-          {:else}
-            <span class="font-display text-2xl text-device-climate-heat-text neon-text-subtle">
-              {preset.target_temp}°C
-            </span>
-          {/if}
-        </div>
-      {/each}
-    </div>
-
-    <!-- Preset Dialog -->
-    {#if selectedPreset}
-      <PresetDialog
-        preset={selectedPreset}
-        {trvDevices}
-        bind:open={presetDialogOpen}
-        onclose={closePresetDialog}
-      />
-    {/if}
-  </section>
-
-  <!-- Create Schedule -->
-  <section>
-    <div class="section-header">
-      <div class="section-icon" style="background: color-mix(in srgb, var(--color-accent) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent);">
-        <Plus class="w-4 h-4" />
-      </div>
-      <h2 class="section-title" style="color: var(--color-accent);">Create Schedule</h2>
-      <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);"></div>
-    </div>
-    <div class="card p-4">
-      <div class="flex flex-col sm:flex-row flex-wrap gap-3">
-        <input
-          type="text"
-          placeholder="Schedule name"
-          bind:value={newName}
-          class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 w-full sm:flex-1 sm:min-w-[150px] text-content-primary placeholder:text-content-tertiary focus:border-accent focus:outline-none transition-colors"
-        />
-        <div class="flex gap-3">
-          <select
-            bind:value={newPresetId}
-            class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary flex-1 sm:flex-initial focus:border-accent focus:outline-none transition-colors"
-          >
-            {#each store.heaterPresets as preset (preset.id)}
-              <option value={preset.id}>{preset.name} ({preset.target_temp}°C)</option>
-            {/each}
-          </select>
-          <input
-            type="time"
-            bind:value={newTime}
-            class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary font-display focus:border-accent focus:outline-none transition-colors"
-          />
-        </div>
-        <button
-          onclick={handleCreate}
-          disabled={loading || !newName.trim()}
-          class="relative px-5 py-2.5 rounded-lg font-semibold uppercase tracking-wider transition-all w-full sm:w-auto flex items-center justify-center gap-2
-                 {!loading && newName.trim() ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary'}"
-        >
-          <Plus class="w-4 h-4 {creatingSchedule ? 'animate-spin' : ''}" />
-          Add
-          {#if creatingSchedule}
-            <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
-          {/if}
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Schedules List -->
-  <section>
-    <div class="section-header">
-      <div class="section-icon" style="background: color-mix(in srgb, var(--color-accent) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent);">
-        <Clock class="w-4 h-4" />
-      </div>
-      <h2 class="section-title" style="color: var(--color-accent);">Schedules</h2>
-      <span class="section-count">{store.heaterSchedules.length}</span>
-      <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);"></div>
-    </div>
-    {#if store.heaterSchedules.length === 0}
-      <div class="card p-6 text-center">
-        <Clock class="w-10 h-10 mx-auto text-content-tertiary mb-2 opacity-50" />
-        <p class="text-content-tertiary">No schedules configured</p>
-      </div>
-    {:else}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {#each store.heaterSchedules as schedule (schedule.id)}
-          <div
-            class="card p-3 transition-opacity"
-            class:opacity-50={!schedule.enabled}
-            class:card-active={schedule.enabled}
-            class:glow-accent={schedule.enabled}
-          >
-            <div class="flex items-center justify-between mb-2">
-              <div class="font-display text-xl text-accent neon-text-subtle">{schedule.time}</div>
-              <div class="flex gap-1.5">
-                <button
-                  onclick={() => handleToggle(schedule.id)}
-                  class="px-2.5 py-1 rounded-lg font-medium text-xs transition-all
-                         {schedule.enabled ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong'}"
-                >
-                  {schedule.enabled ? 'On' : 'Off'}
-                </button>
-                <button
-                  onclick={() => openScheduleDialog(schedule)}
-                  class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-accent hover:border-accent/30 transition-colors"
-                  title="Edit schedule"
-                >
-                  <Pencil class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onclick={() => handleDelete(schedule.id)}
-                  class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"
-                  title="Delete schedule"
-                >
-                  <Trash2 class="w-3.5 h-3.5" />
-                </button>
+                {#if !isOffPreset}
+                  <button
+                    onclick={() => openPresetDialog(preset)}
+                    class="p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-device-climate-heat-text hover:border-device-climate-heat-text/30 transition-all"
+                    title="Edit preset"
+                  >
+                    <Pencil class="w-4 h-4" />
+                  </button>
+                  <button
+                    onclick={() => handleDeletePreset(preset.id)}
+                    disabled={deletingPresetId !== null}
+                    class="relative p-2 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
+                    title="Delete preset"
+                  >
+                    <Trash2 class="w-4 h-4 {deletingPresetId === preset.id ? 'animate-spin' : ''}" />
+                    {#if deletingPresetId === preset.id}
+                      <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+                    {/if}
+                  </button>
+                {/if}
               </div>
             </div>
-            <div class="text-sm">
-              <span class="font-medium text-content-primary">{schedule.name}</span>
-              <span class="text-content-tertiary mx-1">→</span>
-              <span class="text-device-climate-heat-text">{getPresetName(schedule.preset_id)}</span>
-            </div>
+            {#if isOffPreset}
+              <span class="font-display text-2xl text-content-tertiary">
+                Power Off
+              </span>
+            {:else}
+              <span class="font-display text-2xl text-device-climate-heat-text neon-text-subtle">
+                {preset.target_temp}°C
+              </span>
+            {/if}
           </div>
         {/each}
       </div>
-    {/if}
 
-    <!-- Schedule Dialog -->
-    {#if selectedSchedule}
-      <ScheduleDialog
-        schedule={selectedSchedule}
-        presets={store.heaterPresets}
-        bind:open={scheduleDialogOpen}
-        onclose={closeScheduleDialog}
-      />
-    {/if}
-  </section>
-
-  <!-- Pending Actions -->
-  <section>
-    <div class="section-header">
-      <div class="section-icon" style="background: color-mix(in srgb, var(--color-warning) 15%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); color: var(--color-warning);">
-        <AlertCircle class="w-4 h-4" />
-      </div>
-      <h2 class="section-title" style="color: var(--color-warning);">Pending Actions</h2>
-      <span class="section-count">{store.pendingHeaterActions.length}</span>
-      <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning) 40%, transparent) 0%, transparent 100%);"></div>
-      {#if store.pendingHeaterActions.length > 0}
-        <button
-          onclick={handleClearPending}
-          class="ml-3 px-3 py-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary text-sm hover:border-stroke-strong transition-colors"
-        >
-          Clear All
-        </button>
+      <!-- Preset Dialog -->
+      {#if selectedPreset}
+        <PresetDialog
+          preset={selectedPreset}
+          {trvDevices}
+          bind:open={presetDialogOpen}
+          onclose={closePresetDialog}
+        />
       {/if}
-    </div>
-    {#if store.pendingHeaterActions.length === 0}
-      <div class="card p-4 flex items-center gap-3">
-        <div class="w-2 h-2 rounded-full bg-success animate-glow"></div>
-        <p class="text-content-secondary text-sm">All heaters online - no pending actions</p>
+    </section>
+  {/if}
+
+  <!-- Tab: Harmonogramy -->
+  {#if activeTab === 'schedules'}
+    <!-- Create Schedule -->
+    <section>
+      <div class="section-header">
+        <div class="section-icon" style="background: color-mix(in srgb, var(--color-accent) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent);">
+          <Plus class="w-4 h-4" />
+        </div>
+        <h2 class="section-title" style="color: var(--color-accent);">Create Schedule</h2>
+        <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);"></div>
       </div>
-    {:else}
-      <div class="space-y-2">
-        {#each store.pendingHeaterActions as action (action.id)}
-          <div class="card p-3 flex items-center justify-between border-warning/30">
-            <div class="flex items-center gap-3">
-              <div class="w-2 h-2 rounded-full bg-warning animate-glow"></div>
-              <span class="font-mono text-sm text-content-primary">{getDeviceName(action.device_id)}</span>
-              <span class="text-content-tertiary">→</span>
-              <span class="text-sm text-device-climate-heat-text">{getPresetName(action.preset_id)}</span>
-            </div>
-            <span class="text-xs font-display text-content-tertiary px-2 py-1 rounded bg-surface-recessed">
-              Retry #{action.retry_count}
-            </span>
+      <div class="card p-4">
+        <div class="flex flex-col sm:flex-row flex-wrap gap-3">
+          <input
+            type="text"
+            placeholder="Schedule name"
+            bind:value={newName}
+            class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 w-full sm:flex-1 sm:min-w-[150px] text-content-primary placeholder:text-content-tertiary focus:border-accent focus:outline-none transition-colors"
+          />
+          <div class="flex gap-3">
+            <select
+              bind:value={newPresetId}
+              class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary flex-1 sm:flex-initial focus:border-accent focus:outline-none transition-colors"
+            >
+              {#each store.heaterPresets as preset (preset.id)}
+                <option value={preset.id}>{preset.name} ({preset.target_temp}°C)</option>
+              {/each}
+            </select>
+            <input
+              type="time"
+              bind:value={newTime}
+              class="bg-surface-recessed border border-stroke-default rounded-lg px-3 py-2.5 text-content-primary font-display focus:border-accent focus:outline-none transition-colors"
+            />
           </div>
-        {/each}
+          <button
+            onclick={handleCreate}
+            disabled={loading || !newName.trim()}
+            class="relative px-5 py-2.5 rounded-lg font-semibold uppercase tracking-wider transition-all w-full sm:w-auto flex items-center justify-center gap-2
+                   {!loading && newName.trim() ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary'}"
+          >
+            <Plus class="w-4 h-4 {creatingSchedule ? 'animate-spin' : ''}" />
+            Add
+            {#if creatingSchedule}
+              <div class="absolute inset-0 rounded-lg border-2 border-current animate-glow"></div>
+            {/if}
+          </button>
+        </div>
       </div>
-    {/if}
-  </section>
+    </section>
+
+    <!-- Schedules List -->
+    <section>
+      <div class="section-header">
+        <div class="section-icon" style="background: color-mix(in srgb, var(--color-accent) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent);">
+          <Clock class="w-4 h-4" />
+        </div>
+        <h2 class="section-title" style="color: var(--color-accent);">Schedules</h2>
+        <span class="section-count">{store.heaterSchedules.length}</span>
+        <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 100%);"></div>
+      </div>
+      {#if store.heaterSchedules.length === 0}
+        <div class="card p-6 text-center">
+          <Clock class="w-10 h-10 mx-auto text-content-tertiary mb-2 opacity-50" />
+          <p class="text-content-tertiary">No schedules configured</p>
+        </div>
+      {:else}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {#each store.heaterSchedules as schedule (schedule.id)}
+            <div
+              class="card p-3 transition-opacity"
+              class:opacity-50={!schedule.enabled}
+              class:card-active={schedule.enabled}
+              class:glow-accent={schedule.enabled}
+            >
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-display text-xl text-accent neon-text-subtle">{schedule.time}</div>
+                <div class="flex gap-1.5">
+                  <button
+                    onclick={() => handleToggle(schedule.id)}
+                    class="px-2.5 py-1 rounded-lg font-medium text-xs transition-all
+                           {schedule.enabled ? 'glow-accent power-btn-on' : 'bg-surface-recessed border border-stroke-default text-content-tertiary hover:border-stroke-strong'}"
+                  >
+                    {schedule.enabled ? 'On' : 'Off'}
+                  </button>
+                  <button
+                    onclick={() => openScheduleDialog(schedule)}
+                    class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary hover:text-accent hover:border-accent/30 transition-colors"
+                    title="Edit schedule"
+                  >
+                    <Pencil class="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onclick={() => handleDelete(schedule.id)}
+                    class="p-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-tertiary hover:bg-error/10 hover:text-error hover:border-error/30 transition-colors"
+                    title="Delete schedule"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div class="text-sm">
+                <span class="font-medium text-content-primary">{schedule.name}</span>
+                <span class="text-content-tertiary mx-1">→</span>
+                <span class="text-device-climate-heat-text">{getPresetName(schedule.preset_id)}</span>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+
+      <!-- Schedule Dialog -->
+      {#if selectedSchedule}
+        <ScheduleDialog
+          schedule={selectedSchedule}
+          presets={store.heaterPresets}
+          bind:open={scheduleDialogOpen}
+          onclose={closeScheduleDialog}
+        />
+      {/if}
+    </section>
+
+    <!-- Pending Actions -->
+    <section>
+      <div class="section-header">
+        <div class="section-icon" style="background: color-mix(in srgb, var(--color-warning) 15%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); color: var(--color-warning);">
+          <AlertCircle class="w-4 h-4" />
+        </div>
+        <h2 class="section-title" style="color: var(--color-warning);">Pending Actions</h2>
+        <span class="section-count">{store.pendingHeaterActions.length}</span>
+        <div class="section-line" style="background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning) 40%, transparent) 0%, transparent 100%);"></div>
+        {#if store.pendingHeaterActions.length > 0}
+          <button
+            onclick={handleClearPending}
+            class="ml-3 px-3 py-1.5 rounded-lg bg-surface-recessed border border-stroke-default text-content-secondary text-sm hover:border-stroke-strong transition-colors"
+          >
+            Clear All
+          </button>
+        {/if}
+      </div>
+      {#if store.pendingHeaterActions.length === 0}
+        <div class="card p-4 flex items-center gap-3">
+          <div class="w-2 h-2 rounded-full bg-success animate-glow"></div>
+          <p class="text-content-secondary text-sm">All heaters online - no pending actions</p>
+        </div>
+      {:else}
+        <div class="space-y-2">
+          {#each store.pendingHeaterActions as action (action.id)}
+            <div class="card p-3 flex items-center justify-between border-warning/30">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-warning animate-glow"></div>
+                <span class="font-mono text-sm text-content-primary">{getDeviceName(action.device_id)}</span>
+                <span class="text-content-tertiary">→</span>
+                <span class="text-sm text-device-climate-heat-text">{getPresetName(action.preset_id)}</span>
+              </div>
+              <span class="text-xs font-display text-content-tertiary px-2 py-1 rounded bg-surface-recessed">
+                Retry #{action.retry_count}
+              </span>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </section>
+  {/if}
 </div>
 
 <style>
@@ -522,5 +582,38 @@
   .glow-accent {
     box-shadow: 0 0 15px -3px color-mix(in srgb, var(--color-accent) 40%, transparent),
                 inset 0 1px 0 color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+
+  /* Sub-tabs */
+  .sub-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--color-stroke-subtle);
+    margin-bottom: 1.5rem;
+    margin-top: -0.5rem;
+  }
+
+  .sub-tab {
+    padding: 0.5rem 1.25rem;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-content-tertiary);
+    cursor: pointer;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+    background: none;
+  }
+
+  .sub-tab:hover {
+    color: var(--color-climate-heat-text);
+  }
+
+  .sub-tab-active {
+    color: var(--color-climate-heat-text);
+    border-bottom-color: var(--color-climate-heat-text);
   }
 </style>
