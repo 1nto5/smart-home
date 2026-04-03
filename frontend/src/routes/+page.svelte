@@ -1,17 +1,13 @@
 <script lang="ts">
-  import LampCard from '$lib/components/LampCard.svelte';
   import RoborockCard from '$lib/components/RoborockCard.svelte';
   import TuyaSensorCard from '$lib/components/TuyaSensorCard.svelte';
-  import TRVCard from '$lib/components/TRVCard.svelte';
   import YamahaCard from '$lib/components/YamahaCard.svelte';
   import AirPurifierCard from '$lib/components/AirPurifierCard.svelte';
   import HomeStatusCard from '$lib/components/HomeStatusCard.svelte';
   import { store } from '$lib/stores.svelte';
-  import { Lightbulb, Thermometer, Zap, DoorOpen, Droplet } from 'lucide-svelte';
+  import { Zap, DoorOpen, Droplet } from 'lucide-svelte';
 
   // Filter devices by type
-  let lamps = $derived(store.lamps.filter(l => l.category === 'lamp'));
-  let thermostats = $derived(store.tuyaDevices.filter(d => d.category === 'wkf'));
   // Door/window sensors (mcs category)
   let doorSensors = $derived(store.tuyaDevices.filter(d => d.category === 'mcs'));
   // Flood sensors (sj category)
@@ -21,7 +17,6 @@
 
   // Check if data loaded
   let hasLoaded = $derived(
-    store.lamps.length > 0 ||
     store.tuyaDevices.length > 0 ||
     store.yamahaDevices.length > 0
   );
@@ -88,44 +83,6 @@
         {/if}
       </div>
     </section>
-
-    <!-- Lights -->
-    {#if lamps.length > 0}
-      <section>
-        <div class="section-header section-header-lights">
-          <div class="section-icon glow-lights">
-            <Lightbulb class="w-4 h-4" />
-          </div>
-          <h2 class="section-title">Lights</h2>
-          <span class="section-count">{lamps.length}</span>
-          <div class="section-line"></div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {#each lamps as lamp (lamp.id)}
-            <LampCard {lamp} compact />
-          {/each}
-        </div>
-      </section>
-    {/if}
-
-    <!-- Climate (Thermostats only) -->
-    {#if thermostats.length > 0}
-      <section>
-        <div class="section-header section-header-climate">
-          <div class="section-icon glow-climate-heat">
-            <Thermometer class="w-4 h-4" />
-          </div>
-          <h2 class="section-title">Climate</h2>
-          <span class="section-count">{thermostats.length}</span>
-          <div class="section-line"></div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {#each thermostats as device (device.id)}
-            <TRVCard {device} compact />
-          {/each}
-        </div>
-      </section>
-    {/if}
 
     <!-- Door/Window Sensors -->
     {#if doorSensors.length > 0}
@@ -212,26 +169,6 @@
   }
 
   /* Category-specific accents */
-  .section-header-lights .section-icon {
-    background: color-mix(in srgb, var(--color-lights-text) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-lights-text) 30%, transparent);
-    color: var(--color-lights-text);
-  }
-  .section-header-lights .section-title { color: var(--color-lights-text); }
-  .section-header-lights .section-line {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--color-lights-text) 40%, transparent) 0%, transparent 100%);
-  }
-
-  .section-header-climate .section-icon {
-    background: color-mix(in srgb, var(--color-climate-heat-text) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-climate-heat-text) 30%, transparent);
-    color: var(--color-climate-heat-text);
-  }
-  .section-header-climate .section-title { color: var(--color-climate-heat-text); }
-  .section-header-climate .section-line {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--color-climate-heat-text) 40%, transparent) 0%, transparent 100%);
-  }
-
   /* Door/Window sensors - using warning color */
   .section-header-doors .section-icon {
     background: color-mix(in srgb, var(--color-warning) 15%, transparent);
