@@ -204,25 +204,25 @@
       class:sub-tab-active={activeTab === 'devices'}
       onclick={() => activeTab = 'devices'}
     >
-      Urządzenia
+      Devices
     </button>
     <button
       class="sub-tab"
       class:sub-tab-active={activeTab === 'presets'}
       onclick={() => activeTab = 'presets'}
     >
-      Presety
+      Presets
     </button>
     <button
       class="sub-tab"
       class:sub-tab-active={activeTab === 'schedules'}
       onclick={() => activeTab = 'schedules'}
     >
-      Harmonogramy
+      Schedules
     </button>
   </div>
 
-  <!-- Tab: Urządzenia -->
+  <!-- Tab: Devices -->
   {#if activeTab === 'devices'}
     <section>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -239,7 +239,7 @@
     </section>
   {/if}
 
-  <!-- Tab: Presety -->
+  <!-- Tab: Presets -->
   {#if activeTab === 'presets'}
   <!-- Presets Section -->
   <section>
@@ -428,7 +428,7 @@
   </section>
   {/if}
 
-  <!-- Tab: Harmonogramy -->
+  <!-- Tab: Schedules -->
   {#if activeTab === 'schedules'}
   <!-- Create Schedule Section -->
   <section>
