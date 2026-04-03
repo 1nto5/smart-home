@@ -8,6 +8,10 @@
   import { translateDeviceName } from '$lib/translations';
   import type { ComponentType } from 'svelte';
   import LampScheduleDialog from '$lib/components/LampScheduleDialog.svelte';
+  import LampCard from '$lib/components/LampCard.svelte';
+
+  let activeTab = $state<'devices' | 'presets' | 'schedules'>('devices');
+  let lamps = $derived(store.lamps.filter(l => l.category === 'lamp'));
 
   let presets = $state<Record<string, Preset>>({});
   let applyingPreset = $state<string | null>(null);
@@ -184,18 +188,69 @@
 </svelte:head>
 
 <div class="space-y-8 pb-24">
+  <!-- Page header -->
+  <div class="section-header section-header-lights">
+    <div class="section-icon glow-lights">
+      <Lightbulb class="w-4 h-4" />
+    </div>
+    <h2 class="section-title">Lighting</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button
+      class="sub-tab"
+      class:sub-tab-active={activeTab === 'devices'}
+      onclick={() => activeTab = 'devices'}
+    >
+      Urządzenia
+    </button>
+    <button
+      class="sub-tab"
+      class:sub-tab-active={activeTab === 'presets'}
+      onclick={() => activeTab = 'presets'}
+    >
+      Presety
+    </button>
+    <button
+      class="sub-tab"
+      class:sub-tab-active={activeTab === 'schedules'}
+      onclick={() => activeTab = 'schedules'}
+    >
+      Harmonogramy
+    </button>
+  </div>
+
+  <!-- Tab: Urządzenia -->
+  {#if activeTab === 'devices'}
+    <section>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {#each lamps as lamp (lamp.id)}
+          <LampCard {lamp} compact />
+        {/each}
+      </div>
+      {#if lamps.length === 0}
+        <div class="card p-6 text-center">
+          <Lightbulb class="w-10 h-10 mx-auto text-content-tertiary mb-2 opacity-50" />
+          <p class="text-content-tertiary">No lamps found</p>
+        </div>
+      {/if}
+    </section>
+  {/if}
+
+  <!-- Tab: Presety -->
+  {#if activeTab === 'presets'}
   <!-- Presets Section -->
   <section>
-    <div class="section-header section-header-lights">
-      <div class="section-icon glow-lights">
-        <Lightbulb class="w-4 h-4" />
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <h3 class="font-display text-sm uppercase tracking-wider text-device-lights-text">Lamp Presets</h3>
+        <span class="section-count">{Object.keys(presets).length}</span>
       </div>
-      <h2 class="section-title">Lamp Presets</h2>
-      <span class="section-count">{Object.keys(presets).length}</span>
-      <div class="section-line"></div>
       <button
         onclick={() => showNewPresetForm = !showNewPresetForm}
-        class="ml-3 px-3 py-1.5 rounded-lg glow-lights power-btn-on text-sm font-medium flex items-center gap-1.5 transition-transform hover:scale-105"
+        class="px-3 py-1.5 rounded-lg glow-lights power-btn-on text-sm font-medium flex items-center gap-1.5 transition-transform hover:scale-105"
       >
         <Plus class="w-4 h-4" />
         Add
@@ -371,7 +426,10 @@
       </div>
     {/if}
   </section>
+  {/if}
 
+  <!-- Tab: Harmonogramy -->
+  {#if activeTab === 'schedules'}
   <!-- Create Schedule Section -->
   <section>
     <div class="section-header">
@@ -533,6 +591,7 @@
       </div>
     {/if}
   </section>
+  {/if}
 </div>
 
 <style>
@@ -594,6 +653,39 @@
   select option {
     background: var(--color-surface-base);
     color: var(--color-content-primary);
+  }
+
+  /* Sub-tabs */
+  .sub-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--color-stroke-subtle);
+    margin-bottom: 1.5rem;
+    margin-top: -0.5rem;
+  }
+
+  .sub-tab {
+    padding: 0.5rem 1.25rem;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-content-tertiary);
+    cursor: pointer;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+    background: none;
+  }
+
+  .sub-tab:hover {
+    color: var(--color-lights-text);
+  }
+
+  .sub-tab-active {
+    color: var(--color-lights-text);
+    border-bottom-color: var(--color-lights-text);
   }
 
   /* Glow accent for schedules */
