@@ -8,7 +8,7 @@
   let activeHeaters = $derived(thermostats.filter(d => {
     try {
       const s = JSON.parse(d.last_status || '{}') as Record<string, unknown>;
-      return s['1'] !== false && s['3'] === 'opened';
+      return (s['1'] === true || s['1'] === undefined) && s['3'] === 'opened';
     } catch { return false; }
   }).length);
 
