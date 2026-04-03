@@ -1,9 +1,16 @@
 <script lang="ts">
   import { store } from '$lib/stores.svelte';
-  import { Thermometer, Flame, Wind } from 'lucide-svelte';
+  import { Thermometer, Flame, Wind, Activity } from 'lucide-svelte';
 
   let status = $derived(store.homeStatus);
   let purifier = $derived(store.airPurifier);
+  let thermostats = $derived(store.tuyaDevices.filter(d => d.category === 'wkf'));
+  let activeHeaters = $derived(thermostats.filter(d => {
+    try {
+      const s = JSON.parse(d.last_status || '{}') as Record<string, unknown>;
+      return s['1'] !== false && s['3'] === 'opened';
+    } catch { return false; }
+  }).length);
 
   function aqiColor(aqi: number): string {
     if (aqi <= 50) return 'text-success';
@@ -20,7 +27,7 @@
 
 <!-- Home Status Card - Shows at top of dashboard -->
 {#if status}
-  <div class="grid grid-cols-3 gap-2 sm:gap-3">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
     <!-- Weather Station -->
     <div class="status-tile">
       <Thermometer class="w-5 h-5 sm:w-6 sm:h-6 text-device-sensors-text" />
@@ -41,6 +48,16 @@
         {status.heater.avg_temp !== null ? `${status.heater.avg_temp.toFixed(1)}°C` : 'N/A'}
       </span>
       <span class="status-sub text-content-tertiary">avg</span>
+    </div>
+
+    <!-- Climate Activity -->
+    <div class="status-tile">
+      <Activity class="w-5 h-5 sm:w-6 sm:h-6 text-device-climate-heat-text" />
+      <span class="status-label">Climate</span>
+      <span class="status-value text-device-climate-heat-text">
+        {activeHeaters} / {thermostats.length}
+      </span>
+      <span class="status-sub text-device-climate-heat-text">active</span>
     </div>
 
     <!-- Air Quality -->
